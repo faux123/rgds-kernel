@@ -118,7 +118,7 @@ static int sensor_report_value(struct i2c_client *client)
 	struct sensor_axis axis;
 	u8 buf[6] = { 0 };
 	int x, y, z;
-	int i, reg;
+	u8 i, reg;	/* u8 counter and register, as stock (cmp ..., uxtb) */
 
 	if (sensor->ops->read_len < 6) {
 		dev_err(&client->dev, "%s:length is error,len=%d\n", __func__,
@@ -129,7 +129,7 @@ static int sensor_report_value(struct i2c_client *client)
 	/* Byte-wise reads, one register per call, as in the stock driver. */
 	reg = sensor->ops->read_reg;
 	for (i = 0; i < sensor->ops->read_len; i++)
-		buf[i] = sensor_read_reg(client, (reg + i) & 0xff);
+		buf[i] = sensor_read_reg(client, reg++);
 
 	/* Raw counts scaled by 2/3 (signed, truncating), as the stock code does. */
 	x = (s16)((buf[0] << 8) | buf[1]) * 2 / 3;
