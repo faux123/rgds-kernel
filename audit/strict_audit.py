@@ -19,6 +19,8 @@ both binaries, so the boundaries are built the same way on each side.
 
 Usage: strict_audit.py <our vmlinux> <out.tsv>
 Prints class counts; writes one row per function that is not STRICT_SAME.
+ADDR_MAY: equal only if a register that holds an adrp page on SOME path into an
+instruction is treated as an address there. Weaker than ADDR_FLOW; listed for review.
 ADDR_FLOW: equal only if a register written by any adrp in the function is treated as
 an address base everywhere (adrp in one basic block, use in another). Usually a
 WARN_ONCE flag or a global reached through a hoisted adrp, but a reused register can
@@ -88,14 +90,67 @@ def xreg(r):
     return 'x' + r[1:] if r and r[0] in 'xw' else r
 
 
-def norm(fname, seq, lo, hi, addrs, flow_insensitive=False):
+def page_in_sets(fname, seq, addrs, may=False):
+    """Must-analysis over the function's control-flow graph: for each instruction, the
+    x-registers that hold an adrp page on EVERY path reaching it. Jumps inside the
+    function are followed; calls clobber x0-x18; indirect branches end a path."""
+    n = len(seq)
+    idx = {a: i for i, a in enumerate(addrs)}
+    tgt = re.compile(r'0x([0-9a-f]+) <' + re.escape(fname) + r'(\+0x[0-9a-f]+)?>')
+    succ = [[] for _ in range(n)]
+    for i, (op, arg) in enumerate(seq):
+        m = tgt.search(arg)
+        t = idx.get(int(m.group(1), 16)) if m else None
+        if t is not None and (op == 'b' or op.startswith('b.') or
+                              op in ('cbz', 'cbnz', 'tbz', 'tbnz')):
+            succ[i].append(t)
+        if op not in ('b', 'br', 'ret', 'brk', 'eret') and i + 1 < n:
+            succ[i].append(i + 1)
+    inn = [None] * n          # None = not reached yet (top)
+    work = []
+    while True:
+        if not work:
+            # code no in-function jump reaches (cold blocks entered from elsewhere,
+            # jump-table targets) starts a new path with nothing known
+            nxt = next((i for i in range(n) if inn[i] is None), None)
+            if nxt is None:
+                break
+            inn[nxt] = frozenset()
+            work = [nxt]
+        i = work.pop()
+        cur = set(inn[i])
+        op, arg = seq[i]
+        regs = [t.strip() for t in arg.split(',')]
+        if op == 'adrp':
+            cur.add(xreg(regs[0]))
+        elif op == 'mov' and len(regs) == 2 and regs[1].startswith('x') and xreg(regs[1]) in cur:
+            cur.add(xreg(regs[0]))
+        elif op not in NO_DEST:
+            if regs and REG.match(regs[0]):
+                cur.discard(xreg(REG.match(regs[0]).group(1)))
+            if op == 'ldp' and len(regs) > 1:
+                cur.discard(xreg(regs[1]))
+        if op in ('bl', 'blr'):
+            cur -= {'x%d' % r for r in range(19)}
+        if op in LDST and ('!' in arg or re.search(r'\],\s*#', arg)):
+            cur.discard(base_reg(arg))
+        out = frozenset(cur)
+        for j in succ[i]:
+            new = out if inn[j] is None else ((inn[j] | out) if may else (inn[j] & out))
+            if new != inn[j]:
+                inn[j] = new
+                work.append(j)
+    return [x if x is not None else frozenset() for x in inn]
+
+
+def norm(fname, seq, lo, hi, addrs, flow_insensitive=False, may=False):
     out = []
     page = set()  # x-registers currently holding an adrp page
     if flow_insensitive:
-        # every register that any adrp in the function writes; used only for the
-        # separately reported ADDR_FLOW class, never for STRICT_SAME
-        anyp = {xreg(a.split(',')[0].strip()) for o, a in seq if o == 'adrp'}
-    for (op, arg), a in zip(seq, addrs):
+        # ADDR_FLOW only: registers holding an adrp page on every control-flow path
+        # into each instruction (see page_in_sets); never used for STRICT_SAME
+        pin = page_in_sets(fname, seq, addrs, may)
+    for k, ((op, arg), a) in enumerate(zip(seq, addrs)):
         def sym(m):
             name, off = m.group(1), m.group(2) or ''
             return '<SELF%s>' % off if name == fname else '<%s>' % name
@@ -116,7 +171,7 @@ def norm(fname, seq, lo, hi, addrs, flow_insensitive=False):
             continue
         b = base_reg(arg) if op in LDST else None
         if flow_insensitive:
-            page |= anyp
+            page = set(pin[k])
         if op in LDST and b in page:
             # the low 12 bits of a paired adrp address; [xN] is the same with lo12 == 0
             arg = re.sub(r'#0x[0-9a-f]+\]', '#LO]', arg)
@@ -126,6 +181,12 @@ def norm(fname, seq, lo, hi, addrs, flow_insensitive=False):
             if len(parts) == 3 and xreg(parts[1]) in page and parts[2].startswith('#'):
                 arg = '%s, %s, #LO' % (parts[0], parts[1])
         out.append((op, arg))
+        # a plain register copy of a page register is a page register too
+        if op == 'mov':
+            parts = [t.strip() for t in arg.split(',')]
+            if len(parts) == 2 and parts[1].startswith('x') and xreg(parts[1]) in page:
+                page.add(xreg(parts[0]))
+                continue
         # destination bookkeeping: a write to a register ends its "page" status
         if op not in NO_DEST:
             m = REG.match(arg)
@@ -173,6 +234,8 @@ def main():
             c = 'STRICT_SAME'
         elif norm(n, s, sa, sb, s_a, True) == norm(n, o, oa, ob, o_a, True):
             c = 'ADDR_FLOW'
+        elif norm(n, s, sa, sb, s_a, True, True) == norm(n, o, oa, ob, o_a, True, True):
+            c = 'ADDR_MAY'
         elif len(s) == len(o):
             c = 'SAMESIZE_DIFF'
         else:
