@@ -3090,6 +3090,7 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 	DBG("info: voltage = %d\n", battery->voltage_avg);
 	DBG("info: voltage_sys = %d\n", battery->voltage_sys);
 	DBG("info: current = %d\n", battery->current_avg);
+	DBG("info: voltage_relax == %d\n", rk817_bat_get_relax_voltage(battery));
 
 	DBG("info: FCC = %d\n", battery->fcc);
 	DBG("info: remain_cap = %d\n", battery->remain_cap);
@@ -3105,6 +3106,14 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 	DBG("info: dsoc = %d, dsoc/1000 = %d\n",
 	    battery->dsoc, battery->dsoc / 1000);
 	DBG("info: rsoc = %d\n", battery->rsoc);
+	DBG("info: get_boot_sec: %lld\n", get_boot_sec());
+	/*
+	 * Stock passes the immediates 4 and 6 here (ffffffc008edde60,
+	 * ffffffc008edde78); not yet checked against the sleep-current
+	 * values pm_resume uses, so our SLP_CURR_* macros are left alone.
+	 */
+	DBG("info: SLP_CURR_MIN: %d\n", 4);
+	DBG("info: SLP_CURR_MAX: %d\n", 6);
 	DBG("info END.\n");
 }
 
