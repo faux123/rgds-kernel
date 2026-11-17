@@ -1423,29 +1423,33 @@ extern int hat_y, hat_x;			/* T @ffffffc00a4d5b8c, @ffffffc00a4d5b88 (defined be
  * pressed: slot = {1,1,y,x} (@..6f7dc); released: slot = {1,0} (@..6f7f8). Other sel/axis: nothing. */
 noinline int tenpad2touchpanel_abs(int sel, int axis, int pressed)
 {
-	int *mode, *kx, *ky;
-
-	if (axis == 0x11 && sel == 2) {
-		mode = &remapkey_up_mode; kx = &remapkey_up_x; ky = &remapkey_up_y;
-	} else if (axis == 0x11 && sel == 1) {
-		mode = &remapkey_down_mode; kx = &remapkey_down_x; ky = &remapkey_down_y;
-	} else if (axis == 0x10 && sel == 2) {
-		mode = &remapkey_left_mode; kx = &remapkey_left_x; ky = &remapkey_left_y;
-	} else if (axis == 0x10 && sel == 1) {
-		mode = &remapkey_right_mode; kx = &remapkey_right_x; ky = &remapkey_right_y;
-	} else {
-		return 0;
-	}
-	if (!(*mode == 1 && gts_dev))
-		return 0;
-	if (pressed) {
-		*(u64 *)&touch_data[8] = 0x100000001ULL;
-		touch_data[10] = *ky;
-		touch_data[11] = *kx;
-	} else {
-		*(u64 *)&touch_data[8] = 1;
+	/* written out per direction as stock (@..6f6ac UP, @..6f754 DOWN, @..6f700 LEFT, @..6f798 RIGHT) */
+#define TP_DIR(K)								\
+	do {									\
+		if (pressed) {							\
+			if (remapkey_##K##_mode == 1 && gts_dev) {		\
+				*(u64 *)&touch_data[8] = 0x100000001ULL;	\
+				touch_data[10] = remapkey_##K##_y;		\
+				touch_data[11] = remapkey_##K##_x;		\
+			}							\
+		} else if (remapkey_##K##_mode == 1 && gts_dev) {		\
+			*(u64 *)&touch_data[8] = 1;				\
+		}								\
+		return 0;							\
+	} while (0)
+	if (axis == 0x10) {
+		if (sel == 1)
+			TP_DIR(right);
+		if (sel == 2)
+			TP_DIR(left);
+	} else if (axis == 0x11) {
+		if (sel == 1)
+			TP_DIR(down);
+		if (sel == 2)
+			TP_DIR(up);
 	}
 	return 0;
+#undef TP_DIR
 }
 
 /* ---- joypad_gpio_check block 4 @..757f4..75e4c: buttons 4.. (only if gpio_key_count >= 5).
