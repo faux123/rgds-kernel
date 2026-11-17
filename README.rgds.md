@@ -64,6 +64,14 @@ Linux version 6.1.141 (builder1@dell-PowerEdge-R730XD) (Android (10087095, +pgo,
    make -j"$(nproc)" ARCH=arm64 LLVM=1 Image dtbs
    ```
 
+The vendor Wi-Fi and Bluetooth drivers under `drivers/net/wireless/rockchip_wlan/`
+build as external-style modules only when you ask for them, so the kernel
+configuration stays identical to stock:
+
+```
+make ARCH=arm64 LLVM=1 RGDS_VENDOR_WIFI=m drivers/net/wireless/rockchip_wlan/<dir>/
+```
+
 The vendor Wi-Fi and Bluetooth modules on the device report vermagic
 `6.1.141 SMP preempt mod_unload modversions aarch64`.
 
@@ -75,12 +83,15 @@ The vendor Wi-Fi and Bluetooth modules on the device report vermagic
 | Vibrator | `drivers/staging/android/timed_output.*`, `rk_timed_gpio.c` | Copied from TheGammaSqueeze/rg_ds_kernel `ba9053b290`; verified instruction-identical to the stock binary function by function, initcall lines match (stock has no `timed_gpio`) |
 | Board device tree | `arch/arm64/boot/dts/rockchip/rk3566-anbernic-rg-ds.dts` | Rebuilt from the stock DTB on the Rockchip SoC dtsi; no semantic difference from stock (tools in `scripts/rgds/dts/`) |
 | xt_quota2 | `net/netfilter/xt_quota2.c` | Android Common Kernel (part of the ACK delta) |
-| Wi-Fi (RTL8821CS) | `drivers/net/wireless/rockchip_wlan/rtl8821cs/` | Realtek v5.15.9.3 from the Rockchip SDK (rkwifibt), built as a module (`CONFIG_RTL8821CS=m`, stock option set); the built `8821cs.o` matches the stock `8821cs.ko` (5044 functions, every size equal). Stock ships it out of tree, so its config has `RTL8821CS` unset |
-| Wi-Fi (RTL8822CS) | `drivers/net/wireless/rockchip_wlan/rtl8822cs/` | Realtek v5.15.8.3-17 release tarball (public upload `libc0607/rtl8822cs-20240221`), one labelled build fix, stock option set; 5344/5344 symbols, every function the same size as the stock `8822cs.ko` (1901680 bytes) |
+| Wi-Fi (RTL8821CS) | `drivers/net/wireless/rockchip_wlan/rtl8821cs/` | Realtek v5.15.9.3 from the Rockchip SDK (rkwifibt), `CONFIG_RTW_ANDROID = 14` as in the SDK build, built as a module (`CONFIG_RTL8821CS=m`, stock option set); the built `8821cs.o` matches the stock `8821cs.ko` (5044 functions, every size equal). Stock ships it out of tree, so its config has `RTL8821CS` unset |
 | Wi-Fi/BT (AIC8800) | `drivers/net/wireless/rockchip_wlan/aic8800/` | Rockchip SDK `external/wifi_driver` (public mirror `TinkerBoard-Android/rockchip-android-external-wifi_driver`); `aic8800_bsp` 128/128, `aic8800_btlpm` 5/5, `aic8800_fdrv` 508/508 symbols, all sizes equal to stock |
 | Wi-Fi (Seekwave EA6621Q) | `drivers/net/wireless/rockchip_wlan/ea6621q/` | Same SDK mirror; `skw` 421/421, `skw_sdio` 102/102, `skw_bootcoms` 44/44 symbols, all sizes equal to stock |
 | Wi-Fi (Infineon CYW88459) | `drivers/net/wireless/rockchip_wlan/infineon/` | Same SDK mirror (DHD 100.10.130), minus one log line stock lacks; 2232/2232 symbols, all sizes equal to stock `cyw88459.ko` (1137520 bytes) |
 | Panel (panel-simple) | `drivers/gpu/drm/panel/panel-simple.c` | Rockchip base plus stock's `enable1` GPIO and fixed prepare reset sequence, reconstructed from disassembly (0 opcode differences in probe/prepare/unprepare) |
+| Wi-Fi (RTL8822CS) | `drivers/net/wireless/rockchip_wlan/rtl8822cs/` | Rockchip Android 14 SDK copy (public mirror `khadas/android_external_wifi_driver` @ `6855b1f4c74d`), v5.15.8.3-17; 5344/5344 symbols, every function the same size as stock `8822cs.ko` (1901680 bytes) |
+| Wi-Fi (Broadcom bcmdhd) | `drivers/net/wireless/rockchip_wlan/bcmdhd/` | Same SDK mirror, DHD 101.10.591.91.39; 2609/2609 symbols, every function the same size as stock `bcmdhd.ko` (1421260 bytes) |
+| Wi-Fi (RTL8852BS) | `drivers/net/wireless/rockchip_wlan/rtl8852bs/` | Same SDK mirror, v1.19.7.1-72; 8347/8347 symbols, every function the same size as stock `8852bs.ko` (2907296 bytes) |
+| Wi-Fi (Seekwave SWT6621S) | `drivers/net/wireless/rockchip_wlan/swt6621s/` | Same SDK mirror; `swt6621s_wifi` 567/567 and `skw_sdio_lite` 193/193 symbols, all sizes equal to stock |
 | DMA heaps | `drivers/dma-buf/heaps/rk_system_heap.c`, `rk_cma_heap.c` | Rockchip heaps built as stock does, ported to 6.1 |
 | SC7U22 accelerometer and gyroscope | `drivers/input/sensors/{accel,gyro}/sc7u22_*.c` | Reconstructed from stock disassembly |
 | RK817 battery | `drivers/power/supply/rk817_battery.c` | Rockchip `develop-4.19` revision (`d1d1ad90afcc`), ported to 6.1, plus stock-only parts reconstructed from disassembly: resume handling, low-power check, field table tail, LED layer, `/sys/rk809/battery_adjust`, CW2015 SOC reporting |
