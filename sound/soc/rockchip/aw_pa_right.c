@@ -162,7 +162,7 @@ static const struct i2c_device_id goodix_ts_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, goodix_ts_id);
 
-static const struct of_device_id aw87391_dt_ids[] = {
+static struct of_device_id aw87391_dt_ids[] = {	/* not const in stock: .data after the driver */
 	{ .compatible = "aw,aw87391-right" },
 	{ }
 };
@@ -170,6 +170,7 @@ static const struct of_device_id aw87391_dt_ids[] = {
 static struct i2c_driver goodix_ts_driver = {
 	.probe = aw87391_probe,
 	.remove = aw87391_remove,
+	.id_table = goodix_ts_id,	/* stock: i2c_driver+0xc8 = goodix_ts_id */
 	.driver = {
 		.name = "aw87391-right",
 		.of_match_table = aw87391_dt_ids,
