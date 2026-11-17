@@ -1,0 +1,16 @@
+DIFF	aw87391_probe	0	ffffffc00914a7d4	ffffffc00914a76c	444	444	add x0, x0, #0xfab | add x0, x0, #0xf21
+DIFF	aw87391_probe	1	ffffffc00914abb8	ffffffc00914ab50	444	444	add x0, x0, #0xfa6 | add x0, x0, #0x38
+DIFF	compass_dev_ioctl	1	ffffffc008cf7a4c	ffffffc008cf7a18	5840	5840	ldr x20, [x23, #0x2a0] | ldr x20, [x23, #0x298]
+DIFF	cpufreq_online	0	ffffffc008f3f19c	ffffffc008f3f134	2836	2836	ldr x8, [x23, #0xeb0] | ldr x8, [x23, #0xea0]
+DIFF	debug_mem_open	1	ffffffc008987c54	ffffffc008987c54	768	768	add x1, x1, #0x8d0 | add x1, x1, #0x8e8
+DIFF	mmu_teardown_level	0	ffffffc0088f8674	ffffffc0088f8674	772	772	ldr x8, [x24, #0x38] | ldr x8, [x24, #0xd8]
+DIFF	rockchip_panel_notifier_call	1	ffffffc008cbfb08	ffffffc008cbfae4	820	816	add x0, x0, #0x9f3 | add x0, x0, #0x919
+DIFF	rockchip_pwm_irq_v4	1	ffffffc008ce6408	ffffffc008ce63dc	408	408	ldr w8, [x21, #0xec] | ldr w8, [x21, #0xe4]
+DIFF	sensor_init	6	ffffffc008ceb41c	ffffffc008ceb3f0	1168	1168	str w10, [x9, #0x1c0] | str w10, [x9, #0x1b8]
+DIFF	sensor_init	8	ffffffc008cec500	ffffffc008cec4d4	956	956	add x1, x1, #0x4b | add x1, x1, #0xfe6
+DIFF	sensor_init	9	ffffffc008cee5e0	ffffffc008cee5b4	940	940	add x1, x1, #0x4b | add x1, x1, #0xfe6
+DIFF	sensor_init	14	ffffffc008cf1c98	ffffffc008cf1c6c	768	768	ldrb w8, [x21, #0x268] | ldrb w8, [x21, #0x260]
+DIFF	sensor_init	15	ffffffc008cf52a4	ffffffc008cf5278	1336	1336	cmp w3, #0x60 | cmp w3, #0x61
+DIFF	sensor_report_value	16	ffffffc008cf6038	ffffffc008cf600c	504	496	sub sp, sp, #0x50 | sub sp, sp, #0x60
+DIFF	sensor_report_value	25	ffffffc008cfb1e4	ffffffc008cfb1b0	496	480	b.le <SELF+0x1ac> | b.le <SELF+0x19c>
+DIFF	sensor_report_value	26	ffffffc008cfb76c	ffffffc008cfb728	548	540	sub sp, sp, #0x50 | sub sp, sp, #0x60

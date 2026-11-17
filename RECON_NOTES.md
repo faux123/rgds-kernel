@@ -516,3 +516,41 @@ Still open, stated plainly:
 - __LINE__ values in gt9xx, hynitron, cst, rk817_battery, rk817 codec: stock's line layout is not
   recoverable from the binary.
 - Nothing has run on the device. A boot test needs Paul's go.
+
+## Round 6 (2026-11-17): first boot test on the RG DS, and the duplicate-name gap
+
+Boot test (Paul's go): the running image (stock kernel + Magisk + 12 W DT, sha b07cfac1) with only
+the kernel replaced by rgds-v1.21; every changed byte inside the kernel section or the boot header
+id; boot-image-gate PASS; dd from adb root with read-back hash; rollback image
+`rgds-charge/bootlab/boot-device-20261117.img`. Marker that our kernel runs: /proc/kallsyms
+hyn_probe at _text+0xcc2f30 (stock 0xcc2f50); the version banner is identical by design.
+Exported-symbol CRCs: all 14,068 present in both, 6 differ (reconstructed-driver prototypes:
+enable/disable_pa_spk_left/right, get_cw2015_soc, gts_dev); the only loaded module (8821cs Wi-Fi)
+needs 225, all match.
+
+Boot 1 found a regression: no accelerometer. The ICM42607 acc driver expects WHO_AM_I 0x61
+(upstream); stock compares with 0x60, which the chip returns. strict2 never compared it because
+`sensor_init` is a name shared by many sensor drivers: strict2 and text_ranges() skip every
+non-unique function name. `audit/dupfuncs.py` now pairs repeated names by address order: 3,284
+functions, 1,980 EXACT, 1,288 same code with addresses naming the same object or string, 16
+flagged (the ICM sensor_init among them, as a control). Real fixes from it:
+
+| Function | Stock | Tree before | Commit (stock / fixes) |
+|---|---|---|---|
+| icm4260x acc sensor_init | WHO_AM_I == 0x60 | 0x61 | 0aa43b716f2e / 633823bfd320 |
+| icm4260x_gyro sensor_report_value | each axis / 10 | raw (10x stock) | 398b60e42933 / 6f78f93ecbeb |
+| sc7u22 acc/gyro sensor_report_value | u8 register loop | int loop (same values) | 3f4b78df0d4e / d1cfee9e280a |
+
+The rest of the 16: same globals at shifted addresses (cpufreq_driver, memstart_addr, this_client,
+rk_remote_pwm_dbg_level, mc32x0_type, kbase strings), and gt9xx rockchip_panel_notifier_call with
+the gtp_is_suspend store shared instead of duplicated (same behaviour). The 8-byte .bss shift comes
+from the joypad .bss block: identical object set, different order, 8 more bytes of padding in stock.
+
+Device results on rgds-v1.21 d1cfee9e280a (boot 3): 12 input devices as stock (gt9xx-0/1,
+retrogame_joypad, virtual_gamepad, gpio-keys, headset-keys, rk817 Headset, adc-keys, gsensor, gyro,
+rk805 pwrkey, bt-powerkey); GT911 reports config 0x5B, X_MAX 640 Y_MAX 480; Android lists the
+accelerometer and gyroscope; gyro at rest, before -> after the /10 fix: RX mean -82.4 -> -8.0,
+RY -5.7 -> -0.5, RZ 34.3 -> 3.4 (device/gyro-*.txt, captured with device/gyroprobe.c); 8821cs
+loaded, Wi-Fi up, wireless adb back without hands; charger 0xE4/0xE5 = 0xde/0xdf; rk817 codec and
+both aw87391 amps probed. Not checked from adb: touch input, button presses, audible sound, lid,
+charge LED in a non-full state, 12 W at the meter.
