@@ -469,7 +469,6 @@ struct pci_dev {
 #ifdef CONFIG_NO_GKI
 	atomic_t	sysfs_init_cnt;		/* pci_create_sysfs_dev_files has been called */
 #endif
-	spinlock_t	pcie_cap_lock;		/* Protects RMW ops in capability accessors */
 	u32		saved_config_space[16]; /* Config space saved at suspend time */
 	struct hlist_head saved_cap_space;
 	int		rom_attr_enabled;	/* Display of ROM attribute enabled? */
