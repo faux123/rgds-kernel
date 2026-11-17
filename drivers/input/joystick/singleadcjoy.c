@@ -1906,26 +1906,25 @@ static noinline void joypad_adc_check(struct input_dev *input)
 	 * adc_abs_<axis> = |value| (cneg mi @..76330). Channels > 3 only copy value to shown_p. */
 	for (i = 0; i < joypad->amux_count; i++) {
 		struct stock_adc_channel *e = &a[i];
-		int v = e->value, c, *absv;
+		int v = e->value, *absv;
 
 		e->shown_p = v;					/* str @..7635c */
 		if (i > 3)
 			continue;
 		switch (i) {
-		case 0: c = jokstick_cal_switch_l ? (jokstick_cal_lxlr + jokstick_cal_lxrl) / 2 : e->cal; absv = &adc_abs_lx; break;
-		case 1: c = jokstick_cal_switch_l ? (jokstick_cal_lyud + jokstick_cal_lydu) / 2 : e->cal; absv = &adc_abs_ly; break;
-		case 2: c = jokstick_cal_switch_r ? (jokstick_cal_rxlr + jokstick_cal_rxrl) / 2 : e->cal; absv = &adc_abs_rx; break;
-		default: c = jokstick_cal_switch_r ? (jokstick_cal_ryud + jokstick_cal_rydu) / 2 : e->cal; absv = &adc_abs_ry; break;
+		case 0: if (jokstick_cal_switch_l) v -= (jokstick_cal_lxlr + jokstick_cal_lxrl) / 2; else v -= e->cal; absv = &adc_abs_lx; break;
+		case 1: if (jokstick_cal_switch_l) v -= (jokstick_cal_lyud + jokstick_cal_lydu) / 2; else v -= e->cal; absv = &adc_abs_ly; break;
+		case 2: if (jokstick_cal_switch_r) v -= (jokstick_cal_rxlr + jokstick_cal_rxrl) / 2; else v -= e->cal; absv = &adc_abs_rx; break;
+		case 3: if (jokstick_cal_switch_r) v -= (jokstick_cal_ryud + jokstick_cal_rydu) / 2; else v -= e->cal; absv = &adc_abs_ry; break;
 		}
-		v -= c;
-		e->value = v;					/* str @..7632c */
+		e->value = v;					/* str @..7632c; each case subtracts its own centre (@..7636c..76410) */
 		*absv = v < 0 ? -v : v;
 	}
 	/* Block D @..76450..7695c. /1000 = smull 0x10624dd3, asr #38 (2^38 / 0x10624dd3 = 1000.0);
 	 * *98/100 = mul 0x62, smull 0x51eb851f, asr #37. */
 	for (i = 0; i < joypad->amux_count; i++) {
 		struct stock_adc_channel *e = &a[i];
-		int v = e->value, hi, lo, out = 0;
+		int v = e->value, hi, lo, out = 0, sc;
 
 		/* D1 written out per axis (jump table @ffffffc0097195e6 -> @..764ec/76544/76594/765e4) */
 #define D1_AXIS(AX, AY, SW, PS, NS)							\
@@ -1934,16 +1933,18 @@ static noinline void joypad_adc_check(struct input_dev *input)
 			       adc_abs_##AY > jokstick_cal_deadzone);			\
 			if (!jokstick_cal_switch_##SW)					\
 				goto d1_plain;						\
-			if (!out) {							\
+			if (!out) {	/* zero path joins the shared multiply (@..76684) */	\
 				v = 0;							\
 				e->value = 0;						\
 				e->shown = 0;						\
-				v = v * jokstick_cal_##NS##_scale / 1000;		\
+				sc = jokstick_cal_##NS##_scale;				\
 			} else {							\
+				v = e->value;						\
 				e->shown = v;						\
-				v = v * (v > 0 ? jokstick_cal_##PS##_scale		\
-					       : jokstick_cal_##NS##_scale) / 1000;	\
+				sc = v > 0 ? jokstick_cal_##PS##_scale			\
+					   : jokstick_cal_##NS##_scale;			\
 			}								\
+			v = v * sc / 1000;						\
 			e->value = v;							\
 			v = v * jokstick_cal_scale / 1000;				\
 			e->value = v;							\
