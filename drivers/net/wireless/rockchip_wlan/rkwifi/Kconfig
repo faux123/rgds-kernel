@@ -13,14 +13,14 @@ config AP6XXX
 	  If you choose to build a module, it'll be called dhd. Say M if
 	  unsure.
 
-# Reconstructed: stock V1.21 /proc/config.gz lists "# CONFIG_RTL8821CS is not set"
-# right after AP6XXX. The Realtek driver itself is not in the stock image
-# (no rtl8821/rtw_ strings), so only the symbol is carried here.
+# Stock V1.21 /proc/config.gz lists "# CONFIG_RTL8821CS is not set" right after
+# AP6XXX: stock builds the driver out of tree as the 8821cs.ko vendor module.
+# Set =m to build it from drivers/net/wireless/rockchip_wlan/rtl8821cs/.
 config RTL8821CS
 	tristate "Realtek 8821C SDIO WiFi"
 	help
-	  Realtek RTL8821CS SDIO Wi-Fi. The driver source is not part of
-	  this tree; this entry only keeps the stock configuration intact.
+	  Realtek RTL8821CS SDIO Wi-Fi (vendor driver v5.15.9.3). The
+	  module is called 8821cs.
 
 choice
 	prompt "Enable Chip Interface"
