@@ -651,15 +651,14 @@ int joypad2touchpanel_abs_ext(int mask, int axis, int value);
 void g_touch_sync(void);
 int joypad2touchpanel_abs(int axis, int value)
 {
-	int lx = remapkey_left_joy_lenght_x, ly = remapkey_left_joy_lenght_y;	/* @..6eb64, @..6eb78 */
-
-	if (!lx)
-		remapkey_left_joy_lenght_x = lx = 100;
-	if (!ly)
-		remapkey_left_joy_lenght_y = ly = 100;
-	if (lx >= 400)
+	/* clamp written on the globals directly, as stock (each test re-reads the global) */
+	if (!remapkey_left_joy_lenght_x)
+		remapkey_left_joy_lenght_x = 100;
+	if (!remapkey_left_joy_lenght_y)
+		remapkey_left_joy_lenght_y = 100;
+	if (remapkey_left_joy_lenght_x >= 400)
 		remapkey_left_joy_lenght_x = 400;
-	if (ly >= 400)
+	if (remapkey_left_joy_lenght_y >= 400)
 		remapkey_left_joy_lenght_y = 400;
 
 	if (abxy_mask) {				/* @..6eb9c */
@@ -734,15 +733,14 @@ int abxy_z_mask;			/* T @ffffffc00a4d5ab8, ldr w */
 int joypad2touchpanel_abs_z_ext(int mask, int axis, int value);
 int joypad2touchpanel_abs_z(int axis, int value)
 {
-	int lx = remapkey_right_joy_lenght_x, ly = remapkey_right_joy_lenght_y;
-
-	if (!lx)
-		remapkey_right_joy_lenght_x = lx = 100;
-	if (!ly)
-		remapkey_right_joy_lenght_y = ly = 100;
-	if (lx >= 400)
+	/* clamp written on the globals directly, as stock (each test re-reads the global) */
+	if (!remapkey_right_joy_lenght_x)
+		remapkey_right_joy_lenght_x = 100;
+	if (!remapkey_right_joy_lenght_y)
+		remapkey_right_joy_lenght_y = 100;
+	if (remapkey_right_joy_lenght_x >= 400)
 		remapkey_right_joy_lenght_x = 400;
-	if (ly >= 400)
+	if (remapkey_right_joy_lenght_y >= 400)
 		remapkey_right_joy_lenght_y = 400;
 
 	if (abxy_z_mask) {				/* @..6f460 */
