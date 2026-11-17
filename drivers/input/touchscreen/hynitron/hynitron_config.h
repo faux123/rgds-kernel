@@ -21,6 +21,12 @@
  * 1: Protocol B(default), 0: Protocol A
  */
 #define HYN_MT_PROTOCOL_B_EN                   1
+/*
+ * Stock RG DS: cst8xx_touch_report (@ffffffc008cc21b8) reports with protocol A (tpd_touchinfo, tpd_down/tpd_up),
+ * while cst3xx_touch_report uses protocol B (cst3xx_touch_down/up). TODO: stock cst8xx strings differ from V2.2
+ * ("[A]All Up!", "[A]P%d(%4d,%4d) DOWN!", "Number of touch points = %d"); order not yet matched.
+ */
+#define HYN_CST8XX_PROTOCOL_A                  1
 
 
 /*
