@@ -1172,6 +1172,7 @@ void gtp_reset_guitar(struct i2c_client *client, s32 ms)
 
     GTP_DEBUG_FUNC();
     GTP_INFO("Guitar reset");
+    GTP_GPIO_OUTPUT(ts->irq_pin, 0);   /* stock @ffffffc008cbf93c: INT low first */
     GTP_GPIO_OUTPUT(ts->rst_pin, 0);   // begin select I2C slave addr
     msleep(ms);                         // T2: > 10ms
     // HIGH: 0x28/0x29, LOW: 0xBA/0xBB
