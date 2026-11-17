@@ -748,14 +748,6 @@ static int rk817_bat_field_write(struct rk817_battery_device *battery,
 	return regmap_field_write(battery->rmap_fields[field_id], val);
 }
 
-static bool rk817_is_bat_exist(struct rk817_battery_device *battery)
-{
-	if (battery->chip_id == RK817_ID)
-		return rk817_bat_field_read(battery, BAT_EXS) ? true : false;
-
-	return true;
-}
-
 /*cal_offset: current offset value*/
 static int rk817_bat_get_coffset(struct rk817_battery_device *battery)
 {
@@ -1549,6 +1541,12 @@ static void rk817_bat_init_info(struct rk817_battery_device *battery)
 	battery->res_div = (battery->pdata->sample_res == SAMPLE_RES_20MR) ?
 		       SAMPLE_RES_DIV2 : SAMPLE_RES_DIV1;
 	DBG("battery->qmax :%d\n", battery->qmax);
+	/*
+	 * Stock (inlined in rk817_battery_probe, ffffffc008edb9e0..b9fc):
+	 * right after the res_div setup, BAT_LTS_TS (0xE9) = 0xfa.
+	 */
+	DBG("enable charging\n");
+	rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 }
 
 static int rk817_bat_get_prev_cap(struct rk817_battery_device *battery)
@@ -1718,7 +1716,17 @@ static void rk817_bat_not_first_pwron(struct rk817_battery_device *battery)
 		goto finish;
 	} else if (battery->is_initialized) {
 		/* uboot initialized */
+		/*
+		 * Stock (ffffffc008edd318..d3b4): RESET_MODE = 1 when dsoc and
+		 * rsoc differ by max_soc_offset percent or more, else 0; then the
+		 * message and a debug line (stock __LINE__ 1896).
+		 */
+		rk817_bat_field_write(battery, RESET_MODE,
+				      abs(battery->rsoc / 1000 - battery->dsoc / 1000) >=
+				      battery->pdata->max_soc_offset);
 		BAT_INFO("initialized yet..\n");
+		DBG("%s-----%d: rsoc = %d, dsoc = %d, smooth_soc = %d\n", __func__, __LINE__,
+		    battery->rsoc, battery->dsoc, battery->smooth_soc);
 		goto finish;
 	} else if (battery->is_ocv_calib) {
 		/* not initialized and poweroff_cnt above 30 min */
@@ -1829,6 +1837,14 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
 	rk817_bat_init_caltimer(battery);
 	rk817_bat_rsoc_init(battery);
 	rk817_bat_init_coulomb_cap(battery, battery->nac);
+	/*
+	 * Stock (ffffffc008edc5fc..c65c), unconditional: TS ADC on, TS_FUN 0,
+	 * TS source current select 1, ntc_factor 21.
+	 */
+	rk817_bat_field_write(battery, TS_ADC_EN, ENABLE);
+	rk817_bat_field_write(battery, TS_FUN, 0);
+	rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, 1);
+	battery->pdata->ntc_factor = 21;
 	DBG("rsoc%d, fcc = %d\n", battery->rsoc, battery->fcc);
 	rk817_bat_init_dsoc_algorithm(battery);
 	battery->qmax = rk817_bat_get_qmax(battery);
@@ -1842,8 +1858,6 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
 	battery->dbg_pwr_rsoc = battery->rsoc;
 	battery->dbg_pwr_vol = battery->voltage_avg;
 	battery->temperature = VIRTUAL_TEMPERATURE;
-	/* stock rk817_battery_probe @ffffffc008edb9e4: rmap_fields[143] (reg 0xE9) = 0xfa at init */
-	rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 
 	DBG("probe init: battery->dsoc = %d, rsoc = %d\n"
 	    "remain_cap = %d\n, battery_vol = %d\n, system_vol = %d, qmax = %d\n",
@@ -1954,8 +1968,7 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
 	ret = of_property_read_u32(np, "virtual_power", &pdata->bat_mode);
 	if (ret < 0)
 		dev_err(dev, "virtual_power missing!\n");
-	if (!rk817_is_bat_exist(battery))
-		battery->pdata->bat_mode = MODE_VIRTUAL;
+	/* stock has no BAT_EXS -> MODE_VIRTUAL fallback here (ffffffc008edb77c) */
 
 	ret = of_property_read_u32(np, "bat_res", &pdata->bat_res);
 	if (ret < 0)
@@ -1979,10 +1992,6 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
 	ret = of_property_read_u32(np, "power_off_thresd", &pdata->pwroff_vol);
 	if (ret < 0)
 		dev_err(dev, "power_off_thresd missing!\n");
-
-	ret = of_property_read_u32(np, "low_power_sleep", &pdata->low_pwr_sleep);
-	if (ret < 0)
-		dev_info(dev, "low_power_sleep missing!\n");
 
 	if (battery->chip_id == RK809_ID) {
 		ret = of_property_read_u32(np, "bat_res_up",
@@ -3523,9 +3532,6 @@ static int rk817_battery_probe(struct platform_device *pdev)
 	if (rk817_kobj && sysfs_create_file(rk817_kobj, &rk817_attrs.attr))
 		DBG("rk817-bat: create rk817 sysfs error\n");
 	fg_init_done = 1;
-
-	wake_lock_init(&battery->wake_lock, WAKE_LOCK_SUSPEND,
-		       "rk817_bat_lock");
 
 	DBG("name: 0x%x", rk817_bat_field_read(battery, CHIP_NAME_H));
 	DBG("%x\n", rk817_bat_field_read(battery, CHIP_NAME_L));
