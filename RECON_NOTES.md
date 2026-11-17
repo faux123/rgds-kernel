@@ -554,3 +554,7 @@ RY -5.7 -> -0.5, RZ 34.3 -> 3.4 (device/gyro-*.txt, captured with device/gyropro
 loaded, Wi-Fi up, wireless adb back without hands; charger 0xE4/0xE5 = 0xde/0xdf; rk817 codec and
 both aw87391 amps probed. Not checked from adb: touch input, button presses, audible sound, lid,
 charge LED in a non-full state, 12 W at the meter.
+
+Paul's hands-on check on rgds-v1.21 d1cfee9e280a (2026-11-17): touch good, power button good, lid
+working (open: screen on; close: screen off). Still unchecked: joypad buttons/sticks, audible
+sound (speaker and headset), charge LED below full, 12 W at the meter.
