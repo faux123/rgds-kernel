@@ -30,6 +30,7 @@
 #if IS_ENABLED(CONFIG_ROCKCHIP_MINIDUMP)
 #include <soc/rockchip/rk_minidump.h>
 #endif
+#include <trace/hooks/softlockup.h>
 
 static DEFINE_MUTEX(watchdog_mutex);
 
@@ -568,6 +569,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
 			clear_bit_unlock(0, &soft_lockup_nmi_warn);
 		}
 
+		trace_android_vh_watchdog_timer_softlockup(duration, regs, !!softlockup_panic);
 		add_taint(TAINT_SOFTLOCKUP, LOCKDEP_STILL_OK);
 #if IS_ENABLED(CONFIG_ROCKCHIP_MINIDUMP)
 		rk_minidump_update_cpu_regs(regs);
