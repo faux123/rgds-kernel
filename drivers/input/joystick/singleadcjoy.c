@@ -475,10 +475,9 @@ static DEVICE_ATTR(amux_debug, S_IWUSR | S_IRUGO,
  */
 /*----------------------------------------------------------------------------*/
 
-extern int rk817_hp_inserted;
+/* stock has no codec headphone flag or PA export; the codec drives the aw87391 speaker PAs */
 
-int rk817_pa_power_on=1;
-EXPORT_SYMBOL(rk817_pa_power_on);
+static int rk817_pa_power_on = 1;
 
 int vol_temp=100;
 
@@ -492,16 +491,10 @@ static ssize_t joypad_store_vol(struct device *dev,
 
 	if(vol_temp>=15){
 		rk817_pa_power_on=1;
-		if(rk817_hp_inserted==0){
-			gpio_direction_output(146,1);	
-		}
 		
 	}else{
 		rk817_pa_power_on=0;
 
-		if(rk817_hp_inserted==0){
-			gpio_direction_output(146,0);	
-		}
 	}
 
 	return count;
