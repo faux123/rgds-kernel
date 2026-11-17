@@ -947,6 +947,8 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
 	}
 	uvc->video.ep = ep;
 
+	/* RG DS stock keeps the full-speed address copy (uvc_function_bind, 1620 bytes) */
+	uvc_fs_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 	uvc_hs_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 	uvc_ss_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 
