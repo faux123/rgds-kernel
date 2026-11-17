@@ -66,6 +66,7 @@ static u8 gtp_change_x2y = TRUE;
 static u8 gtp_x_reverse = FALSE;
 static u8 gtp_y_reverse = TRUE;
 
+static const char *goodix_ts_name = "goodix-ts";
 
 /* Stock exports gt9xx_touch_swap (EXPORT_SYMBOL); the *_status globals are written by the joypad driver's touch_mode sysfs. */
 int gt9xx_touch_swap;
@@ -2185,19 +2186,27 @@ static s8 gtp_request_input_dev(struct i2c_client *client,
     input_set_abs_params(ts->input_dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);
     input_set_abs_params(ts->input_dev, ABS_MT_TRACKING_ID, 0, 255, 0, 0);
 
-    /* stock @ffffffc008cc11ec..12c0: name/phys/vendor depend on ext_lcd_tp; panel pointer saved in input_gt9xx_{0,1} */
-    ts->input_dev->name = ts->ext_lcd_tp ? "gt9xx-1" : "gt9xx-0";
-    sprintf(phys, ts->ext_lcd_tp ? "input/ts1" : "input/ts0");
+    sprintf(phys, "input/ts");
+    ts->input_dev->name = goodix_ts_name;
     ts->input_dev->phys = phys;
     ts->input_dev->id.bustype = BUS_I2C;
-    ts->input_dev->id.vendor = ts->ext_lcd_tp ? 0x417 : 0x416;
-    if (ts->ext_lcd_tp)
-        input_gt9xx_1 = ts->input_dev;
-    else
-        input_gt9xx_0 = ts->input_dev;
+    ts->input_dev->id.vendor = 0xDEAD;
     ts->input_dev->id.product = 0xBEEF;
     ts->input_dev->id.version = 10427;
-    
+
+    /* stock @ffffffc008cc11ec..12c0: per-panel name/phys/vendor override, panel pointer saved in input_gt9xx_{0,1} */
+    if (ts->ext_lcd_tp) {
+        ts->input_dev->name = "gt9xx-1";
+        ts->input_dev->phys = "input/ts1";
+        ts->input_dev->id.vendor = 0x417;
+        input_gt9xx_1 = ts->input_dev;
+    } else {
+        ts->input_dev->name = "gt9xx-0";
+        ts->input_dev->phys = "input/ts0";
+        ts->input_dev->id.vendor = 0x416;
+        input_gt9xx_0 = ts->input_dev;
+    }
+
     ret = input_register_device(ts->input_dev);
     if (ret)
     {
