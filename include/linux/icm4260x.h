@@ -425,7 +425,7 @@
 #define INT_DRIVE_CIRCUIT		1
 #define INT_MODE			0
 
-#define ICM42607_DEVICE_ID		0x61
+#define ICM42607_DEVICE_ID		0x60	/* stock: icm4260x_acc sensor_init cmp w3, #0x60 @ffffffc008cf52dc; the RG DS chip reads 0x60 */
 #define ICM4260X_PRECISION		16
 #define ICM42607_ADDR			0x68
 
