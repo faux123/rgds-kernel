@@ -1947,7 +1947,7 @@ err_end:
 *  Output:
 *  Return:
 *****************************************************************************/
-static int __exit hyn_remove(struct i2c_client *client)
+static void __exit hyn_remove(struct i2c_client *client)	/* stock returns nothing (no mov w0 before ret @hyn_remove) */
 {
     HYN_FUNC_ENTER();
 	
@@ -1972,7 +1972,7 @@ static int __exit hyn_remove(struct i2c_client *client)
 
     HYN_FUNC_EXIT();
 
-    return 0;
+    return;
 }
 
 
