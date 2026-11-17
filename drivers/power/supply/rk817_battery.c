@@ -154,10 +154,14 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
 #define SAMPLE_RES_DIV2			2
 
 /* sleep */
-#define SLP_CURR_MAX			40
-#define SLP_CURR_MIN			6
-#define LOW_PWR_SLP_CURR_MAX		20
-#define LOW_PWR_SLP_CURR_MIN		1
+/*
+ * Stock rk817_bat_pm_resume estimates sleep discharge with 4 mA when
+ * dsoc <= rsoc (sec >> 2 ... / 900, ffffffc008ee1f20..1f50) and 6 mA when
+ * dsoc > rsoc (3 * sec ... / 1800, ffffffc008ee1eac..1ee0), with no
+ * low_power_sleep variant; output_info prints the same 4 and 6.
+ */
+#define SLP_CURR_MAX			6
+#define SLP_CURR_MIN			4
 #define DISCHRG_TIME_STEP1		MINUTE(10)
 #define DISCHRG_TIME_STEP2		MINUTE(60)
 #define SLP_DSOC_VOL_THRESD		3600
@@ -3107,13 +3111,8 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 	    battery->dsoc, battery->dsoc / 1000);
 	DBG("info: rsoc = %d\n", battery->rsoc);
 	DBG("info: get_boot_sec: %lld\n", get_boot_sec());
-	/*
-	 * Stock passes the immediates 4 and 6 here (ffffffc008edde60,
-	 * ffffffc008edde78); not yet checked against the sleep-current
-	 * values pm_resume uses, so our SLP_CURR_* macros are left alone.
-	 */
-	DBG("info: SLP_CURR_MIN: %d\n", 4);
-	DBG("info: SLP_CURR_MAX: %d\n", 6);
+	DBG("info: SLP_CURR_MIN: %d\n", SLP_CURR_MIN);
+	DBG("info: SLP_CURR_MAX: %d\n", SLP_CURR_MAX);
 	DBG("info END.\n");
 }
 
@@ -3736,10 +3735,7 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
 
 	/* handle dsoc */
 	if (battery->dsoc <= battery->rsoc) {
-		if (battery->pdata->low_pwr_sleep)
-			sleep_cur = LOW_PWR_SLP_CURR_MIN;
-		else
-			sleep_cur = SLP_CURR_MIN;
+		sleep_cur = SLP_CURR_MIN;
 		battery->sleep_sum_cap = (sleep_cur * sleep_sec / 3600);
 		sleep_soc = battery->sleep_sum_cap * 100 / DIV(battery->fcc);
 		tgt_dsoc = battery->dsoc - sleep_soc * 1000;
@@ -3763,10 +3759,7 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
 		    __func__, battery->sleep_sum_cap, sleep_soc, tgt_dsoc);
 	} else {
 		/* di->dsoc > di->rsoc */
-		if (battery->pdata->low_pwr_sleep)
-			sleep_cur = LOW_PWR_SLP_CURR_MAX;
-		else
-			sleep_cur = SLP_CURR_MAX;
+		sleep_cur = SLP_CURR_MAX;
 		battery->sleep_sum_cap = (sleep_cur * sleep_sec / 3600);
 		sleep_soc = battery->sleep_sum_cap / DIV(battery->fcc / 100);
 		gap_soc = battery->dsoc - battery->rsoc;
