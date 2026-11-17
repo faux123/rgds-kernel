@@ -1668,29 +1668,49 @@ static __always_inline void stock_gpio_buttons(void)
 			 * -1 slot for sel 2 @..759ac) as 1, and release touch slot 2 if this direction's mode == 1.
 			 * Then tenpad2touchpanel_abs(sel, code, val) and old = val. Only codes 0x10 / 0x11 act. */
 			/* written out per selector and axis as stock (four tenpad2touchpanel_abs call sites) */
-#define SEL_HALF(SEL, AX, MODE, OPP, NB)						\
+/* After the neighbour mark stock re-reads code and selector and picks the direction's mode again
+			 * (@..758ec..7591c, @..75c44..75c90); pressed is recomputed from b->not_active_low each use (cset). */
+#define SEL_NB_RELEASE()								\
 			do {								\
-				abs_value_##AX##_value = (SEL) == 1 ? pressed : -pressed; \
-				if (abs_value_##AX##_value_old == (OPP) && pressed) {	\
-					(b + (NB))->raw_not_high = 1;			\
-					if (remapkey_##MODE##_mode == 1 && gts_dev)	\
-						*(u64 *)&touch_data[8] = 1;		\
+				int m_ = 0;						\
+				if (b->code == 0x10) {					\
+					if (b->abs_value == 1) m_ = remapkey_right_mode; \
+					else if (b->abs_value == 2) m_ = remapkey_left_mode; \
+					else break;					\
+				} else if (b->code == 0x11) {				\
+					if (b->abs_value == 1) m_ = remapkey_down_mode; \
+					else if (b->abs_value == 2) m_ = remapkey_up_mode; \
+					else break;					\
+				} else {						\
+					break;						\
 				}							\
-				tenpad2touchpanel_abs(b->abs_value, b->code, (SEL) == 1 ? pressed : -pressed); \
-				abs_value_##AX##_value_old = (SEL) == 1 ? pressed : -pressed; \
+				if (m_ == 1 && gts_dev)					\
+					*(u64 *)&touch_data[8] = 1;			\
+			} while (0)
+#define SEL_HALF(SEL, AX, OPP, NB)							\
+			do {								\
+				abs_value_##AX##_value = (SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low); \
+				if (abs_value_##AX##_value_old == (OPP) && v == b->not_active_low) { \
+					(b + (NB))->raw_not_high = 1;			\
+					SEL_NB_RELEASE();				\
+				}							\
+				tenpad2touchpanel_abs(b->abs_value, b->code,	\
+					(SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low)); \
+				abs_value_##AX##_value_old = (SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low); \
 			} while (0)
 			if (b->abs_value == 1) {			/* @..758a0 */
 				if (b->code == 0x10)
-					SEL_HALF(1, x, right, -1, 1);
+					SEL_HALF(1, x, -1, 1);
 				if (b->code == 0x11)
-					SEL_HALF(1, y, down, -1, 1);
+					SEL_HALF(1, y, -1, 1);
 			} else if (b->abs_value == 2) {			/* @..75968 */
 				if (b->code == 0x10)
-					SEL_HALF(2, x, left, 1, -1);
+					SEL_HALF(2, x, 1, -1);
 				if (b->code == 0x11)
-					SEL_HALF(2, y, up, 1, -1);
+					SEL_HALF(2, y, 1, -1);
 			}
 #undef SEL_HALF
+#undef SEL_NB_RELEASE
 		}
 		b->raw_not_high = (v != 0);			/* strb @..75830 */
 	}
@@ -1724,18 +1744,18 @@ static __always_inline void stock_gpio_buttons(void)
 		}								\
 		input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);		\
 	} while (0)
+/* hat values re-read from gpio_hat_value_new[] at each test, as stock (no locals, @..7505c) */
 #define HAT_BLOCK(IDX, ST, CODE, SLOT, NK, PK, L)				\
 	do {									\
-		int n0 = gpio_hat_value_new[IDX], n1 = gpio_hat_value_new[(IDX) + 1]; \
-		if (gpio_hat_value_old[IDX] == n0 && gpio_hat_value_old[(IDX) + 1] == n1) \
+		if (gpio_hat_value_old[IDX] == gpio_hat_value_new[IDX] && gpio_hat_value_old[(IDX) + 1] == gpio_hat_value_new[(IDX) + 1]) \
 			break;							\
-		if (!(n0 | n1)) {						\
+		if (!(gpio_hat_value_new[IDX] | gpio_hat_value_new[(IDX) + 1])) {						\
 			if (ST) {						\
 				ST = 0;						\
 				HAT_DEBOUNCE();					\
 				HAT_LEAVE(CODE, SLOT, NK, PK);			\
 			}							\
-		} else if (n0 == 1 && n1 == 0) {				\
+		} else if (gpio_hat_value_new[IDX] == 1 && gpio_hat_value_new[(IDX) + 1] == 0) {				\
 			if (ST == -1) {						\
 				ST = 1;						\
 				HAT_DEBOUNCE();					\
@@ -1745,7 +1765,7 @@ static __always_inline void stock_gpio_buttons(void)
 				ST = 1;						\
 				goto L##_neg;					\
 			}							\
-		} else if (n0 == 0 && n1 == 1) {				\
+		} else if (gpio_hat_value_new[IDX] == 0 && gpio_hat_value_new[(IDX) + 1] == 1) {				\
 			if (ST == 1) {						\
 				ST = -1;					\
 				HAT_DEBOUNCE();					\
@@ -1760,8 +1780,8 @@ static __always_inline void stock_gpio_buttons(void)
 L##_neg:	HAT_PRESS(CODE, SLOT, NK, -1);					\
 		goto L##_copy;							\
 L##_pos:	HAT_PRESS(CODE, SLOT, PK, 1);					\
-L##_copy:	gpio_hat_value_old[IDX] = n0;					\
-		gpio_hat_value_old[(IDX) + 1] = n1;				\
+L##_copy:	gpio_hat_value_old[IDX] = gpio_hat_value_new[IDX];					\
+		gpio_hat_value_old[(IDX) + 1] = gpio_hat_value_new[(IDX) + 1];				\
 	} while (0)
 static noinline void joypad_gpio_check(struct input_dev *input)
 {
