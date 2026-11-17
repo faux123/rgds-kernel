@@ -1759,13 +1759,13 @@ static int cst3xx_update_judge( unsigned char *pdata, int strict)
 	return 0;
 }
 
-static int cst3xx_boot_update_fw(struct i2c_client *client, u8 apk)
+static int cst3xx_boot_update_fw(struct i2c_client *client)
 {
 	int ret;
 	
 	HYN_FUNC_ENTER();
 
-	if(apk==0)
+	if(hyn_ts_data->apk_upgrade_flag==0)
 		ret = cst3xx_update_judge(hyn_ts_data->p_hynitron_upgrade_firmware, 1);
 	else
 		ret = cst3xx_update_judge(hyn_ts_data->p_hynitron_upgrade_firmware, 0);	
@@ -2173,11 +2173,10 @@ int hyn_boot_update_fw(struct i2c_client * client)
 	int ret=-1;
 	int proj_id=0;
 	int check_proj_id=1;
-	u8 apk = hyn_ts_data->apk_upgrade_flag;	/* read once at entry, as stock (ldrb #0x170 @ffffffc008cc4288) */
 
 	HYN_FUNC_ENTER();
 
-	if(apk==0){	
+	if(hyn_ts_data->apk_upgrade_flag==0){	
 
 		if(hyn_ts_data->chip_ic_checkcode ==0xffffffff){
 			HYN_ERROR("hyn ic have no firmware,update default firmware.\n");
@@ -2254,7 +2253,7 @@ int hyn_boot_update_fw(struct i2c_client * client)
 		case HYN_CHIP_CST3XX: 
 		case HYN_CHIP_CST9XX: 
 #if (HYN_EN_AUTO_UPDATE_CST1xx||HYN_EN_AUTO_UPDATE_CST3xx||HYN_EN_AUTO_UPDATE_CST9xx)
-			ret = cst3xx_boot_update_fw(client, apk);
+			ret = cst3xx_boot_update_fw(client);
 #endif
 			break;
 
