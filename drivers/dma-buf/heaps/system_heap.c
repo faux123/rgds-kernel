@@ -630,28 +630,6 @@ static struct dma_heap_ops system_uncached_heap_ops = {
 	.allocate = system_uncached_heap_not_initialized,
 };
 
-static struct dma_buf *system_uncached_heap_allocate(struct dma_heap *heap,
-						     unsigned long len,
-						     unsigned long fd_flags,
-						     unsigned long heap_flags)
-{
-	return system_heap_do_allocate(heap, len, fd_flags, heap_flags, true);
-}
-
-/* Dummy function to be used until we can call coerce_mask_and_coherent */
-static struct dma_buf *system_uncached_heap_not_initialized(struct dma_heap *heap,
-							    unsigned long len,
-							    unsigned long fd_flags,
-							    unsigned long heap_flags)
-{
-	return ERR_PTR(-EBUSY);
-}
-
-static struct dma_heap_ops system_uncached_heap_ops = {
-	/* After system_heap_create is complete, we will swap this */
-	.allocate = system_uncached_heap_not_initialized,
-};
-
 static int system_heap_create(void)
 {
 	struct dma_heap_export_info exp_info;
