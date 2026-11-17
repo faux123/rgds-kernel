@@ -444,8 +444,6 @@ Output:
 *********************************************************/
 static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 {
-	struct input_dev *dev;
-
 	/*
 	 * Stock coordinate mapping, inlined in goodix_ts_work_func
 	 * @ffffffc008cc08a0..093c (globals compiled as shrunk-to-bool flags):
@@ -474,7 +472,7 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 		if (ts->ext_lcd_tp)
 			y = y / 2;
 		else
-			y = y / 2 + ts->abs_y_max / 2;
+			y = ts->abs_y_max / 2 + y / 2;
 	}
 
 #if GTP_ICS_SLOT_REPORT
@@ -487,20 +485,36 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 #else
     /* stock @ffffffc008cc093c..0a3c: all events go to the swap-selected device */
     if (gt9xx_touch_swap) {
-        dev = ts->ext_lcd_tp ? input_gt9xx_0 : input_gt9xx_1;
-        if (!dev)
-            goto out;
+        if (ts->ext_lcd_tp) {
+            if (input_gt9xx_0) {
+                input_report_key(input_gt9xx_0, BTN_TOUCH, 1);
+                input_report_abs(input_gt9xx_0, ABS_MT_POSITION_X, x);
+                input_report_abs(input_gt9xx_0, ABS_MT_POSITION_Y, y);
+                input_report_abs(input_gt9xx_0, ABS_MT_TOUCH_MAJOR, w);
+                input_report_abs(input_gt9xx_0, ABS_MT_WIDTH_MAJOR, w);
+                input_report_abs(input_gt9xx_0, ABS_MT_TRACKING_ID, id);
+                input_mt_sync(input_gt9xx_0);
+            }
+        } else {
+            if (input_gt9xx_1) {
+                input_report_key(input_gt9xx_1, BTN_TOUCH, 1);
+                input_report_abs(input_gt9xx_1, ABS_MT_POSITION_X, x);
+                input_report_abs(input_gt9xx_1, ABS_MT_POSITION_Y, y);
+                input_report_abs(input_gt9xx_1, ABS_MT_TOUCH_MAJOR, w);
+                input_report_abs(input_gt9xx_1, ABS_MT_WIDTH_MAJOR, w);
+                input_report_abs(input_gt9xx_1, ABS_MT_TRACKING_ID, id);
+                input_mt_sync(input_gt9xx_1);
+            }
+        }
     } else {
-        dev = ts->input_dev;
+        input_report_key(ts->input_dev, BTN_TOUCH, 1);
+        input_report_abs(ts->input_dev, ABS_MT_POSITION_X, x);
+        input_report_abs(ts->input_dev, ABS_MT_POSITION_Y, y);
+        input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, w);
+        input_report_abs(ts->input_dev, ABS_MT_WIDTH_MAJOR, w);
+        input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID, id);
+        input_mt_sync(ts->input_dev);
     }
-    input_report_key(dev, BTN_TOUCH, 1);
-    input_report_abs(dev, ABS_MT_POSITION_X, x);
-    input_report_abs(dev, ABS_MT_POSITION_Y, y);
-    input_report_abs(dev, ABS_MT_TOUCH_MAJOR, w);
-    input_report_abs(dev, ABS_MT_WIDTH_MAJOR, w);
-    input_report_abs(dev, ABS_MT_TRACKING_ID, id);
-    input_mt_sync(dev);
-out:
 #endif
 
     GTP_DEBUG("ID:%d, X:%d, Y:%d, W:%d", id, x, y, w);
@@ -1068,9 +1082,13 @@ static void goodix_ts_work_func(struct work_struct *work)
     {
         /* stock goodix_ts_work_func @ffffffc008cc0a68: one SYN_REPORT, on the swap-selected device */
         if (gt9xx_touch_swap) {
-            struct input_dev *dev = ts->ext_lcd_tp ? input_gt9xx_0 : input_gt9xx_1;
-            if (dev)
-                input_sync(dev);
+            if (ts->ext_lcd_tp) {
+                if (input_gt9xx_0)
+                    input_sync(input_gt9xx_0);
+            } else {
+                if (input_gt9xx_1)
+                    input_sync(input_gt9xx_1);
+            }
         } else {
             input_sync(ts->input_dev);
         }
@@ -1618,7 +1636,7 @@ static s32 gtp_init_panel(struct goodix_ts_data *ts)
             {
                 GTP_INFO("  <%s>_%d \n", __func__, __LINE__);
                 grp_cfg_version = send_cfg_buf[sensor_id][0];       // backup group config version
-                send_cfg_buf[sensor_id][0] = 0x00;
+                /* stock @ffffffc008cc0db8..0df0: no send_cfg_buf[sensor_id][0] = 0x00 here */
                 ts->fixed_cfg = 0;
             }
             else        // treated as fixed config, not send config
