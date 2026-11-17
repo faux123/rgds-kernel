@@ -37,13 +37,13 @@ struct sc7u22_code {
 	u8 code;
 };
 
-static const struct sc7u22_code sc7u22_acc_odr[] = {
+struct sc7u22_code sc7u22_acc_odr[] = {
 	{ 1, 0x2 }, { 3, 0x3 }, { 6, 0x4 }, { 12, 0x5 }, { 25, 0x6 },
 	{ 50, 0x7 }, { 100, 0x8 }, { 200, 0x9 }, { 400, 0xa }, { 800, 0xb },
 	{ 1600, 0xc },
 };
 
-static const struct sc7u22_code sc7u22_acc_range[] = {
+struct sc7u22_code sc7u22_acc_range[] = {
 	{ 2, 0x0 }, { 4, 0x1 }, { 8, 0x2 }, { 16, 0x3 },
 };
 
@@ -55,7 +55,7 @@ static void sc7u22_write_twice(struct i2c_client *client, int reg, int val)
 }
 
 /* Picks the first rate >= the request; a request above 1600 Hz is ignored. */
-static void sc7u22_set_acc_odr(struct i2c_client *client, int rate)
+void sc7u22_set_acc_odr(struct i2c_client *client, int rate)
 {
 	int i, val;
 
@@ -71,7 +71,7 @@ static void sc7u22_set_acc_odr(struct i2c_client *client, int rate)
 }
 
 /* Exact match only; an unknown range leaves the register untouched. */
-static void sc7u22_set_acc_range(struct i2c_client *client, int range)
+void sc7u22_set_acc_range(struct i2c_client *client, int range)
 {
 	int i, val;
 
@@ -165,7 +165,7 @@ static int sensor_report_value(struct i2c_client *client)
 	return 0;
 }
 
-static struct sensor_operate gsensor_sc7u22_ops = {
+struct sensor_operate gsensor_sc7u22_ops = {
 	.name		= "sc7u22_acc",
 	.type		= SENSOR_TYPE_ACCEL,
 	.id_i2c		= ACCEL_ID_SC7U22,
