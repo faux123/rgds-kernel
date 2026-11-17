@@ -25,7 +25,6 @@ menuconfig STAGING
 if STAGING
 
 source "drivers/staging/wlan-ng/Kconfig"
-source "drivers/staging/android/Kconfig"
 
 source "drivers/staging/olpc_dcon/Kconfig"
 
@@ -56,6 +55,8 @@ source "drivers/staging/emxx_udc/Kconfig"
 source "drivers/staging/nvec/Kconfig"
 
 source "drivers/staging/media/Kconfig"
+
+source "drivers/staging/android/Kconfig"
 
 source "drivers/staging/board/Kconfig"
 

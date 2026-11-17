@@ -26,6 +26,7 @@
 #include <asm/kvm_emulate.h>
 #include <asm/kvm_hyp.h>
 #include <asm/kvm_mmu.h>
+#include <asm/kvm_pkvm.h>
 #include <asm/fpsimd.h>
 #include <asm/debug-monitors.h>
 #include <asm/processor.h>
@@ -134,6 +135,9 @@ static inline void ___activate_traps(struct kvm_vcpu *vcpu)
 	if (cpus_have_final_cap(ARM64_WORKAROUND_CAVIUM_TX2_219_TVM))
 		hcr |= HCR_TVM;
 
+	if (!system_supports_mte())
+		hcr &= ~(HCR_DCT | HCR_ATA);
+
 	write_sysreg(hcr, hcr_el2);
 
 	if (cpus_have_final_cap(ARM64_HAS_RAS_EXTN) && (hcr & HCR_VSE))
@@ -222,6 +226,53 @@ static inline void fpsimd_lazy_switch_to_host(struct kvm_vcpu *vcpu)
 	}
 }
 
+static void kvm_hyp_handle_fpsimd_host(struct kvm_vcpu *vcpu)
+{
+	/*
+	 * Non-protected kvm relies on the host restoring its sve state.
+	 * Protected kvm restores the host's sve state as not to reveal that
+	 * fpsimd was used by a guest nor leak upper sve bits.
+	 */
+	if (system_supports_sve()) {
+		struct kvm_host_sve_state *sve_state = get_host_sve_state(vcpu);
+
+		sve_state->zcr_el1 = read_sysreg_el1(SYS_ZCR);
+		sve_cond_update_zcr_vq(sve_vq_from_vl(kvm_host_sve_max_vl) - 1,
+				       SYS_ZCR_EL2);
+		__sve_save_state(sve_state->sve_regs +
+					 sve_ffr_offset(kvm_host_sve_max_vl),
+				 &sve_state->fpsr);
+
+		/* Still trap SVE since it's handled by hyp in pKVM. */
+		if (!vcpu_has_sve(vcpu))
+			sysreg_clear_set(cptr_el2, 0, CPTR_EL2_TZ);
+	} else {
+		__fpsimd_save_state(get_host_fpsimd_state(vcpu));
+	}
+}
+
+static void __deactivate_fpsimd_traps(struct kvm_vcpu *vcpu)
+{
+	if (has_vhe()) {
+		u64 reg = CPACR_EL1_FPEN_EL0EN | CPACR_EL1_FPEN_EL1EN;
+
+		if (vcpu_has_sve(vcpu))
+			reg |= CPACR_EL1_ZEN_EL0EN | CPACR_EL1_ZEN_EL1EN;
+
+		sysreg_clear_set(cpacr_el1, 0, reg);
+
+	} else {
+		u64 reg = CPTR_EL2_TFP;
+
+		if (vcpu_has_sve(vcpu) ||
+		    (is_protected_kvm_enabled() && system_supports_sve())) {
+			reg |= CPTR_EL2_TZ;
+		}
+
+		sysreg_clear_set(cptr_el2, reg, 0);
+	}
+}
+
 /*
  * We trap the first access to the FP/SIMD to save the host context and
  * restore the guest context lazily.
@@ -232,7 +283,6 @@ static inline bool kvm_hyp_handle_fpsimd(struct kvm_vcpu *vcpu, u64 *exit_code)
 {
 	bool sve_guest;
 	u8 esr_ec;
-	u64 reg;
 
 	if (!system_supports_fpsimd())
 		return false;
@@ -247,20 +297,12 @@ static inline bool kvm_hyp_handle_fpsimd(struct kvm_vcpu *vcpu, u64 *exit_code)
 	/* Valid trap.  Switch the context: */
 
 	/* First disable enough traps to allow us to update the registers */
-	if (has_vhe()) {
-		reg = CPACR_EL1_FPEN_EL0EN | CPACR_EL1_FPEN_EL1EN;
-		if (sve_guest)
-			reg |= CPACR_EL1_ZEN_EL0EN | CPACR_EL1_ZEN_EL1EN;
-
-		sysreg_clear_set(cpacr_el1, 0, reg);
-	} else {
-		reg = CPTR_EL2_TFP;
-		if (sve_guest)
-			reg |= CPTR_EL2_TZ;
-
-		sysreg_clear_set(cptr_el2, reg, 0);
-	}
+	__deactivate_fpsimd_traps(vcpu);
 	isb();
+
+	/* Write out the host state if it's in the registers */
+	if (is_protected_kvm_enabled() && vcpu->arch.fp_state == FP_STATE_HOST_OWNED)
+		kvm_hyp_handle_fpsimd_host(vcpu);
 
 	/* Restore the guest state */
 	if (sve_guest)

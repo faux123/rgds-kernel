@@ -129,12 +129,9 @@
 #include <linux/blk-cgroup.h>
 #include <linux/fadvise.h>
 #include <linux/sched/mm.h>
+#include <trace/hooks/mm.h>
 
 #include "internal.h"
-
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-#include <linux/fscrypt.h>
-#endif
 
 /*
  * Initialise a struct file's readahead state.  Assumes that the caller has
@@ -147,6 +144,15 @@ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
 	ra->prev_pos = -1;
 }
 EXPORT_SYMBOL_GPL(file_ra_state_init);
+
+gfp_t readahead_gfp_mask(struct address_space *x)
+{
+	gfp_t mask = __readahead_gfp_mask(x);
+
+	trace_android_rvh_set_readahead_gfp_mask(&mask);
+	return mask;
+}
+EXPORT_SYMBOL_GPL(readahead_gfp_mask);
 
 static void read_pages(struct readahead_control *rac)
 {
@@ -161,6 +167,7 @@ static void read_pages(struct readahead_control *rac)
 		psi_memstall_enter(&rac->_pflags);
 	blk_start_plug(&plug);
 
+	trace_android_vh_read_pages(rac);
 	if (aops->readahead) {
 		aops->readahead(rac);
 		/*
@@ -249,6 +256,7 @@ void page_cache_ra_unbounded(struct readahead_control *ractl,
 			continue;
 		}
 
+		trace_android_vh_io_statistics(mapping, index + i, 1, true, false);
 		folio = filemap_alloc_folio(gfp_mask, 0);
 		if (!folio)
 			break;
@@ -315,9 +323,6 @@ void force_page_cache_ra(struct readahead_control *ractl,
 	struct file_ra_state *ra = ractl->ra;
 	struct backing_dev_info *bdi = inode_to_bdi(mapping->host);
 	unsigned long max_pages, index;
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	bool force_lookahead = false;
-#endif
 
 	if (unlikely(!mapping->a_ops->read_folio && !mapping->a_ops->readahead))
 		return;
@@ -328,13 +333,6 @@ void force_page_cache_ra(struct readahead_control *ractl,
 	 */
 	index = readahead_index(ractl);
 	max_pages = max_t(unsigned long, bdi->io_pages, ra->ra_pages);
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-	/* For files with fscrypt enabled, to allow IO and the encryption
-	 * or decryption process to ping-pong, lookahead is forcibly enabled.
-	 */
-	if (nr_to_read > max_pages && fscrypt_inode_uses_fs_layer_crypto(mapping->host))
-		force_lookahead = true;
-#endif
 	nr_to_read = min_t(unsigned long, nr_to_read, max_pages);
 	while (nr_to_read) {
 		unsigned long this_chunk = (2 * 1024 * 1024) / PAGE_SIZE;
@@ -342,14 +340,7 @@ void force_page_cache_ra(struct readahead_control *ractl,
 		if (this_chunk > nr_to_read)
 			this_chunk = nr_to_read;
 		ractl->_index = index;
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-		if (force_lookahead)
-			do_page_cache_ra(ractl, this_chunk, this_chunk / 2);
-		else
-			do_page_cache_ra(ractl, this_chunk, 0);
-#else
 		do_page_cache_ra(ractl, this_chunk, 0);
-#endif
 
 		index += this_chunk;
 		nr_to_read -= this_chunk;
@@ -605,6 +596,8 @@ static void ondemand_readahead(struct readahead_control *ractl,
 	 */
 	if (req_size > max_pages && bdi->io_pages > max_pages)
 		max_pages = min(req_size, bdi->io_pages);
+
+	trace_android_vh_ra_tuning_max_page(ractl, &max_pages);
 
 	/*
 	 * start of file

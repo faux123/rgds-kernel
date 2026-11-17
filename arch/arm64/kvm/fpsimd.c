@@ -14,19 +14,6 @@
 #include <asm/kvm_mmu.h>
 #include <asm/sysreg.h>
 
-void kvm_vcpu_unshare_task_fp(struct kvm_vcpu *vcpu)
-{
-	struct task_struct *p = vcpu->arch.parent_task;
-	struct user_fpsimd_state *fpsimd;
-
-	if (!is_protected_kvm_enabled() || !p)
-		return;
-
-	fpsimd = &p->thread.uw.fpsimd_state;
-	kvm_unshare_hyp(fpsimd, fpsimd + 1);
-	put_task_struct(p);
-}
-
 /*
  * Called on entry to KVM_RUN unless this vcpu previously ran at least
  * once and the most recent prior KVM_RUN for this vcpu was called from
@@ -38,27 +25,17 @@ void kvm_vcpu_unshare_task_fp(struct kvm_vcpu *vcpu)
  */
 int kvm_arch_vcpu_run_map_fp(struct kvm_vcpu *vcpu)
 {
+	struct user_fpsimd_state *fpsimd = &current->thread.uw.fpsimd_state;
 	int ret;
 
-	struct user_fpsimd_state *fpsimd = &current->thread.uw.fpsimd_state;
-
-	kvm_vcpu_unshare_task_fp(vcpu);
+	/* pKVM has its own tracking of the host fpsimd state. */
+	if (is_protected_kvm_enabled())
+		return 0;
 
 	/* Make sure the host task fpsimd state is visible to hyp: */
 	ret = kvm_share_hyp(fpsimd, fpsimd + 1);
 	if (ret)
 		return ret;
-
-	/*
-	 * We need to keep current's task_struct pinned until its data has been
-	 * unshared with the hypervisor to make sure it is not re-used by the
-	 * kernel and donated to someone else while already shared -- see
-	 * kvm_vcpu_unshare_task_fp() for the matching put_task_struct().
-	 */
-	if (is_protected_kvm_enabled()) {
-		get_task_struct(current);
-		vcpu->arch.parent_task = current;
-	}
 
 	return 0;
 }
@@ -111,16 +88,9 @@ void kvm_arch_vcpu_ctxflush_fp(struct kvm_vcpu *vcpu)
  */
 void kvm_arch_vcpu_ctxsync_fp(struct kvm_vcpu *vcpu)
 {
-	enum fp_type fp_type;
-
 	WARN_ON_ONCE(!irqs_disabled());
 
 	if (vcpu->arch.fp_state == FP_STATE_GUEST_OWNED) {
-		if (vcpu_has_sve(vcpu))
-			fp_type = FP_STATE_SVE;
-		else
-			fp_type = FP_STATE_FPSIMD;
-
 		/*
 		 * Currently we do not support SME guests so SVCR is
 		 * always 0 and we just need a variable to point to.
@@ -128,10 +98,10 @@ void kvm_arch_vcpu_ctxsync_fp(struct kvm_vcpu *vcpu)
 		fpsimd_bind_state_to_cpu(&vcpu->arch.ctxt.fp_regs,
 					 vcpu->arch.sve_state,
 					 vcpu->arch.sve_max_vl,
-					 NULL, 0, &vcpu->arch.svcr,
-					 &vcpu->arch.fp_type, fp_type);
+					 NULL, 0, &vcpu->arch.svcr);
 
 		clear_thread_flag(TIF_FOREIGN_FPSTATE);
+		update_thread_flag(TIF_SVE, vcpu_has_sve(vcpu));
 	}
 }
 
@@ -160,6 +130,8 @@ void kvm_arch_vcpu_put_fp(struct kvm_vcpu *vcpu)
 		 */
 		fpsimd_save_and_flush_cpu_state();
 	}
+
+	update_thread_flag(TIF_SVE, 0);
 
 	local_irq_restore(flags);
 }

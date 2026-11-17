@@ -43,6 +43,7 @@
 
 #include <linux/debugfs.h>
 #include <trace/events/kmem.h>
+#include <trace/hooks/mm.h>
 
 #include "internal.h"
 
@@ -282,23 +283,7 @@ static inline bool kmem_cache_has_cpu_partial(struct kmem_cache *s)
 /* Use cmpxchg_double */
 #define __CMPXCHG_DOUBLE	((slab_flags_t __force)0x40000000U)
 
-/*
- * Tracking user of a slab.
- */
-#define TRACK_ADDRS_COUNT 16
-struct track {
-	unsigned long addr;	/* Called from address */
-#ifdef CONFIG_STACKDEPOT
-	depot_stack_handle_t handle;
-#endif
-	int cpu;		/* Was running on cpu */
-	int pid;		/* Pid context */
-	unsigned long when;	/* When did the operation occur */
-};
-
-enum track_item { TRACK_ALLOC, TRACK_FREE };
-
-#ifdef CONFIG_SLUB_SYSFS
+#ifdef CONFIG_SYSFS
 static int sysfs_slab_add(struct kmem_cache *);
 static int sysfs_slab_alias(struct kmem_cache *, const char *);
 #else
@@ -724,6 +709,42 @@ static struct track *get_track(struct kmem_cache *s, void *object,
 
 	return kasan_reset_tag(p + alloc);
 }
+
+/*
+ * This function will be used to loop through all the slab objects in
+ * a page to give track structure for each object, the function fn will
+ * be using this track structure and extract required info into its private
+ * data, the return value will be the number of track structures that are
+ * processed.
+ */
+unsigned long get_each_object_track(struct kmem_cache *s,
+		struct page *page, enum track_item alloc,
+		int (*fn)(const struct kmem_cache *, const void *,
+		const struct track *, void *), void *private)
+{
+	void *p;
+	struct track *t;
+	int ret;
+	unsigned long num_track = 0;
+	struct slab *p_slab = page_slab(page);
+
+	if (!slub_debug || !(s->flags & SLAB_STORE_USER) || !p_slab)
+		return 0;
+
+	slab_lock(p_slab);
+	for_each_object(p, s, page_address(page), p_slab->objects) {
+		t = get_track(s, p, alloc);
+		metadata_access_enable();
+		ret = fn(s, p, t, private);
+		metadata_access_disable();
+		if (ret < 0)
+			break;
+		num_track += 1;
+	}
+	slab_unlock(p_slab);
+	return num_track;
+}
+EXPORT_SYMBOL_NS_GPL(get_each_object_track, MINIDUMP);
 
 #ifdef CONFIG_STACKDEPOT
 static noinline depot_stack_handle_t set_track_prepare(void)
@@ -1802,6 +1823,8 @@ static inline struct slab *alloc_slab_page(gfp_t flags, int node,
 	__folio_set_slab(folio);
 	if (page_is_pfmemalloc(folio_page(folio, 0)))
 		slab_set_pfmemalloc(slab);
+
+	trace_android_vh_slab_folio_alloced(order, flags);
 
 	return slab;
 }
@@ -2935,7 +2958,7 @@ out:
 }
 #endif /* CONFIG_SLUB_DEBUG */
 
-#if defined(CONFIG_SLUB_DEBUG) || defined(CONFIG_SLUB_SYSFS)
+#if defined(CONFIG_SLUB_DEBUG) || defined(CONFIG_SYSFS)
 static unsigned long count_partial(struct kmem_cache_node *n,
 					int (*get_count)(struct slab *))
 {
@@ -2949,7 +2972,7 @@ static unsigned long count_partial(struct kmem_cache_node *n,
 	spin_unlock_irqrestore(&n->list_lock, flags);
 	return x;
 }
-#endif /* CONFIG_SLUB_DEBUG || CONFIG_SLUB_SYSFS */
+#endif /* CONFIG_SLUB_DEBUG || CONFIG_SYSFS */
 
 static noinline void
 slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
@@ -3397,6 +3420,8 @@ redo:
 out:
 	slab_post_alloc_hook(s, objcg, gfpflags, 1, &object, init);
 
+	trace_android_vh_slab_alloc_node(object, addr, s);
+
 	return object;
 }
 
@@ -3660,6 +3685,9 @@ static __always_inline void slab_free(struct kmem_cache *s, struct slab *slab,
 	 */
 	if (slab_free_freelist_hook(s, &head, &tail, &cnt))
 		do_slab_free(s, slab, head, tail, cnt, addr);
+
+	trace_android_vh_slab_free(addr, s);
+
 }
 
 #ifdef CONFIG_KASAN_GENERIC
@@ -4924,7 +4952,7 @@ int __kmem_cache_create(struct kmem_cache *s, slab_flags_t flags)
 	return 0;
 }
 
-#ifdef CONFIG_SLUB_SYSFS
+#ifdef CONFIG_SYSFS
 static int count_inuse(struct slab *slab)
 {
 	return slab->inuse;
@@ -5182,7 +5210,7 @@ static void process_slab(struct loc_track *t, struct kmem_cache *s,
 #endif  /* CONFIG_DEBUG_FS   */
 #endif	/* CONFIG_SLUB_DEBUG */
 
-#ifdef CONFIG_SLUB_SYSFS
+#ifdef CONFIG_SYSFS
 enum slab_stat_type {
 	SL_ALL,			/* All slabs */
 	SL_PARTIAL,		/* Only partially allocated slabs */
@@ -6056,7 +6084,7 @@ static int __init slab_sysfs_init(void)
 }
 
 __initcall(slab_sysfs_init);
-#endif /* CONFIG_SLUB_SYSFS */
+#endif /* CONFIG_SYSFS */
 
 #if defined(CONFIG_SLUB_DEBUG) && defined(CONFIG_DEBUG_FS)
 static int slab_debugfs_show(struct seq_file *seq, void *v)
@@ -6297,6 +6325,7 @@ void get_slabinfo(struct kmem_cache *s, struct slabinfo *sinfo)
 	sinfo->objects_per_slab = oo_objects(s->oo);
 	sinfo->cache_order = oo_order(s->oo);
 }
+EXPORT_SYMBOL_NS_GPL(get_slabinfo, MINIDUMP);
 
 void slabinfo_show_stats(struct seq_file *m, struct kmem_cache *s)
 {

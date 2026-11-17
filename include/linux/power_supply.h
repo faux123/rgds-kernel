@@ -17,6 +17,7 @@
 #include <linux/leds.h>
 #include <linux/spinlock.h>
 #include <linux/notifier.h>
+#include <linux/android_kabi.h>
 
 /*
  * All voltages, currents, charges, energies, time and temperatures in uV,
@@ -50,6 +51,12 @@ enum {
 	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
 	POWER_SUPPLY_CHARGE_TYPE_LONGLIFE,	/* slow speed, longer life */
 	POWER_SUPPLY_CHARGE_TYPE_BYPASS,	/* bypassing the charger */
+
+	/*
+	 * force to 50 to minimize the chances of userspace binary
+	 * incompatibility on newer upstream kernels
+	 */
+	POWER_SUPPLY_CHARGE_TYPE_TAPER_EXT = 50,	/* charging in CV phase */
 };
 
 enum {
@@ -170,43 +177,6 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
 	POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
 	POWER_SUPPLY_PROP_MANUFACTURE_DAY,
-#if defined(CONFIG_NO_GKI)
-	/* Charge pump properties */
-	POWER_SUPPLY_PROP_CP_ALARM_STATUS,
-	POWER_SUPPLY_PROP_CP_BAT_OVP_ALARM,
-	POWER_SUPPLY_PROP_CP_BAT_OCP_ALARM,
-	POWER_SUPPLY_PROP_CP_BAT_UCP_ALARM,
-	POWER_SUPPLY_PROP_CP_BUS_OVP_ALARM,
-	POWER_SUPPLY_PROP_CP_BUS_OCP_ALARM,
-	POWER_SUPPLY_PROP_CP_BAT_THERM_ALARM,
-	POWER_SUPPLY_PROP_CP_BUS_THERM_ALARM,
-	POWER_SUPPLY_PROP_CP_DIE_THERM_ALARM,
-	POWER_SUPPLY_PROP_CP_FAULT_STATUS,
-	POWER_SUPPLY_PROP_CP_BAT_OVP_FAULT,
-	POWER_SUPPLY_PROP_CP_BAT_OCP_FAULT,
-	POWER_SUPPLY_PROP_CP_BUS_OVP_FAULT,
-	POWER_SUPPLY_PROP_CP_BUS_OCP_FAULT,
-	POWER_SUPPLY_PROP_CP_BAT_THERM_FAULT,
-	POWER_SUPPLY_PROP_CP_BUS_THERM_FAULT,
-	POWER_SUPPLY_PROP_CP_DIE_THERM_FAULT,
-	POWER_SUPPLY_PROP_CP_VBUS_ERROR_STATUS,
-	POWER_SUPPLY_PROP_CP_VBUS_HERROR_STATUS,
-	POWER_SUPPLY_PROP_CP_VBUS_LERROR_STATUS,
-	POWER_SUPPLY_PROP_CP_CHARGING_ENABLED,
-	POWER_SUPPLY_PROP_CP_WORK_MODE,
-	POWER_SUPPLY_PROP_CP_WDT_EN,
-	POWER_SUPPLY_PROP_CP_VOUT,
-	POWER_SUPPLY_PROP_CP_VBUS,
-	POWER_SUPPLY_PROP_CP_IBUS,
-	POWER_SUPPLY_PROP_CP_SWITCHER_EN,
-	POWER_SUPPLY_PROP_CP_BAT_TEMPERATURE,
-	POWER_SUPPLY_PROP_CP_BUS_TEMPERATURE,
-	POWER_SUPPLY_PROP_CP_DIE_TEMPERATURE,
-	POWER_SUPPLY_PROP_CP_ISNS,
-	POWER_SUPPLY_PROP_CP_TOGGLE_SWITCHER,
-	POWER_SUPPLY_PROP_CP_IRQ_STATUS,
-	POWER_SUPPLY_PROP_CP_ILIM,
-#endif
 	/* Properties of type `const char *' */
 	POWER_SUPPLY_PROP_MODEL_NAME,
 	POWER_SUPPLY_PROP_MANUFACTURER,
@@ -227,9 +197,6 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
 	POWER_SUPPLY_TYPE_WIRELESS,		/* Wireless */
-#if defined(CONFIG_NO_GKI)
-	POWER_SUPPLY_TYPE_CHARGE_PUMP,		/* Charge Pump */
-#endif
 };
 
 enum power_supply_usb_type {
@@ -276,6 +243,8 @@ struct power_supply_config {
 
 	char **supplied_to;
 	size_t num_supplicants;
+
+	ANDROID_KABI_RESERVE(1);
 };
 
 /* Description of power supply */
@@ -317,6 +286,8 @@ struct power_supply_desc {
 	bool no_thermal;
 	/* For APM emulation, think legacy userspace. */
 	int use_for_apm;
+
+	ANDROID_KABI_RESERVE(1);
 };
 
 struct power_supply {
@@ -358,6 +329,8 @@ struct power_supply {
 	struct led_trigger *charging_blink_full_solid_trig;
 	char *charging_blink_full_solid_trig_name;
 #endif
+
+	ANDROID_KABI_RESERVE(1);
 };
 
 /*
@@ -377,6 +350,7 @@ struct power_supply_info {
 	int energy_full_design;
 	int energy_empty_design;
 	int use_for_apm;
+	ANDROID_KABI_RESERVE(1);
 };
 
 struct power_supply_battery_ocv_table {
@@ -804,6 +778,7 @@ struct power_supply_battery_info {
 	int vbat2ri_charging_size;
 	int bti_resistance_ohm;
 	int bti_resistance_tolerance;
+	ANDROID_KABI_RESERVE(1);
 };
 
 extern struct blocking_notifier_head power_supply_notifier;
@@ -820,12 +795,22 @@ static inline struct power_supply *power_supply_get_by_name(const char *name)
 #ifdef CONFIG_OF
 extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
 							const char *property);
+extern int power_supply_get_by_phandle_array(struct device_node *np,
+					     const char *property,
+					     struct power_supply **psy,
+					     ssize_t size);
 extern struct power_supply *devm_power_supply_get_by_phandle(
 				    struct device *dev, const char *property);
 #else /* !CONFIG_OF */
 static inline struct power_supply *
 power_supply_get_by_phandle(struct device_node *np, const char *property)
 { return NULL; }
+static inline int
+power_supply_get_by_phandle_array(struct device_node *np,
+				  const char *property,
+				  struct power_supply **psy,
+				  int size)
+{ return 0; }
 static inline struct power_supply *
 devm_power_supply_get_by_phandle(struct device *dev, const char *property)
 { return NULL; }

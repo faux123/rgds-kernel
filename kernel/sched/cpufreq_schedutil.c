@@ -6,14 +6,13 @@
  * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
  */
 
+#include <trace/hooks/sched.h>
+
 #define IOWAIT_BOOST_MIN	(SCHED_CAPACITY_SCALE / 8)
 
 struct sugov_tunables {
 	struct gov_attr_set	attr_set;
 	unsigned int		rate_limit_us;
-#ifdef CONFIG_ARCH_ROCKCHIP
-	unsigned int		target_load;
-#endif
 };
 
 struct sugov_policy {
@@ -158,13 +157,15 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
 	struct cpufreq_policy *policy = sg_policy->policy;
 	unsigned int freq = arch_scale_freq_invariant() ?
 				policy->cpuinfo.max_freq : policy->cur;
+	unsigned long next_freq = 0;
 
-#ifdef CONFIG_ARCH_ROCKCHIP
-	util = 100 * util / sg_policy->tunables->target_load;
-#else
 	util = map_util_perf(util);
-#endif
-	freq = map_util_freq(util, freq, max);
+	trace_android_vh_map_util_freq(util, freq, max, &next_freq, policy,
+			&sg_policy->need_freq_update);
+	if (next_freq)
+		freq = next_freq;
+	else
+		freq = map_util_freq(util, freq, max);
 
 	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
 		return sg_policy->next_freq;
@@ -550,39 +551,8 @@ rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf, size_t count
 
 static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
 
-#ifdef CONFIG_ARCH_ROCKCHIP
-static ssize_t target_load_show(struct gov_attr_set *attr_set, char *buf)
-{
-	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-
-	return sprintf(buf, "%u\n", tunables->target_load);
-}
-
-static ssize_t
-target_load_store(struct gov_attr_set *attr_set, const char *buf, size_t count)
-{
-	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
-	unsigned int target_load;
-
-	if (kstrtouint(buf, 10, &target_load))
-		return -EINVAL;
-
-	if (!target_load || (target_load > 100))
-		return -EINVAL;
-
-	tunables->target_load = target_load;
-
-	return count;
-}
-
-static struct governor_attr target_load = __ATTR_RW(target_load);
-#endif
-
 static struct attribute *sugov_attrs[] = {
 	&rate_limit_us.attr,
-#ifdef CONFIG_ARCH_ROCKCHIP
-	&target_load.attr,
-#endif
 	NULL
 };
 ATTRIBUTE_GROUPS(sugov);
@@ -646,6 +616,7 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
 	if (policy->fast_switch_enabled)
 		return 0;
 
+	trace_android_vh_set_sugov_sched_attr(&attr);
 	kthread_init_work(&sg_policy->work, sugov_work);
 	kthread_init_worker(&sg_policy->worker);
 	thread = kthread_create(kthread_worker_fn, &sg_policy->worker,
@@ -746,9 +717,6 @@ static int sugov_init(struct cpufreq_policy *policy)
 	}
 
 	tunables->rate_limit_us = cpufreq_policy_transition_delay_us(policy);
-#ifdef CONFIG_ARCH_ROCKCHIP
-	tunables->target_load = 80;
-#endif
 
 	policy->governor_data = sg_policy;
 	sg_policy->tunables = tunables;
@@ -888,29 +856,3 @@ struct cpufreq_governor *cpufreq_default_governor(void)
 #endif
 
 cpufreq_governor_init(schedutil_gov);
-
-#ifdef CONFIG_ENERGY_MODEL
-static void rebuild_sd_workfn(struct work_struct *work)
-{
-	rebuild_sched_domains_energy();
-}
-static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
-
-/*
- * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
- * on governor changes to make sure the scheduler knows about it.
- */
-void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
-				  struct cpufreq_governor *old_gov)
-{
-	if (old_gov == &schedutil_gov || policy->governor == &schedutil_gov) {
-		/*
-		 * When called from the cpufreq_register_driver() path, the
-		 * cpu_hotplug_lock is already held, so use a work item to
-		 * avoid nested locking in rebuild_sched_domains().
-		 */
-		schedule_work(&rebuild_sd_work);
-	}
-
-}
-#endif

@@ -13,32 +13,12 @@
 #include <linux/usb/gadget.h>
 #include <linux/usb/video.h>
 #include <asm/unaligned.h>
-#include <linux/pm_qos.h>
 
 #include <media/v4l2-dev.h>
 
 #include "uvc.h"
 #include "uvc_queue.h"
 #include "uvc_video.h"
-#include "u_uvc.h"
-
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-static bool uvc_using_zero_copy(struct uvc_video *video)
-{
-	struct uvc_device *uvc = container_of(video, struct uvc_device, video);
-	struct f_uvc_opts *opts = fi_to_f_uvc_opts(uvc->func.fi);
-
-	if (opts && opts->uvc_zero_copy && video->fcc != V4L2_PIX_FMT_YUYV)
-		return true;
-	else
-		return false;
-}
-#else
-static inline bool uvc_using_zero_copy(struct uvc_video *video)
-{
-	return false;
-}
-#endif
 
 /* --------------------------------------------------------------------------
  * Video codecs
@@ -52,20 +32,6 @@ uvc_video_encode_header(struct uvc_video *video, struct uvc_buffer *buf,
 	struct usb_composite_dev *cdev = uvc->func.config->cdev;
 	struct timespec64 ts = ns_to_timespec64(buf->buf.vb2_buf.timestamp);
 	int pos = 2;
-
-	if (uvc_using_zero_copy(video)) {
-		u8 *mem;
-
-		mem = buf->mem + video->queue.buf_used +
-		      (video->queue.buf_used / (video->req_size - 2)) * 2;
-
-		mem[0] = 2;
-		mem[1] = UVC_STREAM_EOH | video->fid;
-		if (buf->bytesused - video->queue.buf_used <= len - 2)
-			mem[1] |= UVC_STREAM_EOF;
-
-		return 2;
-	}
 
 	data[1] = UVC_STREAM_EOH | video->fid;
 
@@ -114,8 +80,7 @@ uvc_video_encode_data(struct uvc_video *video, struct uvc_buffer *buf,
 	mem = buf->mem + queue->buf_used;
 	nbytes = min((unsigned int)len, buf->bytesused - queue->buf_used);
 
-	if (!uvc_using_zero_copy(video))
-		memcpy(data, mem, nbytes);
+	memcpy(data, mem, nbytes);
 	queue->buf_used += nbytes;
 
 	return nbytes;
@@ -128,7 +93,6 @@ uvc_video_encode_bulk(struct usb_request *req, struct uvc_video *video,
 	void *mem = req->buf;
 	struct uvc_request *ureq = req->context;
 	int len = video->req_size;
-	int encode_len = 0;
 	int ret;
 
 	/* Add a header at the beginning of the payload. */
@@ -137,18 +101,16 @@ uvc_video_encode_bulk(struct usb_request *req, struct uvc_video *video,
 		video->payload_size += ret;
 		mem += ret;
 		len -= ret;
-		encode_len += ret;
 	}
 
 	/* Process video data. */
 	len = min((int)(video->max_payload_size - video->payload_size), len);
-	encode_len += len;
 	ret = uvc_video_encode_data(video, buf, mem, len);
 
 	video->payload_size += ret;
 	len -= ret;
 
-	req->length = encode_len - len;
+	req->length = video->req_size - len;
 	req->zero = video->payload_size == video->max_payload_size;
 
 	if (buf->bytesused == video->queue.buf_used) {
@@ -159,7 +121,6 @@ uvc_video_encode_bulk(struct usb_request *req, struct uvc_video *video,
 		ureq->last_buf = buf;
 
 		video->payload_size = 0;
-		req->zero = 1;
 	}
 
 	if (video->payload_size == video->max_payload_size ||
@@ -243,10 +204,6 @@ uvc_video_encode_isoc(struct usb_request *req, struct uvc_video *video,
 	struct uvc_request *ureq = req->context;
 	int len = video->req_size;
 	int ret;
-
-	if (uvc_using_zero_copy(video))
-		req->buf = buf->mem + video->queue.buf_used +
-			   (video->queue.buf_used / (video->req_size - 2)) * 2;
 
 	/* Add the header. */
 	ret = uvc_video_encode_header(video, buf, mem, len);
@@ -516,12 +473,6 @@ uvc_video_complete(struct usb_ep *ep, struct usb_request *req)
 			 * up later.
 			 */
 			list_add_tail(&to_queue->list, &video->req_free);
-			/*
-			 * There is a new free request - wake up the pump.
-			 */
-			queue_work(video->async_wq, &video->pump);
-		} else if (is_bulk) {
-			queue_work(video->async_wq, &video->pump);
 		}
 	} else {
 		uvc_video_free_request(ureq, ep);
@@ -557,28 +508,9 @@ uvc_video_alloc_requests(struct uvc_video *video)
 
 	BUG_ON(video->req_size);
 
-	if (!usb_endpoint_xfer_bulk(video->ep->desc)) {
-		req_size = video->ep->maxpacket
-			 * max_t(unsigned int, video->ep->maxburst, 1)
-			 * (video->ep->mult);
-	} else {
-#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-		/*
-		 * Set req size 256KB for Super-Speed and 128KB for High-speed.
-		 * The larger value of the req size, the better transmission
-		 * performance of the USB controller. And the req size should
-		 * not exceed the max_payload_size which equals to image size.
-		 */
-		req_size = min_t(unsigned int, video->ep->maxpacket * 256,
-				 video->max_payload_size);
-		uvcg_info(&video->uvc->func,
-			  "req_size (%d)B max_payload_size (%d)B\n",
-			  req_size, video->max_payload_size);
-#else
-		req_size = video->ep->maxpacket
-			 * max_t(unsigned int, video->ep->maxburst, 1);
-#endif
-	}
+	req_size = video->ep->maxpacket
+		 * max_t(unsigned int, video->ep->maxburst, 1)
+		 * (video->ep->mult);
 
 	for (i = 0; i < video->uvc_num_requests; i++) {
 		ureq = kzalloc(sizeof(struct uvc_request), GFP_KERNEL);
@@ -721,19 +653,12 @@ uvcg_video_disable(struct uvc_video *video)
 	struct usb_request *req, *temp;
 	struct uvc_buffer *buf, *btemp;
 	struct uvc_request *ureq, *utemp;
-	struct uvc_device *uvc;
-	struct f_uvc_opts *opts;
 
 	if (video->ep == NULL) {
 		uvcg_info(&video->uvc->func,
 			  "Video disable failed, device is uninitialized.\n");
 		return -ENODEV;
 	}
-
-	uvc = container_of(video, struct uvc_device, video);
-	opts = fi_to_f_uvc_opts(uvc->func.fi);
-	if (cpu_latency_qos_request_active(&uvc->pm_qos))
-		cpu_latency_qos_remove_request(&uvc->pm_qos);
 
 	INIT_LIST_HEAD(&inflight_bufs);
 	spin_lock_irqsave(&video->req_lock, flags);
@@ -802,8 +727,6 @@ uvcg_video_disable(struct uvc_video *video)
  */
 int uvcg_video_enable(struct uvc_video *video)
 {
-	struct uvc_device *uvc;
-	struct f_uvc_opts *opts;
 	int ret;
 
 	if (video->ep == NULL) {
@@ -812,9 +735,6 @@ int uvcg_video_enable(struct uvc_video *video)
 		return -ENODEV;
 	}
 
-	uvc = container_of(video, struct uvc_device, video);
-	opts = fi_to_f_uvc_opts(uvc->func.fi);
-	cpu_latency_qos_add_request(&uvc->pm_qos, opts->pm_qos_latency);
 	/*
 	 * Safe to access request related fields without req_lock because
 	 * this is the only thread currently active, and no other
@@ -839,7 +759,6 @@ int uvcg_video_enable(struct uvc_video *video)
 	video->req_int_count = 0;
 
 	uvc_video_ep_queue_initial_requests(video);
-	queue_work(video->async_wq, &video->pump);
 
 	return ret;
 }

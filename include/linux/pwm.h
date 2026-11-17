@@ -5,6 +5,7 @@
 #include <linux/err.h>
 #include <linux/mutex.h>
 #include <linux/of.h>
+#include <linux/android_kabi.h>
 
 struct pwm_chip;
 
@@ -60,11 +61,6 @@ struct pwm_state {
 	u64 period;
 	u64 duty_cycle;
 	enum pwm_polarity polarity;
-#ifdef CONFIG_PWM_ROCKCHIP_ONESHOT
-	u64 oneshot_count;
-	u32 oneshot_repeat;
-	u64 duty_offset;
-#endif /* CONFIG_PWM_ROCKCHIP_ONESHOT */
 	bool enabled;
 	bool usage_power;
 };
@@ -92,6 +88,8 @@ struct pwm_device {
 	struct pwm_args args;
 	struct pwm_state state;
 	struct pwm_state last;
+
+	ANDROID_KABI_RESERVE(1);
 };
 
 /**
@@ -284,6 +282,7 @@ struct pwm_ops {
 	int (*get_state)(struct pwm_chip *chip, struct pwm_device *pwm,
 			 struct pwm_state *state);
 	struct module *owner;
+	ANDROID_KABI_RESERVE(1);
 };
 
 /**
@@ -310,6 +309,8 @@ struct pwm_chip {
 	/* only used internally by the PWM framework */
 	struct list_head list;
 	struct pwm_device *pwms;
+
+	ANDROID_KABI_RESERVE(1);
 };
 
 #if IS_ENABLED(CONFIG_PWM)

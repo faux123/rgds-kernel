@@ -54,39 +54,13 @@
 #include <trace/events/initcall.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
+#undef CREATE_TRACE_POINTS
+#include <trace/hooks/printk.h>
 
 #include "printk_ringbuffer.h"
 #include "console_cmdline.h"
 #include "braille.h"
 #include "internal.h"
-
-#ifdef CONFIG_PRINTK_TIME_FROM_ARM_ARCH_TIMER
-#include <asm/arch_timer.h>
-static u64 get_local_clock(void)
-{
-	u64 ns;
-	static u32 mhz;
-
-	if (!mhz) {
-		mhz = arch_timer_get_cntfrq() / 1000000;
-		if (!mhz)
-			mhz = 24;
-	}
-
-	if (mhz == 1000)
-		return arch_timer_read_counter();
-
-	ns = arch_timer_read_counter() * 1000;
-	do_div(ns, mhz);
-
-	return ns;
-}
-#else
-static inline u64 get_local_clock(void)
-{
-	return local_clock();
-}
-#endif
 
 int console_printk[4] = {
 	CONSOLE_LOGLEVEL_DEFAULT,	/* console_loglevel */
@@ -2173,6 +2147,8 @@ static u16 printk_sprint(char *text, u16 size, int facility,
 	return text_len;
 }
 
+EXPORT_TRACEPOINT_SYMBOL_GPL(console);
+
 __printf(4, 0)
 int vprintk_store(int facility, int level,
 		  const struct dev_printk_info *dev_info,
@@ -2201,7 +2177,7 @@ int vprintk_store(int facility, int level,
 	 * close to the call of printk(). This provides a more deterministic
 	 * timestamp with respect to the caller.
 	 */
-	ts_nsec = get_local_clock();
+	ts_nsec = local_clock();
 
 	caller_id = printk_caller_id();
 
@@ -2272,6 +2248,7 @@ int vprintk_store(int facility, int level,
 	r.info->flags = flags & 0x1f;
 	r.info->ts_nsec = ts_nsec;
 	r.info->caller_id = caller_id;
+	trace_android_vh_vprintk_store(r.info->ts_nsec, r.text_buf, r.info->text_len);
 	if (dev_info)
 		memcpy(&r.info->dev_info, dev_info, sizeof(r.info->dev_info));
 
@@ -2611,6 +2588,12 @@ void resume_console(void)
  */
 static int console_cpu_notify(unsigned int cpu)
 {
+	int flag = 0;
+
+	trace_android_vh_printk_hotplug(&flag);
+	if (flag)
+		return 0;
+
 	if (!cpuhp_tasks_frozen) {
 		/* If trylock fails, someone else is doing the printing */
 		if (console_trylock())
@@ -3629,6 +3612,7 @@ int _printk_deferred(const char *fmt, ...)
 
 	return r;
 }
+EXPORT_SYMBOL_GPL(_printk_deferred);
 
 /*
  * printk rate limiting, lifted from the networking subsystem.
