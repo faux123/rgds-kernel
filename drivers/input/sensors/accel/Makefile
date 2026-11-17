@@ -24,3 +24,4 @@ obj-$(CONFIG_ICM2060X_ACC)	+= icm2060x_acc.o
 obj-$(CONFIG_ICM4260X_ACC)	+= icm4260x_acc.o
 da223-y	:= da223_cust.o da223_core.o
 obj-$(CONFIG_IAM20680_ACC)	+= iam20680_acc.o
+obj-$(CONFIG_SC7U22_ACC)	+= sc7u22_acc.o
