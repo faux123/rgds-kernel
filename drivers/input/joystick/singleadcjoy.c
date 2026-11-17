@@ -1,3 +1,18 @@
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/slab.h>
+#include <linux/input.h>
+#include <linux/ioport.h>
+#include <linux/platform_device.h>
+#include <linux/gpio.h>
+#include <linux/gpio/consumer.h>
+#include <linux/gpio_keys.h>
+#include <linux/iio/consumer.h>
+#include <linux/iio/types.h>
+#include <linux/property.h>
+#include <linux/of_gpio.h>
+#include <linux/delay.h>
+#include <linux/device.h>
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Reconstruction of the Anbernic RG DS stock singleadc-joypad sysfs layer,
@@ -14,21 +29,29 @@
  * joypad_show_touch_mode loads its fmt from @ffffffc009cb008d, which reads
  * "gt9xx_touch_swap" in this ELF: UNRESOLVED, do not assume "%d\n" there.
  */
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/input.h>
-#include <linux/ioport.h>
-#include <linux/platform_device.h>
-#include <linux/gpio.h>
-#include <linux/gpio/consumer.h>
-#include <linux/gpio_keys.h>
-#include <linux/iio/consumer.h>
-#include <linux/iio/types.h>
-#include <linux/property.h>
-#include <linux/of_gpio.h>
-#include <linux/delay.h>
-#include <linux/device.h>
+
+/*
+ * Stock layer: every behavior below reproduces the RG DS stock binary, bugs included. Suspected stock bugs are listed
+ * here for separate fix commits; nothing in this file fixes them.
+ */
+/* FIX CANDIDATE: keypad2touchpanel_abs key B accepts a mode 2/3 press when the mask is 0 or 4 (Y's slot) instead of
+ * 0 or 6 (tst #0xfffffffb @ffffffc008c70080, @ffffffc008c700c8). Same in the RG556 .ko. */
+/* FIX CANDIDATE: joypad_resume (@ffffffc008c7699c) is byte-identical to joypad_suspend and writes 0 to the +0xc byte
+ * (strb wzr @ffffffc008c769c0); resume would be expected to restore it. */
+/* FIX CANDIDATE: joypad_show_adc_z_p / joypad_show_adc_rz_p (@ffffffc008c71e9c, @ffffffc008c71ed8) read channel 0
+ * +0x8 (the LX value) instead of their own channel; joypad_show_adc_z / _rz print a constant 0. */
+/* FIX CANDIDATE: joypad2touchpanel_abs (@ffffffc008c6ecf0) and joypad2touchpanel_abs_z (@ffffffc008c6f624) scale
+ * both axes by the *_lenght_x value; the *_lenght_y value is clamped but never used there. */
+/* FIX CANDIDATE: joypad_probe does not return when amux-count or the child count is 0; it only logs
+ * "adc key = %d, gpio key = %d error!" (@ffffffc008c708d0) and allocates a zero-length adc array. */
+/* FIX CANDIDATE: amux setup returns -EINVAL instead of PTR_ERR() on a devm_iio_channel_get error
+ * (@ffffffc008c70bdc), which loses -EPROBE_DEFER. */
+/* FIX CANDIDATE: joypad_adc_read refuses mux indices >= 4 (@ffffffc008c71a54) while the DTB sets amux-count = 6, so
+ * channels 4/5 (ABS_Z/ABS_RZ) always read 0. */
+/* FIX CANDIDATE: joypad_show_amux_debug (@ffffffc008c71bcc) clears the enable byte, so reading the attr stops
+ * polling, and always prints adc value 0 (@ffffffc008c71be4). */
+/* FIX CANDIDATE: joypad_adc_check sums and averages a fixed 6 channels and writes hist[] of channels 4/5
+ * (@ffffffc008c75fd4..762ac) regardless of amux_count; with amux_count < 6 this writes past the adcs array. */
 
 #define STOCK_INT_SHOW(fn, var) \
 static ssize_t fn(struct device *dev, struct device_attribute *attr, char *buf) \
@@ -63,8 +86,9 @@ static ssize_t fn(struct device *dev, struct device_attribute *attr, const char 
  *   adc_z_p, adc_rz_p: print ch[0]+0x8 (same field as adc_lx_p; stock quirk) @..71e9c/@..71ed8
  * Field names of the channel struct are UNKNOWN; offsets used raw until the probe is rebuilt.
  */
-extern int hall_status_share;          /* T @ffffffc00a4d56ec */
+extern int hall_status_share;          /* T @ffffffc00a4d56ec. Owned by stock gpio_keys.c: it sits in .bss between evdev and gpio_keys_probe.__key, and joypad_show/store_hall_status (@ffffffc008c6bd34) lie in gpio_keys text just before gpio_keys_resume. Keep extern. */
 int factory_led_status;                /* T @ffffffc00a4d5a94 */
+EXPORT_SYMBOL(factory_led_status);	/* stock has __ksymtab_factory_led_status (battery LED code reads it) */
 int gt9xx_touch_swap_status;           /* T @ffffffc00a4d5a98 */
 int gt9xx_touch_combo_status;          /* T @ffffffc00a4d5a9c */
 
@@ -112,6 +136,9 @@ JATTR(adc_ry, joypad_show_adc_ry, NULL) JATTR(adc_ry_p, joypad_show_adc_ry_p, NU
 JATTR(adc_z, joypad_show_adc_z, NULL)   JATTR(adc_z_p, joypad_show_adc_z_p, NULL)
 JATTR(adc_rz, joypad_show_adc_rz, NULL) JATTR(adc_rz_p, joypad_show_adc_rz_p, NULL)
 JATTR(hall_status, joypad_show_hall_status, joypad_store_hall_status)
+/* Stock keeps dev_attr_hall_status and joypad_show/store_hall_status in gpio_keys.c (text @ffffffc008c6bd34 next to
+ * gpio_keys_resume), not in joypad_attrs. Kept here only as a reference for the tree agent's gpio_keys work. */
+static struct device_attribute *stock_hall_status_attr __maybe_unused = &dev_attr_hall_status;
 JATTR(factory_led, joypad_show_factory_led, joypad_store_factory_led)
 JATTR(touch_mode, joypad_show_touch_mode, joypad_store_touch_mode)
 JATTR(touch_mode_combo, joypad_show_touch_mode_combo, joypad_store_touch_mode_combo)
@@ -234,9 +261,38 @@ JOKSTICK(ryd)	/* @ffffffc00a2a4f40 */
 JOKSTICK(ryd_scale)	/* @ffffffc00a2a4f60 */
 /* joypad family, hand-written below: factory_led @ffffffc00a2a4f80 */
 
+
+/* joypad_show_enable @ffffffc008c717ec: sprintf("%d\n", byte +0xc). joypad_store_enable @ffffffc008c71824: under the
+ * mutex, +0xc = (simple_strtoul(buf, NULL, 10) != 0), return count. Userspace turns polling on through this attr;
+ * probe leaves it 0 (@..71684), as does suspend/resume. */
+static ssize_t joypad_show_enable(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", *((u8 *)dev_get_drvdata(dev) + 0xc));
+}
+static ssize_t joypad_store_enable(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	char *j = dev_get_drvdata(dev);
+
+	mutex_lock((struct mutex *)(j + 0x50));
+	*(u8 *)(j + 0xc) = simple_strtoul(buf, NULL, 10) != 0;
+	mutex_unlock((struct mutex *)(j + 0x50));
+	return count;
+}
+static DEVICE_ATTR(enable, 0644, joypad_show_enable, joypad_store_enable);
+
+/* Order = stock joypad_attrs @ffffffc00a2a3cb0 (121 entries, read from the ELF). hall_status is NOT in stock's
+ * joypad group (it lives with gpio_keys). Entries marked TODO need their handlers written. */
+/* tentative definitions; the DEVICE_ATTRs are at the end of the file, after the structs they use */
+static struct device_attribute dev_attr_poll_interval, dev_attr_adc_fuzz, dev_attr_adc_flat, dev_attr_adc_cal,
+	dev_attr_amux_debug;
 static struct attribute *joypad_stock_attrs[] = {
-	&dev_attr_hall_status.attr,
+	&dev_attr_poll_interval.attr,
+	&dev_attr_adc_fuzz.attr,
+	&dev_attr_adc_flat.attr,
+	&dev_attr_enable.attr,
+	&dev_attr_adc_cal.attr,
 	&dev_attr_adc_deadzone.attr,
+	&dev_attr_amux_debug.attr,
 	&dev_attr_adc_lx.attr,
 	&dev_attr_adc_ly.attr,
 	&dev_attr_adc_rx.attr,
@@ -391,7 +447,7 @@ int adc_abs_lx, adc_abs_ly, adc_abs_rx, adc_abs_ry;    /* @..5bac..@..5bb8 */
 struct stock_amux { struct iio_channel *chan; int sel_a_gpio; int sel_b_gpio; int en_gpio; };
 static const int stock_amux_sel_a[4] = { 1, 1, 0, 0 };
 static const int stock_amux_sel_b[4] = { 1, 0, 0, 1 };
-static int joypad_adc_read(struct stock_amux *amux, void *button)
+static int __maybe_unused joypad_adc_read(struct stock_amux *amux, void *button)	/* callers (probe tail, joypad_adc_check) not yet written */
 {
 	int val = 0;
 	int idx = *(int *)((char *)button + 0x58);
@@ -527,9 +583,10 @@ static struct platform_driver joypad_driver = {
  *   touch_data @ffffffc00a4d58b4: writes at +0x10 (str x / 8 bytes), +0x18 and +0x1c (stp w). Layout unknown, modelled as int[].
  * Division by 2000: smull by 0x10624dd3, asr #39, + sign bit @..6f330..6f36c.
  */
-extern struct input_dev *joypad_input_g;	/* T @ffffffc00a4d5af0 */
-extern void *gts_dev;				/* T @ffffffc00a4d58a8, type unknown */
-extern int touch_data[];			/* T @ffffffc00a4d58b4, layout unknown */
+struct input_dev *joypad_input_g;	/* T @ffffffc00a4d5af0, 8 bytes (ldr x) */
+struct input_dev *gts_dev;		/* T @ffffffc00a4d58a8, 8 bytes; passed to input_event in g_touch_sync */
+int touch_id;				/* T @ffffffc00a4d58b0 (4 bytes before touch_data); no access with #0x8b0 in the joypad text range, kept for symbol parity */
+int touch_data[0x1e0 / 4];		/* T @ffffffc00a4d58b4..@..5a94 = 0x1e0 bytes = 30 slots of 16 */
 int joypad2touchpanel_abs_z_mode2(void)
 {
 	static int joypadz_count_mode2 = 5;	/* @ffffffc00a2a3bb0 */
@@ -577,7 +634,7 @@ int joypad2touchpanel_abs_z_mode2(void)
  * Both axes multiply by remapkey_left_joy_lenght_x (single load @..6ecf0), y's own length is unused here (stock).
  * Widths: remapkey_left_joy_lenght_x/_y, remapkey_left_joy_mode, remapkey_left_joy_key_x/_y, abxy_mask,
  * joypadx/joypady, joypadxy_init/count: all 32-bit (ldr/str w). gts_dev: 64-bit pointer. */
-extern int abxy_mask;				/* T @ffffffc00a4d5aa0 */
+int abxy_mask;				/* T @ffffffc00a4d5aa0, ldr w */
 int joypad2touchpanel_abs_ext(int mask, int axis, int value);
 void g_touch_sync(void);
 int joypad2touchpanel_abs(int axis, int value)
@@ -659,7 +716,7 @@ void g_touch_up(int id)
  * abxy_z_mask @..5ab8, remapkey_right_joy_mode @..5804, joypadz_init (.data @ffffffc00a2a3ba4), joypadz_count (@..3ba8),
  * joypadz @..5ad0, joypadrz @..5ad4, abs_z_mode2_x/_y @..5adc/@..5ae0, abs_z_mode2 (.data @..3bac),
  * remapkey_right_joy_key_x/_y @..57a8/@..57ac. Same /163 and /100 magic as joypad2touchpanel_abs (@..6f608..6f680). */
-extern int abxy_z_mask;				/* T @ffffffc00a4d5ab8 */
+int abxy_z_mask;			/* T @ffffffc00a4d5ab8, ldr w */
 int joypad2touchpanel_abs_z_ext(int mask, int axis, int value);
 int joypad2touchpanel_abs_z(int axis, int value)
 {
@@ -729,7 +786,7 @@ int joypad2touchpanel_abs_z(int axis, int value)
  * So g_touch_down(id, x, y). Event codes are literal immediates: EV_KEY=1/BTN_TOUCH=0x14a, EV_ABS=3,
  * 0x35/0x36/0x30/0x32/0x39 = MT X/Y/TOUCH_MAJOR/WIDTH_MAJOR/TRACKING_ID, EV_SYN=0 code 2 = SYN_MT_REPORT, 0/0/0 = sync. */
 struct stock_touch_slot { int active; int down; int y; int x; };
-extern int BTN_S;		/* T .data @ffffffc00a2a3b88 (nm name BTN_S), ldr/str w */
+int BTN_S = 1;				/* T .data @ffffffc00a2a3b88, initial value 1 read from the ELF; ldr/str w */
 void g_touch_sync(void)
 {
 	struct input_dev *in = gts_dev;
@@ -778,7 +835,7 @@ void g_touch_sync(void)
  * In every fixed case the touch slot index equals mask (slot addr 0x..58b4 + 16*mask, e.g. X -> @..58e4 = slot 3).
  * Scale: /163 then * remapkey_left_joy_lenght_x then /100, as in joypad2touchpanel_abs. joypadx_temp/joypady_temp read
  * with ldrsw (32-bit signed). joypad_count_temp (.data @ffffffc00a2a3b90) is decremented; reload value 2 (@..6eb34). */
-extern int abxy_mask_l3;			/* T @ffffffc00a4d5aac */
+int abxy_mask_l3;			/* T @ffffffc00a4d5aac, ldrsw */
 static void stock_ext_touch(int slot, int key_x, int key_y)
 {
 	struct stock_touch_slot *s = (struct stock_touch_slot *)touch_data + slot;
@@ -830,7 +887,7 @@ int joypad2touchpanel_abs_ext(int mask, int axis, int value)
  * Same as _abs_ext: fixed cases 3 X,4 Y,5 A,6 B,9 L2,10 R1,11 R2,14 L1 with the same remapkey_* keys and slot == mask
  * (e.g. case 3 @..6ee04 loads remapkey_x_x @..5720 / remapkey_x_y @..5724, slot @..58e4); same /163,/100 magic
  * and y-into-+0x8, x-into-+0xc layout (tail @..6f250..6f27c). */
-extern int abxy_z_mask_r3;			/* T @ffffffc00a4d5ac4 */
+int abxy_z_mask_r3;			/* T @ffffffc00a4d5ac4, ldrsw */
 static void stock_zext_touch(int slot, int key_x, int key_y)
 {
 	struct stock_touch_slot *s = (struct stock_touch_slot *)touch_data + slot;
@@ -911,11 +968,18 @@ int joypad2touchpanel_abs_z_ext(int mask, int axis, int value)
 
 /* ---- Stock layouts (offsets from the disassembly; unnamed gaps are padding until decoded) ---- */
 struct stock_bt_adc {				/* stride 0x64 (devm_kmalloc amux_count*0x64 @..708e4) */
-	u8  pad0[0x40];				/* +0x4 value, +0x8 value_p (joypad_show_adc_lx/_lx_p) live here */
+	int value;				/* +0x00 joypad_adc_read result, then the 4-sample average (@..75f08, @..761f0) */
+	int shown;				/* +0x04 joypad_show_adc_lx */
+	int shown_p;				/* +0x08 joypad_show_adc_lx_p */
+	int hist[4];				/* +0x0c..+0x18 sample history (@..75f8c) */
+	u8  pad1c[0x34 - 0x1c];
+	int sum;				/* +0x34 accumulator, zeroed after averaging (@..76284) */
+	int last;				/* +0x38 last reported value (@..764b0) */
+	int pad3c;
 	int code;				/* +0x40 ABS_* code (switch @..709b8) */
 	int max;				/* +0x44 */
 	int min;				/* +0x48 */
-	int pad4c;
+	int cal;				/* +0x4c centre value subtracted when jokstick_cal_switch_* is 0 (@..7631c) */
 	int scale;				/* +0x50 */
 	u8  invert;				/* +0x54 */
 	u8  pad55[3];
@@ -939,9 +1003,11 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 	int bt_adc_scale;			/* +0x44 */
 	int bt_adc_deadzone;			/* +0x48 */
 	int bt_adc_deadzone2;			/* +0x4c copy of +0x48 */
-	u8  lock[0x78 - 0x50];			/* +0x50 struct mutex (mutex_lock(drvdata+0x50)) */
+	u8  lock[0x20];				/* +0x50 struct mutex (mutex_lock(drvdata+0x50)) */
+	int amux_debug;				/* +0x70 joypad_store_amux_debug @..71c48 */
+	int pad74;
 };
-extern void *poll_dev_private;			/* T @ffffffc00a4d5708 */
+void *poll_dev_private;			/* T @ffffffc00a4d5708, 8 bytes (next symbol @..5710) */
 
 /* Per channel: axis code, p/n tuning property names, invert byte (set via the shared tail @..70afc -> @..70950). */
 static const struct { int code; const char *p, *n; u8 invert; } stock_adc_axis[6] = {
@@ -1082,3 +1148,842 @@ _Static_assert(sizeof(struct stock_joypad) == 0x78, "joypad 0x78");
 _Static_assert(sizeof(struct stock_bt_adc) == 0x64, "adc 0x64");
 _Static_assert(__builtin_offsetof(struct stock_bt_adc, amux_ch) == 0x58, "adc+0x58");
 _Static_assert(__builtin_offsetof(struct stock_joypad, bt_adc_deadzone) == 0x48, "jp+0x48");
+
+/* ---- joypad_gpio_setup, inlined in probe @..70e04..70f9c. Button slot is 0x20 bytes (index << 5 @..70e9c):
+ *   +0x00 const char *label   (of_get_property(child, "label", NULL), str x @..70ed4)
+ *   +0x08 int gpio            (of_get_named_gpio_flags(child, "gpios", 0, &flags), str w @..70ea4)
+ *   +0x0c int input_type      ("linux,input-type"; 1 if the read fails, @..70f40)
+ *   +0x10 int code            ("linux,code"; required, @..70f00)
+ *   +0x14 int abs_value       ("linux,abs-value"; 0 if the read fails, @..70f68)
+ *   +0x19 u8                  = ((flags & 1) == 0), i.e. 1 when NOT OF_GPIO_ACTIVE_LOW (tst/cset eq @..70ec0)
+ * Error exits: gpio < 0 -> "Failed to get gpio flags, error: %d\n"; request fail -> "Failed to request GPIO %d,
+ * error %d\n" (@..712fc); no code -> "Button without keycode: 0x%x\n" (prints the gpio) and -EINVAL; zero children
+ * -> -EINVAL. All exits then print "dt parse error!(err = %d)\n" (@..70d9c). */
+struct stock_button {
+	const char *label;	/* +0x00 */
+	int gpio;		/* +0x08 */
+	int input_type;		/* +0x0c */
+	int code;		/* +0x10 */
+	int abs_value;		/* +0x14 */
+	u8  raw_not_high;	/* +0x18: (gpiod_get_raw_value != 1), written by joypad_gpio_check @..74f70 */
+	u8  not_active_low;	/* +0x19 */
+	u8  pad1a[6];
+};
+_Static_assert(sizeof(struct stock_button) == 0x20, "button 0x20");
+_Static_assert(__builtin_offsetof(struct stock_button, not_active_low) == 0x19, "button+0x19");
+
+static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joypad, struct stock_button **out)
+{
+	struct device_node *np = dev->of_node, *child = NULL;
+	struct stock_button *buttons;
+	int n = 0, ret;
+
+	buttons = devm_kmalloc(dev, (long)joypad->bt_gpio_count << 5, GFP_KERNEL | __GFP_ZERO);
+	*out = buttons;					/* joypad+0x30 */
+	if (!buttons) {
+		dev_err(dev, "%s devm_kzmalloc error!", "joypad_gpio_setup");
+		return -ENOMEM;
+	}
+	while ((child = of_get_next_child(np, child))) {
+		struct stock_button *b = &buttons[n];
+		enum of_gpio_flags flags = 0;
+
+		b->gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
+		if (b->gpio < 0) {
+			dev_err(dev, "Failed to get gpio flags, error: %d\n", b->gpio);
+			return b->gpio;
+		}
+		b->not_active_low = !(flags & 1);
+		b->label = of_get_property(child, "label", NULL);
+		if ((unsigned int)b->gpio <= 0x1ff) {
+			ret = devm_gpio_request_one(dev, b->gpio, 1, b->label);	/* flags 1 = GPIOF_IN */
+			if (ret < 0) {
+				dev_err(dev, "Failed to request GPIO %d, error %d\n", b->gpio, ret);
+				return ret;
+			}
+		}
+		if (of_property_read_u32(child, "linux,code", &b->code) < 0) {
+			dev_err(dev, "Button without keycode: 0x%x\n", b->gpio);
+			return -EINVAL;
+		}
+		if (of_property_read_u32(child, "linux,input-type", &b->input_type) < 0)
+			b->input_type = 1;
+		if (of_property_read_u32(child, "linux,abs-value", &b->abs_value) < 0)
+			b->abs_value = 0;
+		n++;
+	}
+	return n ? 0 : -EINVAL;
+}
+
+/* ---- joypad_probe @ffffffc008c70780 (body decoded to @..71340; virtual_gamepad part @..7134c..71718 NOT yet). ---- */
+struct input_dev *poll_dev_input;	/* T @ffffffc00a4d58a0, 8 bytes */
+/* sysfs group: stock @ffffffc00a2a3c88; using joypad_stock_attr_group (generated from the 116 dev_attr_* structs). Not yet checked that its attrs[] order matches joypad_attrs @ffffffc00a2a3cb0. */
+/* gpio_hat_value_new/old: defined with joypad_gpio_check below */
+int gpio_hat_value_new[16];
+int gpio_hat_value_old[16];
+int hat_y;					/* T @ffffffc00a4d5b8c */
+int hat_x;					/* T @ffffffc00a4d5b88 */
+static void joypad_gpio_check(struct input_dev *input);
+static void joypad_adc_check(struct input_dev *input);	/* @ffffffc008c75eb4 (0xaa8), stock static; not yet written */
+short lx_g, ly_g, rx_g, ry_g, lt_g, rt_g;	/* T @ffffffc00a4d5b94.. (strh, 16-bit) */
+/* joypad_poll @ffffffc008c74ee4: if (poll_dev_private->enable) { gpio_check; adc_check } with input passed through in x0. */
+static void joypad_poll(struct input_dev *input)
+{
+	if (((struct stock_joypad *)poll_dev_private)->enable) {	/* ldrb +0xc @..74ef8 */
+		joypad_gpio_check(input);
+		joypad_adc_check(input);
+	}
+}
+static int joypad_probe(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	struct stock_joypad *joypad;
+	struct stock_amux *amux;
+	struct stock_button *buttons;
+	struct input_dev *input;
+	u32 joypad_revision = 0, joypad_product = 0;	/* locals [x29-0xc], [x29-0x10] */
+	int i, err;
+
+	err = stock_joypad_dt_parse_head(dev, &joypad);
+	if (err)
+		return err;	/* stock: alloc failure returns -ENOMEM without "dt parse error" (@..707e0 -> @..70da0) */
+	err = stock_joypad_amux_setup(dev, joypad, &amux);
+	if (err) {
+		dev_err(dev, "Joypad amux setup failed: %d\n", err);
+		goto dt_err;
+	}
+	*(struct stock_amux **)((char *)joypad + 0x10) = amux;
+	err = stock_joypad_gpio_setup(dev, joypad, &buttons);
+	if (err)
+		goto dt_err;
+	*(struct stock_button **)((char *)joypad + 0x30) = buttons;
+	dev_info(dev, "%s : adc key cnt = %d, gpio key cnt = %d\n", "joypad_dt_parse",
+		 joypad->amux_count, joypad->bt_gpio_count);		/* @..70fc0 */
+
+	mutex_init((struct mutex *)joypad->lock);			/* @..70fd8, class "&joypad->lock" */
+	platform_set_drvdata(pdev, joypad);				/* pdev+0x88 @..70fe8 */
+	err = sysfs_create_group(&dev->kobj, &joypad_stock_attr_group);
+	if (err) {
+		dev_err(dev, "create sysfs group fail, error: %d\n", err);
+		return err;					/* @..71310 -> @..70d98 (no "dt parse error") */
+	}
+
+	gts_dev = devm_input_allocate_device(dev);			/* first alloc -> gts_dev @..71008 */
+	input = devm_input_allocate_device(dev);			/* second -> poll_dev_input, joypad_input_g */
+	poll_dev_input = input;
+	joypad_input_g = input;
+	device_property_read_string(dev, "joypad-name", &input->name);
+	input->phys = "retrogame_joypad/input0";			/* @..71058 */
+	device_property_read_u32(dev, "joypad-revision", &joypad_revision);
+	device_property_read_u32(dev, "joypad-product", &joypad_product);
+	input->id.bustype = 0x19;					/* BUS_HOST; w = 0x484b0019 @..71088 */
+	input->id.vendor = 0x484b;
+	input->id.product = joypad_product;				/* strh @..71094 */
+	input->id.version = joypad_revision;				/* strh @..71098 */
+	__set_bit(EV_ABS, input->evbit);				/* orr #0x8 @..7108c */
+
+	for (i = 0; i < joypad->amux_count; i++) {
+		struct stock_bt_adc *e = &joypad->adcs[i];
+
+		input_set_abs_params(input, e->code, e->min, e->max,
+				     joypad->bt_adc_fuzz, joypad->bt_adc_flat);	/* @..710e8 */
+		dev_info(dev, "%s : SCALE = %d, ABS min = %d, max = %d, fuzz = %d, flat = %d, deadzone = %d\n",
+			 "joypad_input_setup", e->scale, e->min, e->max,
+			 joypad->bt_adc_fuzz, joypad->bt_adc_flat, joypad->bt_adc_deadzone);
+		dev_info(dev, "%s : adc tuning_p = %d, adc_tuning_n = %d\n\n",
+			 "joypad_input_setup", e->tuning_p, e->tuning_n);
+	}
+	__set_bit(EV_KEY, input->evbit);				/* orr #0x2 @..7113c */
+	for (i = 0; i < joypad->bt_gpio_count; i++)
+		input_set_capability(input, buttons[i].input_type, buttons[i].code);	/* @..71168 */
+
+	input_set_capability(input, EV_KEY, 0x132);			/* BTN_C   @..7118c */
+	input_set_capability(input, EV_KEY, 0x135);			/* BTN_Z */
+	input_set_capability(input, EV_KEY, 0x138);			/* BTN_TL2 */
+	input_set_capability(input, EV_KEY, 0x139);			/* BTN_TR2 */
+	input_set_capability(input, EV_KEY, 0x13c);			/* BTN_MODE */
+	input_set_capability(input, EV_KEY, 0x220);			/* BTN_DPAD_UP .. */
+	input_set_capability(input, EV_KEY, 0x221);
+	input_set_capability(input, EV_KEY, 0x222);
+	input_set_capability(input, EV_KEY, 0x223);			/* .. BTN_DPAD_RIGHT @..711fc */
+	input_set_abs_params(input, ABS_HAT0X, -1, 1, 0, 0);		/* @..71228 */
+	input_set_abs_params(input, ABS_HAT0Y, -1, 1, 0, 0);
+	input_set_abs_params(input, ABS_Z, 0, 0x4000, 0x20, 0x20);	/* @..71260 */
+	input_set_abs_params(input, ABS_RZ, 0, 0x4000, 0x20, 0x20);
+	if (joypad->auto_repeat)
+		__set_bit(EV_REP, input->evbit);			/* orr #0x100000 @..7128c */
+
+	*(struct device **)joypad = dev;				/* joypad+0x0 @..712a4 */
+	err = input_setup_polling(input, joypad_poll);
+	if (err)
+		goto reg_err;
+	input_set_poll_interval(input, joypad->poll_interval);
+	err = input_register_device(input);
+	if (err)
+		goto reg_err;
+	if (!gts_dev) {
+		dev_err(dev, "no memory for polled device\n");	/* @..712e8, then continues at @..71444 */
+	} else {
+		/* virtual touch device @..7134c..71440 (gts_dev) */
+		__set_bit(BTN_TOUCH, gts_dev->keybit);		/* stock: str 0x400 to keybit word 5 (+0x58) @..71368 */
+		input_set_abs_params(gts_dev, ABS_MT_POSITION_X, 0, 640, 0, 0);	/* 0x35, 0x280 */
+		input_set_abs_params(gts_dev, ABS_MT_POSITION_Y, 0, 480, 0, 0);	/* 0x36, 0x1e0 */
+		input_set_abs_params(gts_dev, ABS_MT_WIDTH_MAJOR, 0, 255, 0, 0);	/* 0x32 */
+		input_set_abs_params(gts_dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);	/* 0x30 */
+		input_set_abs_params(gts_dev, ABS_MT_TRACKING_ID, 0, 255, 0, 0);	/* 0x39 @..713dc */
+		gts_dev->name = "virtual_gamepad";
+		gts_dev->phys = "input/virtual_gamepad";
+		gts_dev->id.bustype = 0x18;			/* id word 0x01abcdabcd0018 @..71410 */
+		gts_dev->id.vendor = 0xabcd;
+		gts_dev->id.product = 0xabcd;
+		gts_dev->id.version = 0x1ab;
+		__set_bit(INPUT_PROP_DIRECT, gts_dev->propbit);	/* orr #0x2 on propbit @..716d4 / stset @..71420 */
+		if (input_register_device(gts_dev))
+			printk("Register %s input device failed", gts_dev->name);	/* @..71440, no return */
+	}
+
+	jokstick_cal_init();					/* inlined in stock @..71450..71538 */
+
+	/* joypad_open, inlined @..7153c..716a0 */
+	for (i = 0; i < joypad->bt_gpio_count; i++)
+		buttons[i].raw_not_high = buttons[i].not_active_low ^ 1;	/* @..715a0..715a8 */
+	mdelay(300);						/* 300 x __const_udelay(0x418958 = 1 ms) @..715c4 */
+	for (i = 0; i < joypad->amux_count; i++) {
+		struct stock_bt_adc *e = &joypad->adcs[i];
+		int v = joypad_adc_read(amux, e);
+
+		e->value = v;					/* @..7164c */
+		if (!v) {
+			dev_err(dev, "%s : saradc channels[%d]!\n", "joypad_open", i);
+			continue;
+		}
+		e->cal = ((i & ~1) == 4) ? 0 : v;		/* @..71610..71618 */
+		dev_info(dev, "%s : adc[%d] adc->cal = %d\n", "joypad_open", i, e->cal);
+	}
+	joypad_adc_check(input);				/* @..7166c */
+	joypad_gpio_check(input);				/* @..71670 */
+	mutex_lock((struct mutex *)joypad->lock);
+	joypad->enable = 0;				/* strb wzr +0xc @..71684 (stock writes 0 here; see report) */
+	mutex_unlock((struct mutex *)joypad->lock);
+	dev_info(dev, "%s : opened\n", "joypad_open");
+	dev_info(dev, "%s : probe success\n", "joypad_probe");
+	return 0;
+
+reg_err:
+	dev_err(dev, "unable to register polled device, err=%d\n", err);	/* @..71338 */
+	dev_err(dev, "input setup failed!(err = %d)\n", err);			/* @..71340 -> @..70d98 */
+	return err;
+dt_err:
+	dev_err(dev, "dt parse error!(err = %d)\n", err);
+	return err;
+}
+
+/* ---- joypad_gpio_check @ffffffc008c74f14 (0xfa0). Block 1 @..74f34..7502c: sample buttons 0..3 (the d-pad):
+ * for each: if gpiod_get_raw_value_cansleep(gpio) < 0 -> dev_err(joypad->dev, "failed to get gpio state\n")
+ * (@ffffffc009b5806c, error stubs @..751f4/75208/7521c/75230) and skip; else v = gpiod_get_raw_value(gpio),
+ * slot+0x18 = (v != 1), gpio_hat_value_new[i] = 1 - v (str w @..74f74/74fb0/74fec/75028).
+ * Blocks 2.. (@..7502c onward: compare against gpio_hat_value_old, hat_y, 25..35 ms usleep_range debounce,
+ * remapkey_switch / remapkey_up_mode gating, input_event + *2touchpanel calls) NOT YET WRITTEN. */
+
+/* ---- joypad_gpio_check block 2 @..7502c..75430: hat Y from sw1 "GPIO DPAD-UP" (button 0) and sw2 "GPIO DPAD-DOWN"
+ * (button 1), per the stock DTB child order (both linux,input-type 3, linux,code 0x11 = ABS_HAT0Y).
+ * hat_y (@ffffffc00a4d5b8c) is internal state: +1 while UP is held, -1 while DOWN is held. The reported value is
+ * the opposite sign: UP sends ABS_HAT0Y -1 (@..75364), DOWN sends +1 (@..75684). Debounce = usleep_range(32000, 35000).
+ * With remapkey_switch set, the hat drives touch slot 2 (@..58d4) at remapkey_up_x/_y or remapkey_down_x/_y. */
+extern int hat_y, hat_x;			/* T @ffffffc00a4d5b8c, @ffffffc00a4d5b88 (defined below) */
+/* Hat X (@..75430..757f4) was checked instruction by instruction against hat Y. Same control flow; differences:
+ * buttons 2/3 = sw3 "GPIO DPAD-LEFT" / sw4 "GPIO DPAD-RIGHT", state hat_x, ABS_HAT0X (0x10), touch slot 15
+ * (@..59a4), remapkey_left_mode/right_mode (@..57d8/@..57dc), remapkey_left_x/_y (@..5750/5754),
+ * remapkey_right_x/_y (@..5758/575c). LEFT reports -1 (@..75728), RIGHT +1 (@..75ea8). */
+struct stock_hat {
+	int idx, *state, code, slot;
+	int *neg_mode, *neg_x, *neg_y, *pos_mode, *pos_x, *pos_y;
+};
+static void stock_hat_debounce(void) { usleep_range(32000, 35000); }
+static void stock_hat_leave(const struct stock_hat *h)	/* @..7508c.. / @..75480.. */
+{
+	if (!remapkey_switch) {
+		input_event(poll_dev_input, EV_ABS, h->code, 0);
+	} else {
+		stock_hat_debounce();
+		if (*h->neg_mode == 1 && gts_dev)
+			*(u64 *)&touch_data[h->slot * 4] = 1;
+		if (*h->pos_mode == 1 && gts_dev)
+			*(u64 *)&touch_data[h->slot * 4] = 1;
+		g_touch_sync();
+	}
+	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
+}
+static void stock_hat_press(const struct stock_hat *h, int neg)	/* Y: @..752f4/@..75398, X: @..756b8/@..7575c */
+{
+	stock_hat_debounce();
+	if (!remapkey_switch) {
+		input_event(poll_dev_input, EV_ABS, h->code, neg ? -1 : 1);
+	} else {
+		stock_hat_debounce();
+		if (*(neg ? h->neg_mode : h->pos_mode) == 1 && gts_dev) {
+			*(u64 *)&touch_data[h->slot * 4] = 0x100000001ULL;
+			touch_data[h->slot * 4 + 2] = *(neg ? h->neg_y : h->pos_y);
+			touch_data[h->slot * 4 + 3] = *(neg ? h->neg_x : h->pos_x);
+		}
+		g_touch_sync();				/* called even when mode != 1 */
+	}
+	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
+}
+/* *state is +1 while the "neg" button (UP / LEFT) is held and -1 while the "pos" button is held. */
+static void stock_gpio_hat(const struct stock_hat *h)
+{
+	int n0 = gpio_hat_value_new[h->idx], n1 = gpio_hat_value_new[h->idx + 1];
+
+	if (gpio_hat_value_old[h->idx] == n0 && gpio_hat_value_old[h->idx + 1] == n1)
+		return;
+	if (!(n0 | n1)) {
+		if (*h->state) {
+			*h->state = 0;
+			stock_hat_debounce();
+			stock_hat_leave(h);
+		}
+	} else if (n0 == 1 && n1 == 0) {
+		if (*h->state == -1) {
+			*h->state = 1;
+			stock_hat_debounce();
+			stock_hat_leave(h);
+			stock_hat_press(h, 1);
+		} else if (*h->state == 0) {
+			*h->state = 1;
+			stock_hat_press(h, 1);
+		}
+	} else if (n0 == 0 && n1 == 1) {
+		if (*h->state == 1) {
+			*h->state = -1;
+			stock_hat_debounce();
+			stock_hat_leave(h);
+			stock_hat_press(h, 0);
+		} else if (*h->state == 0) {
+			*h->state = -1;
+			stock_hat_press(h, 0);
+		}
+	}
+	gpio_hat_value_old[h->idx] = n0;		/* Y @..7542c, X @..757f0 */
+	gpio_hat_value_old[h->idx + 1] = n1;
+}
+
+/* ---- tenpad2touchpanel_abs @ffffffc008c6f69c (0x168). Leaf, returns 0. (sel = linux,abs-value selector,
+ * axis = ABS_HAT0X 0x10 / ABS_HAT0Y 0x11, pressed). Writes touch slot 2 (@..58d4) for BOTH axes, unlike the hat-X
+ * block in joypad_gpio_check which uses slot 15. Guard "mode == 1 && gts_dev" is the ccmp/cset pair (@..6f6d0).
+ *   0x11 sel 2 -> UP (remapkey_up_*),  0x11 sel 1 -> DOWN (remapkey_down_*)   (@..6f6b4 / @..6f754)
+ *   0x10 sel 2 -> LEFT (remapkey_left_*), 0x10 sel 1 -> RIGHT (remapkey_right_*) (@..6f708 / @..6f798)
+ * pressed: slot = {1,1,y,x} (@..6f7dc); released: slot = {1,0} (@..6f7f8). Other sel/axis: nothing. */
+int tenpad2touchpanel_abs(int sel, int axis, int pressed)
+{
+	int *mode, *kx, *ky;
+
+	if (axis == 0x11 && sel == 2) {
+		mode = &remapkey_up_mode; kx = &remapkey_up_x; ky = &remapkey_up_y;
+	} else if (axis == 0x11 && sel == 1) {
+		mode = &remapkey_down_mode; kx = &remapkey_down_x; ky = &remapkey_down_y;
+	} else if (axis == 0x10 && sel == 2) {
+		mode = &remapkey_left_mode; kx = &remapkey_left_x; ky = &remapkey_left_y;
+	} else if (axis == 0x10 && sel == 1) {
+		mode = &remapkey_right_mode; kx = &remapkey_right_x; ky = &remapkey_right_y;
+	} else {
+		return 0;
+	}
+	if (!(*mode == 1 && gts_dev))
+		return 0;
+	if (pressed) {
+		*(u64 *)&touch_data[8] = 0x100000001ULL;
+		touch_data[10] = *ky;
+		touch_data[11] = *kx;
+	} else {
+		*(u64 *)&touch_data[8] = 1;
+	}
+	return 0;
+}
+
+/* ---- joypad_gpio_check block 4 @..757f4..75e4c: buttons 4.. (only if bt_gpio_count >= 5).
+ * Slot fields used: gpio +0x08, input_type +0x0c, code +0x10, selector +0x14 (linux,abs-value), last raw +0x18,
+ * not_active_low +0x19. "pressed" below = (v == not_active_low) (cset eq @..75b7c etc.). */
+extern int remapkey_xbox_switch, remapkey_xbox_switch_bt_tr;	/* @..5714, @..5718 (DEVICE_ATTR vars, defined above) */
+/* ---- keypad2touchpanel_abs(code, pressed) @ffffffc008c6f804 (0xe48). Returns 0 on every path.
+ * switch(code - 0x130) through the halfword table @ffffffc0097195a0 (15 entries, read from the ELF). Each mapped key has
+ * a remapkey_<k>_mode and a touch slot; the slot number is also the value stored in abxy_mask / abxy_z_mask, which the
+ * *_ext functions switch on. SELECT/START handle mode 1 only. Verified in full for A (@..6f82c, 6fbbc, 6fda4, 6ffe0, 7002c, 70440, 70494, 704a0,
+ * 6ff40, 7063c) and the two thumb keys; the other keys were checked for mode var, slot and x/y loads only.
+ *   press:   mode 1 -> slot {1,1,y,x} (gts_dev); mode 2 -> if abxy_mask is 0 or == slot: slot {1,1,y,x} (gts_dev),
+ *            abxy_mask = slot; mode 3 -> same with abxy_z_mask.
+ *   release: mode 1 -> slot {1,0} (gts_dev); mode 2 -> if abxy_mask == slot: slot {1,0} (gts_dev), abxy_mask = 0
+ *            (cleared even without gts_dev, @..6ff48); mode 3 -> same with abxy_z_mask (@..70640).
+ *   THUMBL (0x13d): mode 1 as above on slot 12; mode 2 press: if abxy_mask: abxy_mask_l3 = abxy_mask, abxy_mask = 12
+ *            (@..6fd4c); mode 2 release: if abxy_mask == 12: slot[abxy_mask_l3] {1,0} (gts_dev), abxy_mask = 0 (@..6ff50).
+ *   THUMBR (0x13e): same with mode 3, abxy_z_mask, abxy_z_mask_r3, 13 (@..6fd78, @..6ff9c). */
+/* accept: the mask value (besides 0) that still lets a mode 2/3 press through. It equals slot for every key except B:
+ * stock B tests `tst mask, #0xfffffffb` (@..70080 for abxy_z_mask, @..700c8 for abxy_mask), i.e. mask in {0, 4},
+ * which is Y's slot, then stores 6. Y uses the same test correctly (@..701a8/@..701f0). Kept as in stock.
+ * The RG556 .ko keypad2touchpanel_abs has the same 4 `tst ..., #0xfffffffb` sites, so the quirk predates the RG DS. */
+struct stock_key { int code, slot, *mode, *x, *y; int accept; };
+static const struct stock_key stock_keys[] = {
+	{ 0x130, 5,  &remapkey_a_mode,      &remapkey_a_x,      &remapkey_a_y, 5 },
+	{ 0x131, 6,  &remapkey_b_mode,      &remapkey_b_x,      &remapkey_b_y, 4 },
+	{ 0x133, 3,  &remapkey_x_mode,      &remapkey_x_x,      &remapkey_x_y, 3 },
+	{ 0x134, 4,  &remapkey_y_mode,      &remapkey_y_x,      &remapkey_y_y, 4 },
+	{ 0x136, 14, &remapkey_l1_mode,     &remapkey_l1_x,     &remapkey_l1_y, 14 },
+	{ 0x137, 10, &remapkey_r1_mode,     &remapkey_r1_x,     &remapkey_r1_y, 10 },
+	{ 0x138, 9,  &remapkey_l2_mode,     &remapkey_l2_x,     &remapkey_l2_y, 9 },
+	{ 0x139, 11, &remapkey_r2_mode,     &remapkey_r2_x,     &remapkey_r2_y, 11 },
+	{ 0x13a, 7,  &remapkey_select_mode, &remapkey_select_x, &remapkey_select_y, 7 },
+	{ 0x13b, 8,  &remapkey_start_mode,  &remapkey_start_x,  &remapkey_start_y, 8 },
+	{ 0x13d, 12, &remapkey_left_joy_mid_mode,  &remapkey_left_joy_mid_x,  &remapkey_left_joy_mid_y, 12 },
+	{ 0x13e, 13, &remapkey_right_joy_mid_mode, &remapkey_right_joy_mid_x, &remapkey_right_joy_mid_y, 13 },
+};
+static void stock_slot_down(int slot, int x, int y)
+{
+	*(u64 *)&touch_data[slot * 4] = 0x100000001ULL;
+	touch_data[slot * 4 + 2] = y;
+	touch_data[slot * 4 + 3] = x;
+}
+static void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
+int keypad2touchpanel_abs(int code, int pressed)
+{
+	const struct stock_key *k = NULL;
+	int i, mode;
+
+	for (i = 0; i < ARRAY_SIZE(stock_keys); i++)
+		if (stock_keys[i].code == code)
+			k = &stock_keys[i];
+	if (!k)
+		return 0;
+	mode = *k->mode;
+
+	if (mode == 1) {
+		if (gts_dev) {
+			if (pressed)
+				stock_slot_down(k->slot, *k->x, *k->y);
+			else
+				stock_slot_up(k->slot);
+		}
+		return 0;
+	}
+	if (code == 0x13d || code == 0x13e) {			/* thumb keys */
+		int want = (code == 0x13d) ? 2 : 3;
+		int *mask = (code == 0x13d) ? &abxy_mask : &abxy_z_mask;
+		int *saved = (code == 0x13d) ? &abxy_mask_l3 : &abxy_z_mask_r3;
+
+		if (mode != want)
+			return 0;
+		if (pressed) {
+			if (*mask) {
+				*saved = *mask;
+				*mask = k->slot;
+			}
+		} else if (*mask == k->slot) {
+			if (gts_dev)
+				stock_slot_up(*saved);
+			*mask = 0;
+		}
+		return 0;
+	}
+	if (code == 0x13a || code == 0x13b)	/* SELECT/START: mode 1 only (@..6faa8, @..6faec; same in the RG556 .ko) */
+		return 0;
+	if (mode == 2 || mode == 3) {
+		int *mask = (mode == 2) ? &abxy_mask : &abxy_z_mask;
+
+		if (pressed) {
+			if (*mask == k->accept || *mask == 0) {
+				if (gts_dev)
+					stock_slot_down(k->slot, *k->x, *k->y);
+				*mask = k->slot;
+			}
+		} else if (*mask == k->slot) {
+			if (gts_dev)
+				stock_slot_up(k->slot);
+			*mask = 0;
+		}
+	}
+	return 0;
+}
+static void stock_report_trigger(struct stock_button *b, int code, int abs, int pressed)
+{
+	/* @..75a08 (TL2 0x138 / ABS_Z 2) and @..75a4c (TR2 0x139 / ABS_RZ 5) */
+	if (remapkey_xbox_switch_bt_tr == 1) {
+		input_event(poll_dev_input, EV_ABS, abs, pressed << 14);	/* @..75b1c */
+	} else if (remapkey_xbox_switch_bt_tr == 2) {
+		input_event(poll_dev_input, b->input_type, code, pressed);
+		input_event(poll_dev_input, EV_ABS, abs, pressed << 14);
+	} else {
+		input_event(poll_dev_input, b->input_type, code, pressed);	/* @..75b2c / @..75b64 */
+	}
+}
+static void stock_gpio_buttons(void)
+{
+	struct stock_joypad *joypad = poll_dev_private;
+	struct device *dev = *(struct device **)joypad;
+	int i, v;
+
+	for (i = 4; i < joypad->bt_gpio_count; i++) {
+		struct stock_button *b = *(struct stock_button **)((char *)joypad + 0x30) + i;
+		int pressed, code;
+
+		if (gpiod_get_raw_value_cansleep(gpio_to_desc(b->gpio)) < 0) {
+			dev_err(dev, "failed to get gpio state\n");	/* @..759f0 */
+			continue;
+		}
+		v = gpiod_get_raw_value(gpio_to_desc(b->gpio));
+		if (v == b->raw_not_high)			/* unchanged @..75870 */
+			continue;
+		pressed = (v == b->not_active_low);
+
+		if (b->abs_value == 0) {			/* selector 0 @..75888 */
+			if (remapkey_switch) {
+				keypad2touchpanel_abs(b->code, pressed);	/* @..75824 */
+			} else {
+				code = b->code;
+				if (remapkey_xbox_switch) {	/* byte table @ffffffc0097195d8, read from the ELF */
+					switch (code) {
+					case 0x130: code = 0x131; break;	/* @..75958 */
+					case 0x131: code = 0x130; break;	/* @..75a9c */
+					case 0x133: code = 0x134; break;	/* @..75aac */
+					case 0x134: code = 0x133; break;	/* @..75abc */
+					default: break;			/* 0x132, 0x135..0x137 -> @..75a90 */
+					}
+				}
+				if (code == 0x138)
+					stock_report_trigger(b, 0x138, ABS_Z, pressed);
+				else if (code == 0x139)
+					stock_report_trigger(b, 0x139, ABS_RZ, pressed);
+				else
+					input_event(poll_dev_input, b->input_type, code, pressed);	/* @..75b80 */
+			}
+		} else if (!remapkey_switch) {
+			/* selector 1/2 without remap: @..7588c -> @..75828 (no event) */
+		} else {
+			/* selector 1/2 with remapkey_switch (@..758a0..75e48): a button acting as one half of a hat axis.
+			 * val = +pressed for sel 1 (cset @..758c0) or -pressed for sel 2 (csetm @..75988).
+			 * If the opposite half is still recorded as held (old == -1 for sel 1, +1 for sel 2) and this
+			 * one is pressed: mark the neighbour button's last-raw byte (+1 slot for sel 1 @..758e8,
+			 * -1 slot for sel 2 @..759ac) as 1, and release touch slot 2 if this direction's mode == 1.
+			 * Then tenpad2touchpanel_abs(sel, code, val) and old = val. Only codes 0x10 / 0x11 act. */
+			int sel = b->abs_value, val = (sel == 1) ? pressed : -pressed;
+			int *cur, *old, *mode;
+
+			if (sel != 1 && sel != 2)		/* @..75890..7589c: other selectors do nothing */
+				goto next;
+			if (b->code == 0x10) {
+				cur = &abs_value_x_value; old = &abs_value_x_value_old;
+				mode = (sel == 1) ? &remapkey_right_mode : &remapkey_left_mode;
+			} else if (b->code == 0x11) {
+				cur = &abs_value_y_value; old = &abs_value_y_value_old;
+				mode = (sel == 1) ? &remapkey_down_mode : &remapkey_up_mode;
+			} else {
+				goto next;
+			}
+			*cur = val;
+			if (*old == ((sel == 1) ? -1 : 1) && pressed) {
+				(b + ((sel == 1) ? 1 : -1))->raw_not_high = 1;
+				if (*mode == 1 && gts_dev)
+					*(u64 *)&touch_data[8] = 1;
+			}
+			tenpad2touchpanel_abs(sel, b->code, val);	/* @..75be0/75cd4/75dd0/75e30 */
+			*old = val;
+		}
+next:
+		b->raw_not_high = (v != 0);			/* strb @..75830 */
+	}
+}
+static void joypad_gpio_check(struct input_dev *input)
+{
+	struct stock_joypad *joypad = poll_dev_private;
+	struct stock_button *b = *(struct stock_button **)((char *)joypad + 0x30);
+	struct device *dev = *(struct device **)joypad;
+	int i, v;
+
+	for (i = 0; i < 4; i++) {
+		if (gpiod_get_raw_value_cansleep(gpio_to_desc(b[i].gpio)) < 0) {
+			dev_err(dev, "failed to get gpio state\n");
+			continue;
+		}
+		v = gpiod_get_raw_value(gpio_to_desc(b[i].gpio));
+		b[i].raw_not_high = (v != 1);
+		gpio_hat_value_new[i] = 1 - v;
+	}
+	{
+		static const struct stock_hat hy = { 0, &hat_y, ABS_HAT0Y, 2, &remapkey_up_mode, &remapkey_up_x,
+			&remapkey_up_y, &remapkey_down_mode, &remapkey_down_x, &remapkey_down_y };
+		static const struct stock_hat hx = { 2, &hat_x, ABS_HAT0X, 15, &remapkey_left_mode, &remapkey_left_x,
+			&remapkey_left_y, &remapkey_right_mode, &remapkey_right_x, &remapkey_right_y };
+		stock_gpio_hat(&hy);			/* block 2 @..7502c */
+		stock_gpio_hat(&hx);			/* block 3 @..75430 */
+	}
+	stock_gpio_buttons();				/* block 4 @..757f4 */
+	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);	/* tail @..75e5c */
+	g_touch_sync();						/* @..75e60 */
+	if (remapkey_switch && abs_z_mode2)			/* @..75e64..75e74 */
+		joypad2touchpanel_abs_z_mode2();			/* @..75e78 */
+}
+
+/* joypad_gpio_check block 2 (@..7502c..75244), DECODED BUT NOT YET C (several targets @..75244..75430 still open).
+ * Hat Y from d-pad buttons 0 (up?) and 1 (down?), using gpio_hat_value_new/old[0..1] and hat_y (@ffffffc00a4d5b8c):
+ *   if (old[0]==new[0] && old[1]==new[1]) -> @..75430 (no change path, open)
+ *   else if (new[0]|new[1]) == 0  (release):
+ *       if (hat_y == 0) -> @..75418 (open); else { hat_y = 0; usleep_range(32000, 35000);
+ *         if (!remapkey_switch) input_event(poll_dev_input, EV_ABS(3), ABS_HAT0Y(0x11), 0) -> @..75404
+ *         else { usleep_range(32000, 35000);
+ *                if (remapkey_up_mode == 1 && gts_dev) touch slot 2 (@..58d4) = {1,0};
+ *                if (remapkey_down_mode == 1 && gts_dev) touch slot 2 = {1,0}; -> @..75400 } }
+ *   else if (new[0]==1 && new[1]==0): if hat_y == -1 -> @..7516c (hat_y = 1, debounce, remap release then
+ *       g_touch_sync, -> @..752e0); else if hat_y == 0 { hat_y = 1; -> @..752f4 } else -> @..75418
+ *   else if (new[0]==0 && new[1]==1): if hat_y == 1 -> @..75244 (hat_y = -1, debounce ...); else if hat_y == 0
+ *       { hat_y = -1; -> @..75398 } else -> @..75418
+ * Annotated listing of the whole remaining function: .gpioc.annot.txt (global names resolved). */
+
+/* joypad_gpio_check block 4 (@..757f4..75e4c), PARTIAL DECODE, NOT YET C.
+ * Loop i = 4 .. bt_gpio_count-1 (only if bt_gpio_count >= 5, @..757f8). x26 = buttons + 0x20*i - 8, so in slot terms:
+ *   gpio = slot+0x08; last raw value byte = slot+0x18 (compared with the new raw value, @..75870; same byte
+ *   block 1 fills with (v != 1) for buttons 0..3); code = slot+0x10; not_active_low = slot+0x19; slot+0x14 used as a
+ *   0/1/2 selector (@..75884..7589c; this is the "linux,abs-value" field).
+ *   cansleep read < 0 -> "failed to get gpio state\n" (@..759f0), next button.
+ *   unchanged -> next button. Changed (v):
+ *     selector 0: if !remapkey_switch -> @..75920 (remapkey_xbox_switch, key-code remap via byte jump table
+ *        @ffffffc0097195d8 for codes 0x130..0x139, input_event on poll_dev_input), else
+ *        keypad2touchpanel_abs(code, v == not_active_low) (@..75824); then slot+0x18 = (v != 0).
+ *     selector 1 / 2 with remapkey_switch: code 0x10 (ABS_HAT0X) / 0x11 (ABS_HAT0Y) handled through
+ *        abs_value_x_value(_old) / abs_value_y_value(_old) with +1 / -1, and remapkey_*_mode touch paths
+ *        (@..758a0..75cf0). Not decoded further yet.
+ * NOTE: the annotator's "=0xffffffc00a4d50xx" names in this range are struct-field offsets, not globals. */
+
+/* ---- joypad_adc_check @ffffffc008c75eb4 (0xaa8). Blocks A+B (@..75ed8..762ac) written; rest TODO. */
+static void joypad_adc_check(struct input_dev *input)
+{
+	struct stock_joypad *joypad = poll_dev_private;
+	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
+	struct stock_bt_adc *a;
+	int i, k;
+
+	for (i = 0; i < joypad->amux_count; i++)		/* @..75ef4 */
+		joypad->adcs[i].value = joypad_adc_read(amux, &joypad->adcs[i]);
+	a = joypad->adcs;
+	lx_g = a[0].value; ly_g = a[1].value; rx_g = a[2].value; ry_g = a[3].value;	/* strh @..75f40.. */
+	lt_g = 0; rt_g = 0;
+	if (count_joypad_data > 3) {				/* @..75f6c: wrap without storing */
+		count_joypad_data = 0;
+	} else {
+		a[0].hist[count_joypad_data] = (short)a[0].value;	/* sxth @..75f80 */
+		a[1].hist[count_joypad_data] = (short)a[1].value;
+		a[2].hist[count_joypad_data] = (short)a[2].value;
+		a[3].hist[count_joypad_data] = (short)a[3].value;
+		a[4].hist[count_joypad_data] = 0;
+		a[5].hist[count_joypad_data] = 0;
+		count_joypad_data++;
+	}
+	/* Fixed 6 channels and 4 taps regardless of amux_count (unrolled @..75ff8..761d4). */
+	for (k = 0; k < 4; k++)
+		for (i = 0; i < 6; i++)
+			a[i].sum += a[i].hist[k];
+	for (i = 0; i < 6; i++) {				/* @..761dc..7627c: signed /4 */
+		a[i].value = a[i].sum / 4;
+		a[i].sum = 0;
+	}
+	/* Block C @..762b0..7644c: centre each stick channel. Table @ffffffc0097195e2 = {0,0xa,0x14,0x1e} words
+	 * -> i0 @..76378, i1 @..763a0, i2 @..763c8, i3 @..763f0. Centre = (lr + rl) / 2 (signed, cinc/asr) when the
+	 * side's jokstick_cal_switch is set, else the channel's own cal (+0x4c). value = value - centre and
+	 * adc_abs_<axis> = |value| (cneg mi @..76330). Channels > 3 only copy value to shown_p. */
+	for (i = 0; i < joypad->amux_count; i++) {
+		struct stock_bt_adc *e = &a[i];
+		int v = e->value, c, *absv;
+
+		e->shown_p = v;					/* str @..7635c */
+		if (i > 3)
+			continue;
+		switch (i) {
+		case 0: c = jokstick_cal_switch_l ? (jokstick_cal_lxlr + jokstick_cal_lxrl) / 2 : e->cal; absv = &adc_abs_lx; break;
+		case 1: c = jokstick_cal_switch_l ? (jokstick_cal_lyud + jokstick_cal_lydu) / 2 : e->cal; absv = &adc_abs_ly; break;
+		case 2: c = jokstick_cal_switch_r ? (jokstick_cal_rxlr + jokstick_cal_rxrl) / 2 : e->cal; absv = &adc_abs_rx; break;
+		default: c = jokstick_cal_switch_r ? (jokstick_cal_ryud + jokstick_cal_rydu) / 2 : e->cal; absv = &adc_abs_ry; break;
+		}
+		v -= c;
+		e->value = v;					/* str @..7632c */
+		*absv = v < 0 ? -v : v;
+	}
+	/* Block D @..76450..7695c. /1000 = smull 0x10624dd3, asr #38 (2^38 / 0x10624dd3 = 1000.0);
+	 * *98/100 = mul 0x62, smull 0x51eb851f, asr #37. */
+	for (i = 0; i < joypad->amux_count; i++) {
+		struct stock_bt_adc *e = &a[i];
+		int v = e->value, hi, lo, sw, out, sp, sn, axv, ayv;
+
+		if (i <= 3) {		/* table @ffffffc0097195e6 -> @..764ec/76544/76594/765e4 */
+			int left = i < 2;
+			axv = left ? adc_abs_lx : adc_abs_rx;
+			ayv = left ? adc_abs_ly : adc_abs_ry;
+			sw = left ? jokstick_cal_switch_l : jokstick_cal_switch_r;
+			out = (axv > jokstick_cal_deadzone || ayv > jokstick_cal_deadzone);	/* @..76500..76510 */
+			switch (i) {
+			case 0: sp = jokstick_cal_lxr_scale; sn = jokstick_cal_lxl_scale; break;
+			case 1: sp = jokstick_cal_lyd_scale; sn = jokstick_cal_lyu_scale; break;
+			case 2: sp = jokstick_cal_rxr_scale; sn = jokstick_cal_rxl_scale; break;
+			default: sp = jokstick_cal_ryd_scale; sn = jokstick_cal_ryu_scale; break;
+			}
+			if (!sw) {				/* @..76634 */
+				if (!out)
+					v = 0;
+				v = v * jokstick_cal_scale / 1000;	/* @..7665c */
+				e->value = v;
+				e->shown = e->invert ? -v : v;		/* stp @..76670 */
+			} else {
+				if (!out) {			/* @..76678 */
+					v = 0;
+					e->value = 0;
+					e->shown = 0;
+				} else {
+					e->shown = v;		/* @..76528 */
+				}
+				v = v * ((out && v > 0) ? sp : sn) / 1000;	/* @..766d4..766f4 */
+				e->value = v;
+				v = v * jokstick_cal_scale / 1000;		/* @..76700..76714 */
+				e->value = v;
+			}
+		}
+		/* D2 clamp @..7671c..767b4 */
+		hi = e->max * 98 / 100;
+		if (v > hi) {
+			v = e->max;
+			e->value = v;
+		}
+		lo = e->min * 98 / 100;
+		{
+			int w12 = (v < lo) ? e->min : v;		/* csel lt @..76764 */
+			int w13 = (w12 < e->max) ? w12 : e->max;	/* csel lt @..7676c */
+			int w8 = (w13 > e->min) ? w13 : e->min;		/* csel gt @..76774 */
+
+			if (v < lo || w12 > e->max || w13 < e->min)	/* @..76778..76788 */
+				e->value = w8;
+			v = w8;
+		}
+		if (e->shown > e->max || e->shown < e->min)	/* @..76794..767b4 */
+			e->shown = e->shown > e->max ? e->max : e->min;
+
+		/* D3 @..767b8 */
+		if (v != e->last) {
+			if (!remapkey_switch) {
+				if (e->code != 2 && e->code != 5)	/* @..767f4..76800 */
+					input_event(poll_dev_input, EV_ABS, e->code, e->invert ? -v : v);	/* @..76498 */
+			} else {
+				int last = e->last, r;
+				int av = v < 0 ? -v : v;
+
+				if (av < 0x168)					/* 360 @..767dc */
+					r = 0;
+				else if (last - 0x140 < v && v < last + 0x140)	/* 320 @..76808 */
+					r = last;
+				else if (last - 0x280 < v && v < last + 0x280)	/* 640 @..76824 */
+					r = (3 * last + v) / 4;
+				else if (last - 0x500 < v && v < last + 0x500)	/* 1280 @..76858 */
+					r = (last + v) / 2;
+				else
+					r = v;
+				e->last = r;					/* @..76894 */
+				e->value = r;					/* @..7689c */
+				if ((unsigned int)e->code <= 1)
+					joypad2touchpanel_abs(e->code, e->invert ? -r : r);	/* @..768b4 */
+				if (e->code == 3)
+					joypad2touchpanel_abs_z(2, e->invert ? -e->value : e->value);	/* @..768e4 */
+				if (e->code == 4)
+					joypad2touchpanel_abs_z(5, e->invert ? -e->value : e->value);	/* @..7691c */
+			}
+		}
+		e->last = e->value;				/* @..764a4..764b0 */
+	}
+	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);	/* @..76938 */
+}
+
+_Static_assert(sizeof(struct mutex) <= 0x20, "stock struct joypad has 0x20 bytes for the mutex (+0x50..+0x70)");
+_Static_assert(__builtin_offsetof(struct stock_joypad, amux_debug) == 0x70, "jp+0x70");
+
+/* ---- Attributes shared with the Gamma port (stock @ffffffc008c716e4..71c58, dev_attr_* @ffffffc00a2a4080..4140,
+ * all 0644; adc_fuzz/adc_flat have no store). */
+static ssize_t joypad_show_poll_interval(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+
+	return sprintf(buf, "%d\n", joypad->poll_interval);		/* @..71704 */
+}
+static ssize_t joypad_store_poll_interval(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+
+	mutex_lock((struct mutex *)joypad->lock);
+	joypad->poll_interval = simple_strtoul(buf, NULL, 10);		/* @..71758; polling rate itself not updated */
+	mutex_unlock((struct mutex *)joypad->lock);
+	return count;
+}
+static ssize_t joypad_show_adc_fuzz(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->bt_adc_fuzz);	/* +0x3c */
+}
+static ssize_t joypad_show_adc_flat(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->bt_adc_flat);	/* +0x40 */
+}
+static ssize_t joypad_show_adc_cal(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+	ssize_t len = 0;
+	int i;
+
+	for (i = 0; i < joypad->amux_count; i++)			/* @..718cc */
+		len += sprintf(buf + len, "adc[%d]->cal = %d\n", i, joypad->adcs[i].cal);
+	len += sprintf(buf + len, "adc scale = %d\n", joypad->bt_adc_scale);	/* @..71914 */
+	return len;
+}
+static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
+	int i, v;
+
+	if (!simple_strtoul(buf, NULL, 10))				/* @..71968 */
+		return count;
+	mutex_lock((struct mutex *)joypad->lock);
+	for (i = 0; i < joypad->amux_count; i++) {
+		v = joypad_adc_read(amux, &joypad->adcs[i]);
+		joypad->adcs[i].value = v;				/* @..719b0 */
+		if (v)
+			joypad->adcs[i].cal = v;			/* @..719b8 (no channel 4/5 exception, unlike probe) */
+		else
+			dev_err(*(struct device **)joypad, "%s : saradc channels[%d]!\n", "joypad_store_adc_cal", i);
+	}
+	mutex_unlock((struct mutex *)joypad->lock);
+	return count;
+}
+static ssize_t joypad_show_amux_debug(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+	ssize_t len;
+
+	mutex_lock((struct mutex *)joypad->lock);
+	if (joypad->enable)
+		joypad->enable = 0;					/* @..71bcc: reading this attr stops polling */
+	len = sprintf(buf, "amux ch[%d], adc scale = %d, adc value = %d\n",
+		      joypad->amux_debug, joypad->bt_adc_scale, 0);	/* @..71be8, value is a literal 0 */
+	mutex_unlock((struct mutex *)joypad->lock);
+	return len;
+}
+static ssize_t joypad_store_amux_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct stock_joypad *joypad = dev_get_drvdata(dev);
+	int v = simple_strtoul(buf, NULL, 10);
+
+	joypad->amux_debug = (joypad->amux_count < v) ? 0 : v;		/* cmp/csel @..71c3c..71c48, no lock */
+	return count;
+}
+static DEVICE_ATTR(poll_interval, 0644, joypad_show_poll_interval, joypad_store_poll_interval);
+static DEVICE_ATTR(adc_fuzz, 0644, joypad_show_adc_fuzz, NULL);
+static DEVICE_ATTR(adc_flat, 0644, joypad_show_adc_flat, NULL);
+static DEVICE_ATTR(adc_cal, 0644, joypad_show_adc_cal, joypad_store_adc_cal);
+static DEVICE_ATTR(amux_debug, 0644, joypad_show_amux_debug, joypad_store_amux_debug);
+
+/* RG556 .ko cross-check of joypad_gpio_check (.ko 0x49e4, size 0x820 vs 0xfa0 on RG DS), by relocation names:
+ * shared with RG DS: the selector 1/2 hat-half path (abs_value_x/y_value(_old), 4 x tenpad2touchpanel_abs,
+ * remapkey_up/down/left/right_mode, touch_data+0x20), keypad2touchpanel_abs dispatch, remapkey_xbox_switch, and the
+ * tail (g_touch_sync, abs_z_mode2 -> joypad2touchpanel_abs_z_mode2). Present only on RG DS: the hat_x/hat_y state
+ * machines with gpio_hat_value_new/old and the 32-35 ms usleep_range debounce, and remapkey_xbox_switch_bt_tr
+ * (TL2/TR2 as ABS_Z/ABS_RZ). The RG556 revision has no d-pad hat block; RG DS bytes are the authority. */
