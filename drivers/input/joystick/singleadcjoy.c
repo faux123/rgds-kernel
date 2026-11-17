@@ -280,12 +280,12 @@ static ssize_t joypad_store_enable(struct device *dev, struct device_attribute *
 }
 static DEVICE_ATTR(enable, 0644, joypad_show_enable, joypad_store_enable);
 
-/* Order = stock joypad_attrs @ffffffc00a2a3cb0 (121 entries, read from the ELF). hall_status is NOT in stock's
+/* Names and order = stock joypad_attrs @ffffffc00a2a3cb0 / joypad_attr_group @ffffffc00a2a3c88; (121 entries, read from the ELF). hall_status is NOT in stock's
  * joypad group (it lives with gpio_keys). Entries marked TODO need their handlers written. */
 /* tentative definitions; the DEVICE_ATTRs are at the end of the file, after the structs they use */
 static struct device_attribute dev_attr_poll_interval, dev_attr_adc_fuzz, dev_attr_adc_flat, dev_attr_adc_cal,
 	dev_attr_amux_debug;
-static struct attribute *joypad_stock_attrs[] = {
+static struct attribute *joypad_attrs[] = {
 	&dev_attr_poll_interval.attr,
 	&dev_attr_adc_fuzz.attr,
 	&dev_attr_adc_flat.attr,
@@ -409,7 +409,7 @@ static struct attribute *joypad_stock_attrs[] = {
 	&dev_attr_factory_led.attr,
 	NULL,
 };
-static const struct attribute_group joypad_stock_attr_group = { .attrs = joypad_stock_attrs };
+static const struct attribute_group joypad_attr_group = { .attrs = joypad_attrs };
 
 /* ---- State variables (global, nm type T). Initialized ones live in .data @ffffffc00a2a3b8c.. (values read from ELF);
  * the rest are .bss @ffffffc00a4d5aa4... 4-byte spacing between neighbors => int. Width of each still to be confirmed
@@ -584,7 +584,8 @@ static struct platform_driver joypad_driver = {
  * Division by 2000: smull by 0x10624dd3, asr #39, + sign bit @..6f330..6f36c.
  */
 struct input_dev *joypad_input_g;	/* T @ffffffc00a4d5af0, 8 bytes (ldr x) */
-struct input_dev *gts_dev;		/* T @ffffffc00a4d58a8, 8 bytes; passed to input_event in g_touch_sync */
+struct input_dev *gts_dev;
+EXPORT_SYMBOL(gts_dev);			/* stock has __ksymtab_gts_dev */		/* T @ffffffc00a4d58a8, 8 bytes; passed to input_event in g_touch_sync */
 int touch_id;				/* T @ffffffc00a4d58b0 (4 bytes before touch_data); no access with #0x8b0 in the joypad text range, kept for symbol parity */
 int touch_data[0x1e0 / 4];		/* T @ffffffc00a4d58b4..@..5a94 = 0x1e0 bytes = 30 slots of 16 */
 int joypad2touchpanel_abs_z_mode2(void)
@@ -836,7 +837,7 @@ void g_touch_sync(void)
  * Scale: /163 then * remapkey_left_joy_lenght_x then /100, as in joypad2touchpanel_abs. joypadx_temp/joypady_temp read
  * with ldrsw (32-bit signed). joypad_count_temp (.data @ffffffc00a2a3b90) is decremented; reload value 2 (@..6eb34). */
 int abxy_mask_l3;			/* T @ffffffc00a4d5aac, ldrsw */
-static void stock_ext_touch(int slot, int key_x, int key_y)
+static __always_inline void stock_ext_touch(int slot, int key_x, int key_y)
 {
 	struct stock_touch_slot *s = (struct stock_touch_slot *)touch_data + slot;
 	int len = remapkey_left_joy_lenght_x;
@@ -888,7 +889,7 @@ int joypad2touchpanel_abs_ext(int mask, int axis, int value)
  * (e.g. case 3 @..6ee04 loads remapkey_x_x @..5720 / remapkey_x_y @..5724, slot @..58e4); same /163,/100 magic
  * and y-into-+0x8, x-into-+0xc layout (tail @..6f250..6f27c). */
 int abxy_z_mask_r3;			/* T @ffffffc00a4d5ac4, ldrsw */
-static void stock_zext_touch(int slot, int key_x, int key_y)
+static __always_inline void stock_zext_touch(int slot, int key_x, int key_y)
 {
 	struct stock_touch_slot *s = (struct stock_touch_slot *)touch_data + slot;
 	int len = remapkey_right_joy_lenght_x;
@@ -1217,7 +1218,7 @@ static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joyp
 
 /* ---- joypad_probe @ffffffc008c70780 (body decoded to @..71340; virtual_gamepad part @..7134c..71718 NOT yet). ---- */
 struct input_dev *poll_dev_input;	/* T @ffffffc00a4d58a0, 8 bytes */
-/* sysfs group: stock @ffffffc00a2a3c88; using joypad_stock_attr_group (generated from the 116 dev_attr_* structs). Not yet checked that its attrs[] order matches joypad_attrs @ffffffc00a2a3cb0. */
+/* sysfs group: stock @ffffffc00a2a3c88; using joypad_attr_group (generated from the 116 dev_attr_* structs). Not yet checked that its attrs[] order matches joypad_attrs @ffffffc00a2a3cb0. */
 /* gpio_hat_value_new/old: defined with joypad_gpio_check below */
 int gpio_hat_value_new[16];
 int gpio_hat_value_old[16];
@@ -1262,7 +1263,7 @@ static int joypad_probe(struct platform_device *pdev)
 
 	mutex_init((struct mutex *)joypad->lock);			/* @..70fd8, class "&joypad->lock" */
 	platform_set_drvdata(pdev, joypad);				/* pdev+0x88 @..70fe8 */
-	err = sysfs_create_group(&dev->kobj, &joypad_stock_attr_group);
+	err = sysfs_create_group(&dev->kobj, &joypad_attr_group);
 	if (err) {
 		dev_err(dev, "create sysfs group fail, error: %d\n", err);
 		return err;					/* @..71310 -> @..70d98 (no "dt parse error") */
@@ -1399,8 +1400,8 @@ struct stock_hat {
 	int idx, *state, code, slot;
 	int *neg_mode, *neg_x, *neg_y, *pos_mode, *pos_x, *pos_y;
 };
-static void stock_hat_debounce(void) { usleep_range(32000, 35000); }
-static void stock_hat_leave(const struct stock_hat *h)	/* @..7508c.. / @..75480.. */
+static __always_inline void stock_hat_debounce(void) { usleep_range(32000, 35000); }
+static __always_inline void stock_hat_leave(const struct stock_hat *h)	/* @..7508c.. / @..75480.. */
 {
 	if (!remapkey_switch) {
 		input_event(poll_dev_input, EV_ABS, h->code, 0);
@@ -1414,7 +1415,7 @@ static void stock_hat_leave(const struct stock_hat *h)	/* @..7508c.. / @..75480.
 	}
 	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
 }
-static void stock_hat_press(const struct stock_hat *h, int neg)	/* Y: @..752f4/@..75398, X: @..756b8/@..7575c */
+static __always_inline void stock_hat_press(const struct stock_hat *h, int neg)	/* Y: @..752f4/@..75398, X: @..756b8/@..7575c */
 {
 	stock_hat_debounce();
 	if (!remapkey_switch) {
@@ -1431,7 +1432,7 @@ static void stock_hat_press(const struct stock_hat *h, int neg)	/* Y: @..752f4/@
 	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
 }
 /* *state is +1 while the "neg" button (UP / LEFT) is held and -1 while the "pos" button is held. */
-static void stock_gpio_hat(const struct stock_hat *h)
+static __always_inline void stock_gpio_hat(const struct stock_hat *h)
 {
 	int n0 = gpio_hat_value_new[h->idx], n1 = gpio_hat_value_new[h->idx + 1];
 
@@ -1536,13 +1537,13 @@ static const struct stock_key stock_keys[] = {
 	{ 0x13d, 12, &remapkey_left_joy_mid_mode,  &remapkey_left_joy_mid_x,  &remapkey_left_joy_mid_y, 12 },
 	{ 0x13e, 13, &remapkey_right_joy_mid_mode, &remapkey_right_joy_mid_x, &remapkey_right_joy_mid_y, 13 },
 };
-static void stock_slot_down(int slot, int x, int y)
+static __always_inline void stock_slot_down(int slot, int x, int y)
 {
 	*(u64 *)&touch_data[slot * 4] = 0x100000001ULL;
 	touch_data[slot * 4 + 2] = y;
 	touch_data[slot * 4 + 3] = x;
 }
-static void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
+static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
 int keypad2touchpanel_abs(int code, int pressed)
 {
 	const struct stock_key *k = NULL;
@@ -1602,7 +1603,7 @@ int keypad2touchpanel_abs(int code, int pressed)
 	}
 	return 0;
 }
-static void stock_report_trigger(struct stock_button *b, int code, int abs, int pressed)
+static __always_inline void stock_report_trigger(struct stock_button *b, int code, int abs, int pressed)
 {
 	/* @..75a08 (TL2 0x138 / ABS_Z 2) and @..75a4c (TR2 0x139 / ABS_RZ 5) */
 	if (remapkey_xbox_switch_bt_tr == 1) {
@@ -1614,7 +1615,7 @@ static void stock_report_trigger(struct stock_button *b, int code, int abs, int 
 		input_event(poll_dev_input, b->input_type, code, pressed);	/* @..75b2c / @..75b64 */
 	}
 }
-static void stock_gpio_buttons(void)
+static __always_inline void stock_gpio_buttons(void)
 {
 	struct stock_joypad *joypad = poll_dev_private;
 	struct device *dev = *(struct device **)joypad;
