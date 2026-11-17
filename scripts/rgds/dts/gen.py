@@ -88,7 +88,22 @@ def emit_new(p, ind):
         if not skip(c): out += emit_new(c, ind + '\t')
     out.append(ind + '};')
     return out
-out = [header, '']
+# Each change lands in the override block of the nearest labeled ancestor
+# (or the root block); unlabeled nodes on the way are nested by name.
+class Blk:
+    def __init__(self): self.labels, self.props, self.kids, self.new = [], [], {}, []
+blocks = {}  # anchor path -> Blk
+def anchor(p):
+    q = p
+    while q != '/' and not bl.get(q):
+        q = q.rsplit('/', 1)[0] or '/'
+    return q
+def blk_for(p):
+    a = anchor(p); b = blocks.setdefault(a, Blk())
+    rel = p[len(a):].strip('/') if a != '/' else p.strip('/')
+    for seg in [s for s in rel.split('/') if s]:
+        b = b.kids.setdefault(seg, Blk())
+    return b
 dels = []
 for p in B:
     if skip(p) or p in St: continue
@@ -99,21 +114,33 @@ for p in St:
     if skip(p): continue
     if p not in B:
         par = p.rsplit('/', 1)[0] or '/'
-        if par in B:
-            out.append('%s {' % label_ref(par)) if par != '/' else out.append('/ {')
-            out += emit_new(p, '\t'); out.append('};'); out.append('')
+        if par in B: blk_for(par).new.append(p)
         continue
     body = []
     for k, v in St[p].items():
         if k in ('phandle', 'linux,phandle'): continue
         if B[p].get(k) != v or val(p, k, v, St) != val(p, k, B[p][k], B):
-            body.append(prop(p, k, v, St, '\t'))
-    for k in B[p]:
-        if k not in St[p] and k not in ('phandle', 'linux,phandle'):
-            body.append('\t/delete-property/ %s;' % k)
+            body.append((k, v))
+    gone = [k for k in B[p] if k not in St[p] and k not in ('phandle', 'linux,phandle')]
     newl = [l for l in sl.get(p, []) if l not in bl.get(p, [])]
-    if body or newl:
-        lab = ''.join(l + ': ' for l in newl)
-        out.append('%s%s {' % (lab, label_ref(p)) if p != '/' else '/ {')
-        out += body; out.append('};'); out.append('')
-print('\n'.join(out + dels))
+    if body or gone or newl:
+        b = blk_for(p); b.labels += newl
+        b.props += [prop(p, k, v, St, '') for k, v in body] + ['/delete-property/ %s;' % k for k in gone]
+        b.path = p
+def render(b, ind):
+    lines = [ind + s.replace('\n', '\n' + ind) for s in b.props]
+    for p in b.new:
+        lines += (lines and lines[-1] != ind + '' and [''] or []) + emit_new(p, ind)
+    for name, kb in b.kids.items():
+        lab = ''.join(l + ': ' for l in kb.labels)
+        if lines: lines.append('')
+        lines += ['%s%s%s {' % (ind, lab, name)] + render(kb, ind + '\t') + [ind + '};']
+    return lines
+out = [header, '']
+if '/' in blocks:
+    out += ['/ {'] + render(blocks.pop('/'), '\t') + ['};', '']
+for a in sorted(blocks, key=lambda a: bl[a][0]):
+    b = blocks[a]
+    lab = ''.join(l + ': ' for l in b.labels)
+    out += ['%s&%s {' % (lab, bl[a][0])] + render(b, '\t') + ['};', '']
+print('\n'.join(out + dels).rstrip('\n'))
