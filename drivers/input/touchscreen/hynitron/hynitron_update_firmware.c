@@ -44,8 +44,11 @@ struct hynitron_fw_array hynitron_fw_grp[] = {
 	{ "capacitive_hynitron_cst0xx_update",   cst0xx_fw,   0x2843,0x01, CST016, (sizeof(cst0xx_fw))},	
 	{ "capacitive_hynitron_cst2xx_update",   cst2xx_fw,   0x0501,0x01, CST226, (sizeof(cst2xx_fw))},
 	{ "capacitive_hynitron_cst2xxse_update", cst2xxse_fw, 0x0501,0x01, CST226SE, (sizeof(cst2xxse_fw))},
-	{ "capacitive_hynitron_cst3xx_update",   cst3xx_fw,   0x2117,0x11, CST328, (sizeof(cst3xx_fw))},
-	{ "capacitive_hynitron_cst6xx_update",   cst6xx_fw,   0x2117,0x11, CST6928S, (sizeof(cst6xx_fw))},
+	/* stock hynitron_fw_grp @ffffffc00a3006c8 (9 entries): cst3xx entries use chip types 3348/3340 and cst6xx 1614,
+	 * values V2.2 has no names for */
+	{ "capacitive_hynitron_cst3xx_update",   cst3xx_fw,   0x2117,0x11, 3348, (sizeof(cst3xx_fw))},
+	{ "capacitive_hynitron_cst3xx_update",   cst3xx_fw,   0x2c2e,0x11, 3340, (sizeof(cst3xx_fw))},
+	{ "capacitive_hynitron_cst6xx_update",   cst6xx_fw,   0x2117,0x11, 1614, (sizeof(cst6xx_fw))},
 	{ "capacitive_hynitron_cst3xxse_update", cst3xxse_fw, 0x0501,0x01, CST328SE, (sizeof(cst3xxse_fw))},
 	{ "capacitive_hynitron_cst8xx_update",   cst8xx_fw,   0x0501,0x01, CST836, (sizeof(cst8xx_fw))},
   	{ "capacitive_hynitron_cst9xx_update",   cst9xx_fw,   0x2208,0x01, CST918, (sizeof(cst9xx_fw))},
@@ -53,41 +56,39 @@ struct hynitron_fw_array hynitron_fw_grp[] = {
 };
 
 
+/* Stock hynitron_chip_type_grp @ffffffc00a3007a0: 30 entries of {chip_type, chip_series, product_line, boot_addr},
+ * read from the ELF (includes 130, 3340/3348/1598, 1614, 644 and a zero last entry that V2.2 does not have). */
 struct hynitron_chip_type_array hynitron_chip_type_grp[] = {
-	{CST016   ,HYN_CHIP_CST0XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},	
-	{CST026   ,HYN_CHIP_CST0XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-    {CST036   ,HYN_CHIP_CST0XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-		
-  	{CST126   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST128   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST128SE ,HYN_CHIP_CST1XXSE,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x5A},
-	{CST140   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST148   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-
-	{CST226   ,HYN_CHIP_CST2XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST226SE ,HYN_CHIP_CST2XXSE,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x5A},
-	{CST237   ,HYN_CHIP_CST2XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST240   ,HYN_CHIP_CST2XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-
-	{CST326   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST328   ,HYN_CHIP_CST1XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST328SE ,HYN_CHIP_CST3XXSE,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x5A},
-	{CST340   ,HYN_CHIP_CST3XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST348   ,HYN_CHIP_CST3XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST356   ,HYN_CHIP_CST3XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST6928S ,HYN_CHIP_CST6XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-
-	{CST716   ,HYN_CHIP_CST7XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},	
-	{CST726   ,HYN_CHIP_CST7XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-    {CST736   ,HYN_CHIP_CST7XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-
-	{CST816   ,HYN_CHIP_CST8XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},	
-	{CST826   ,HYN_CHIP_CST8XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-    {CST836   ,HYN_CHIP_CST8XX  ,  HYN_CHIP_PRODUCT_LINE_SEL_CAP, 0x15},
-
-	{CST912   ,HYN_CHIP_CST9XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	{CST918   ,HYN_CHIP_CST9XX  ,  HYN_CHIP_PRODUCT_LINE_MUT_CAP, 0x1A},
-	
+	{16, 10, 2, 0x15},
+	{26, 10, 2, 0x15},
+	{36, 10, 2, 0x15},
+	{126, 100, 1, 0x1a},
+	{128, 100, 1, 0x1a},
+	{130, 100, 1, 0x1a},
+	{129, 101, 1, 0x5a},
+	{140, 100, 1, 0x1a},
+	{148, 100, 1, 0x1a},
+	{226, 200, 1, 0x1a},
+	{168, 201, 1, 0x5a},
+	{237, 200, 1, 0x1a},
+	{240, 200, 1, 0x1a},
+	{326, 100, 1, 0x1a},
+	{328, 100, 1, 0x1a},
+	{329, 301, 1, 0x5a},
+	{3340, 300, 1, 0x1a},
+	{3348, 300, 1, 0x1a},
+	{1598, 300, 1, 0x1a},
+	{1614, 692, 1, 0x1a},
+	{716, 700, 2, 0x15},
+	{726, 700, 2, 0x15},
+	{736, 700, 2, 0x15},
+	{816, 800, 2, 0x15},
+	{826, 800, 2, 0x15},
+	{836, 800, 2, 0x15},
+	{912, 900, 1, 0x1a},
+	{918, 900, 1, 0x1a},
+	{644, 644, 1, 0x5a},
+	{0, 0, 0, 0x00},
 };
 
 extern struct hynitron_fw_array hynitron_fw_grp[];
@@ -2121,12 +2122,15 @@ static noinline int hyn_find_fw_idx(u8 check_project_id)
 {
 	int i = 0;
 	HYN_FUNC_ENTER();
+	/* stock @ffffffc008cc4cd4 */
+	HYN_INFO("hyn_find_fw_idx check_project_id:%d,chip_ic_type :0x%x,chip_ic_project_id:0x%x,config_chip_type :0x%x.",
+		check_project_id, hyn_ts_data->chip_ic_type, hyn_ts_data->chip_ic_project_id, hyn_ts_data->config_chip_type);
 
 	if (0 != hyn_ts_data->config_chip_type ) {
 		for (i=0; i<ARRAY_SIZE(hynitron_fw_grp); i++) {
 			if(check_project_id==1){
 				if((hyn_ts_data->chip_ic_project_id  ==hynitron_fw_grp[i].project_id)
-				 &&(hyn_ts_data->config_chip_type	==hynitron_fw_grp[i].chip_type))
+				 &&(hyn_ts_data->chip_ic_type	==hynitron_fw_grp[i].chip_type))	/* stock @ffffffc008cc4d1c: chip_ic_type, not config_chip_type */
 				{
 					return i;	
 				}
