@@ -173,35 +173,37 @@ static inline u32 calc_burst_penalty(u64 burst_time) {
 	return min(MAX_BURST_PENALTY, scaled_penalty);
 }
 
-static inline u64 scale_slice(u64 delta, struct sched_entity *se) {
-	return mul_u64_u32_shr(delta, sched_prio_to_wmult[se->burst_score], 22);
-}
-
+/* BORE state is per task (task_struct->bore); callers pass task entities only. */
 static void update_burst_score(struct sched_entity *se) {
 	struct task_struct *p;
+	struct sched_burst *b;
 	u8 prio, prev_prio, new_prio;
 
 	if (!entity_is_task(se)) return;
 	p = task_of(se);
+	b = &p->bore;
 	prio = p->static_prio - MAX_RT_PRIO;
-	prev_prio = min(39, prio + se->burst_score);
+	prev_prio = min(39, prio + b->burst_score);
 
 	/*
 	 * With sched_bore off the score is forced to 0, so a task that earned a
 	 * penalty before a runtime toggle-off is reweighted back to its stock
 	 * weight on its next update instead of staying penalised forever.
 	 */
-	se->burst_score = sched_bore ? se->burst_penalty >> 2 : 0;
+	b->burst_score = sched_bore ? b->burst_penalty >> 2 : 0;
 
-	new_prio = min(39, prio + se->burst_score);
+	new_prio = min(39, prio + b->burst_score);
 	if (new_prio != prev_prio)
 		reweight_task(p, new_prio);
 }
 
 static void update_burst_penalty(struct sched_entity *se) {
-	if (!sched_bore) return;
-	se->curr_burst_penalty = calc_burst_penalty(se->burst_time);
-	se->burst_penalty = max(se->prev_burst_penalty, se->curr_burst_penalty);
+	struct sched_burst *b;
+
+	if (!sched_bore || !entity_is_task(se)) return;
+	b = &task_of(se)->bore;
+	b->curr_burst_penalty = calc_burst_penalty(b->burst_time);
+	b->burst_penalty = max(b->prev_burst_penalty, b->curr_burst_penalty);
 	update_burst_score(se);
 }
 
@@ -213,11 +215,14 @@ static inline u32 binary_smooth(u32 new, u32 old) {
 }
 
 static void restart_burst(struct sched_entity *se) {
-	if (!sched_bore) return;
-	se->burst_penalty = se->prev_burst_penalty =
-		binary_smooth(se->curr_burst_penalty, se->prev_burst_penalty);
-	se->curr_burst_penalty = 0;
-	se->burst_time = 0;
+	struct sched_burst *b;
+
+	if (!sched_bore || !entity_is_task(se)) return;
+	b = &task_of(se)->bore;
+	b->burst_penalty = b->prev_burst_penalty =
+		binary_smooth(b->curr_burst_penalty, b->prev_burst_penalty);
+	b->curr_burst_penalty = 0;
+	b->burst_time = 0;
 	update_burst_score(se);
 }
 #endif // CONFIG_SCHED_BORE
@@ -1075,12 +1080,16 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	 * that bounds the recursion at one level.
 	 */
 	if (sched_bore) {
-		curr->burst_time += delta_exec;
-		update_burst_penalty(curr);
+		/* Upstream also accumulated burst time on group entities, where it
+		 * was never used (scores apply to tasks only); state is per task here. */
+		if (entity_is_task(curr)) {
+			task_of(curr)->bore.burst_time += delta_exec;
+			update_burst_penalty(curr);
+		}
 		curr->vruntime += max(1ULL, calc_delta_fair(delta_exec, curr));
 	} else {
 		/* unwind leftover weight after a runtime toggle-off */
-		if (unlikely(curr->burst_score))
+		if (entity_is_task(curr) && unlikely(task_of(curr)->bore.burst_score))
 			update_burst_score(curr);
 		curr->vruntime += calc_delta_fair(delta_exec, curr);
 	}

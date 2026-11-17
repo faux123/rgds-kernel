@@ -548,6 +548,20 @@ struct sched_statistics {
 #endif /* CONFIG_SCHEDSTATS */
 } ____cacheline_aligned;
 
+#ifdef CONFIG_SCHED_BORE
+/* BORE per-task state. Lives at the very end of task_struct; see there. */
+struct sched_burst {
+	u64				burst_time;
+	u8				prev_burst_penalty;
+	u8				curr_burst_penalty;
+	u8				burst_penalty;
+	u8				burst_score;
+	u8				child_burst;
+	u32				child_burst_cnt;
+	u64				child_burst_last_cached;
+};
+#endif // CONFIG_SCHED_BORE
+
 struct sched_entity {
 	/* For load-balancing: */
 	struct load_weight		load;
@@ -559,24 +573,6 @@ struct sched_entity {
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
-#if defined(CONFIG_SCHED_BORE) && !defined(__GENKSYMS__)
-	/*
-	 * Hidden from genksyms: CONFIG_ANDROID_KABI_RESERVE is off in the stock
-	 * config, so these fields would otherwise change the symbol version of
-	 * everything that reaches struct task_struct (117 of the 225 symbols the
-	 * stock 8821cs Wi-Fi module imports) and the module would refuse to load.
-	 * Safe only because no loaded module dereferences task_struct fields at
-	 * or after sched_entity; recheck that before loading any other module.
-	 */
-	u64				burst_time;
-	u8				prev_burst_penalty;
-	u8				curr_burst_penalty;
-	u8				burst_penalty;
-	u8				burst_score;
-	u8				child_burst;
-	u32				child_burst_cnt;
-	u64				child_burst_last_cached;
-#endif // CONFIG_SCHED_BORE
 
 	u64				nr_migrations;
 
@@ -1588,6 +1584,21 @@ struct task_struct {
 	 *
 	 * Do not put anything below here!
 	 */
+#if defined(CONFIG_SCHED_BORE) && !defined(__GENKSYMS__)
+	/*
+	 * RG DS exception to the rule above (arm64 has a fixed-size thread_struct,
+	 * so nothing after it moves). BORE's state sits after every existing field
+	 * so that no field offset changes: the stock vendor Wi-Fi modules (8821cs
+	 * and the others in /vendor/lib/modules) read `current` fields directly,
+	 * for example the stack-protector canary at a fixed offset, and adding the
+	 * fields inside sched_entity shifted those offsets. It is also hidden from
+	 * genksyms because CONFIG_ANDROID_KABI_RESERVE is off: otherwise the symbol
+	 * versions of everything reaching task_struct change (117 of the 225 that
+	 * 8821cs imports) and the modules refuse to load. Only sizeof(task_struct)
+	 * changes, which no module uses.
+	 */
+	struct sched_burst		bore;
+#endif
 };
 
 static inline struct pid *task_pid(struct task_struct *task)
