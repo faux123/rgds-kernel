@@ -345,3 +345,55 @@ Counts: IDENTICAL 42022, ADDR_ONLY 27844, SAMESIZE_DIFF 46, DIFFSIZE 12 (of 6992
 - Verified with vmcmp.py (0 opcode differences): sc7u22_set_acc/gyro_odr (orr operand order only), gtp_init_panel and gtp_request_irq (__LINE__ constants, gt9xx.c lines differ by ~370), goodix_ts_work_func, gpio_keys_gpio_report_event, rk817_hw_params, battery_adjust_store (branch targets / __LINE__ only).
 - Real differences found and fixed this pass: headset_det_irq_thread debounce 800 ms (c7cf2e4fe0d7e), rk817 PA calls inside rk817_codec_ctl_gpio before the mute delay, usb_role_switch_register sets 'registered' after device_register (stock lacks db8686b24af1). Open (owned by agents): joypad/hynitron/rk817 layout items above.
 - Follow-up pass (2026-11-17, stock 656f9dde73824 / fix a24a9f19b27c0): two more real gt9xx differences fixed. b1b59a95bf9a4: gtp_read_version config-version local is a zeroed 16-byte array (stock @ffffffc008cbfa1c stp xzr,xzr,[sp,#0x8]). 656f9dde73824: goodix_ts_probe fails with -EINVAL ('no max-x defined') when ext_lcd_tp, flip_report_tp or com_lcd_tp is missing (stock tbnz @ffffffc008cc0168/0190/01b8 to +0x404); the earlier 'read order' note was wrong, order and strings already matched. The RG DS DTS sets all three properties. Line counts unchanged. allcmp2 categories unchanged (both stay SAMESIZE_DIFF on __LINE__/.bss offsets).
+
+## Strict audit and final classification (2026-11-17, stock tip ea48ebc17736)
+
+Tools: `audit/strict_audit.py` (keeps every immediate, offset, literal word and nop; only
+adrp/lo12 pairs proven on every control-flow path, and branch targets, are normalized),
+`audit/semtokens.py`, `audit/strictdiff.py`, `audit/maydeltas.py`, Ghidra 12.2 headless with
+`ghidra/DecompileFuncs.java`. Controls on every run: stock vs itself = 0 differences; old build
+r9a flags all 6 known fixes; build 656f9dd flags the dma-heap ops bug.
+
+Counts (69,923 functions present in both): STRICT_SAME 69,170; ADDR_FLOW 611; ADDR_MAY 67;
+SAMESIZE_DIFF 63; DIFFSIZE 12. Every non-identical function is in one class below.
+
+Fixed today from this audit (stock branch): hynitron chip type 3340, 720x1280 default, 40 ms resume
+reset, probe error path; rk817 fake-finish rounding; dma_heap_ops get_phys order; rk817 battery
+platform data 0x208; hynitron ts data 0x1d0; joypad INPUT_PROP_DIRECT set atomically.
+
+Classes of the 75 SAMESIZE_DIFF/DIFFSIZE functions:
+1. `__LINE__` only (debug prints; stock line layout not recoverable): gt9xx (goodix_ts_probe,
+   goodix_ts_work_func, gtp_init_panel, gtp_read_version, gtp_request_irq), cst3xx/cst8xx
+   (firmware_info x2, touch_report), hynitron (hyn_* 13 functions, hynitron_driver_init/exit),
+   battery_adjust_store, rk817_hw_params.
+2. Equivalent after path-by-path review (Ghidra pseudocode or instruction trace): all joypad
+   functions (adc_check, adc_read, gpio_check, probe, keypad/tenpad2touchpanel_abs, joypad2touchpanel_abs,
+   _abs_ext, _abs_z, _abs_z_ext, _abs_z_mode2), g_touch_sync, gpio_keys_gpio_report_event,
+   enable/disable_pa_spk_left/right, sc7u22_set_acc/gyro_odr (orr operand order), gtp_touch_up,
+   led_update_charger_soc_status, rk817_battery_probe (register choice), rk817_battery_work
+   (range checks rewritten, plus __LINE__), elants_a_report, tcp_v6_get_syncookie.
+3. Global-variable placement only (adrp page register; the offset inside the page differs because
+   .bss/.data objects sit in a different order or one neighbour differs in size): scheduler and
+   warn-once flags (__migrate_swap_task, pick_next_task_fair, scheduler_tick, tick_nohz_idle_stop_tick,
+   update_dl_revised_wakeup, update_rq_clock, prb_reserve_in_last, free_large_kmalloc, set_regdom,
+   early_fixmap_init), cm_monitor_poller, crypt_dtr, thermal_zone_device_update, rk817_charge_probe,
+   mir3da_chip_resume, mir3da_write_offset (A53 erratum veneer hides the adrp).
+   Example measured: the rk817 battery globals occupy the same 40 bytes in both kernels but in a
+   different order (stock: dbg_enable, ..., led_charger_status @+0xc, led_bat_soc @+0x10,
+   led_red/green/yellow @+0x18..; ours: led_red first); the function-local statics at
+   0xac8..0xad8 are at identical offsets.
+4. Linker or disassembly artifacts: __CortexA53843419_* veneer, __entry_tramp_text_end, _text,
+   tramp_vectors, __primary_switch, cpu_resume, sha256_block_data_order (stock ELF decodes the K256
+   table as code), proc_tcp_available_ulp (runtime-patched branch), run_state_machine (duplicated
+   tail, same logic).
+
+ADDR_MAY (67): offset deltas are a constant -864 (arm64 page-table globals) or 896 (warn-once
+flags) except a few small deltas (8/16/64) that `maydeltas.py` lists; each of those was traced to an
+adrp-based global (rkisp_sd_s_rx_buffer, rkcif_irq_pingpong_v1, hdmirx_*, rockchip_pwm_irq,
+snd_card_init, timed_output_dev_register, crypto_create_session, __vb2_perform_fileio, lg4ff_init,
+rk818_battery_work, binder_alloc_deferred_release). Global placement, not struct layout.
+Correction of an earlier note: the rkisp 0x33c/0x334 difference is a global (adrp x28), not the ISP
+device structure. The camera and ISP nodes are disabled in the stock DT in any case.
+
+Not recoverable from the binary: comments, compiled-out code, source line layout, definition order
+of globals (class 3 could be reduced by reordering definitions, no behaviour change).

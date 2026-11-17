@@ -1,0 +1,142 @@
+__CortexA53843419_FFFFFFC008584004   stock-only {('off', 'ldr', 3732): 1} | ours-only {('off', 'ldr', 500): 1}
+__cpu_suspend_exit                   stock-only {('off', 'ldr', 224): 8, ('off', 'ldr', 56): 3} | ours-only {('off', 'ldr', 1088): 8, ('off', 'ldr', 920): 3}
+__dev_close_many                     stock-only {('off', 'ldr', 3088): 1, ('off', 'str', 3088): 1} | ours-only {('off', 'ldr', 2192): 1, ('off', 'str', 2192): 1}
+__entry_tramp_text_end               TOKENS_EQUAL
+__handle_irq_event_percpu            stock-only {('off', 'ldr', 2683): 1, ('off', 'str', 2683): 1} | ours-only {('off', 'ldr', 1787): 1, ('off', 'str', 1787): 1}
+__migrate_swap_task                  stock-only {('off', 'ldr', 2642): 1, ('off', 'str', 2642): 1} | ours-only {('off', 'ldr', 1746): 1, ('off', 'str', 1746): 1}
+__netdev_notify_peers                stock-only {('off', 'ldr', 3088): 1, ('off', 'str', 3088): 1} | ours-only {('off', 'ldr', 2192): 1, ('off', 'str', 2192): 1}
+__netdev_update_features             stock-only {('off', 'ldr', 3088): 1, ('off', 'str', 3088): 1} | ours-only {('off', 'ldr', 2192): 1, ('off', 'str', 2192): 1}
+__netdev_upper_dev_link              stock-only {('off', 'ldr', 3094): 1, ('off', 'str', 3094): 1} | ours-only {('off', 'ldr', 2198): 1, ('off', 'str', 2198): 1}
+__netdev_upper_dev_unlink            stock-only {('off', 'ldr', 3088): 1, ('off', 'str', 3088): 1} | ours-only {('off', 'ldr', 2192): 1, ('off', 'str', 2192): 1}
+__primary_switch                     TOKENS_EQUAL
+__rseq_handle_notify_resume          stock-only {('off', 'str', 2765): 1} | ours-only {('off', 'str', 1869): 1}
+__schedule                           stock-only {('off', 'ldr', 2643): 2, ('off', 'str', 2643): 2} | ours-only {('off', 'ldr', 1747): 2, ('off', 'str', 1747): 2}
+__update_stats_enqueue_sleeper       stock-only {('off', 'ldr', 2674): 1, ('off', 'str', 2674): 1} | ours-only {('off', 'ldr', 1778): 1, ('off', 'str', 1778): 1}
+__vb2_perform_fileio                 stock-only {('off', 'ldr', 716): 3} | ours-only {('off', 'ldr', 708): 3}
+_text                                TOKENS_EQUAL
+active_load_balance_cpu_stop         stock-only {('off', 'ldr', 2655): 1, ('off', 'str', 2655): 1} | ours-only {('off', 'ldr', 1759): 1, ('off', 'str', 1759): 1}
+alloc_contig_range                   stock-only {('off', 'ldr', 56): 2} | ours-only {('off', 'ldr', 920): 2}
+arm64_memblock_init                  stock-only {('off', 'ldr', 56): 3, ('off', 'str', 56): 1, ('off', 'ldr', 224): 1} | ours-only {('off', 'ldr', 920): 3, ('off', 'str', 920): 1, ('off', 'ldr', 1088): 1}
+battery_adjust_store                 stock-only {('imm', 3498): 1} | ours-only {('imm', 3429): 1}
+binder_alloc_deferred_release        stock-only {('off', 'ldr', 3176): 2} | ours-only {('off', 'ldr', 3112): 2}
+cm_monitor_poller                    stock-only {('off', 'ldr', 2676): 69} | ours-only {('off', 'ldr', 2668): 69}
+copy_net_ns                          stock-only {('off', 'ldr', 3936): 1} | ours-only {('off', 'ldr', 704): 1}
+cpu_enable_cnp                       stock-only {('off', 'ldr', 224): 6, ('off', 'ldr', 56): 3} | ours-only {('off', 'ldr', 1088): 6, ('off', 'ldr', 920): 3}
+cpu_resume                           TOKENS_EQUAL
+cqhci_irq                            stock-only {('off', 'ldr', 3028): 1, ('off', 'str', 3028): 1} | ours-only {('off', 'ldr', 2132): 1, ('off', 'str', 2132): 1}
+crypt_dtr                            stock-only {('off', 'str', 3364): 1, ('off', 'ldr', 3364): 1} | ours-only {('off', 'str', 3348): 1, ('off', 'ldr', 3348): 1}
+crypto_create_session                stock-only {('off', 'ldr', 1144): 1} | ours-only {('off', 'ldr', 1128): 1}
+cst3xx_firmware_info                 stock-only {('imm', 2353): 1} | ours-only {('imm', 2062): 1}
+cst8xx_firmware_info                 stock-only {('imm', 2400): 1} | ours-only {('imm', 2109): 1}
+cst8xx_touch_report                  stock-only {('imm', 286): 1} | ours-only {('imm', 289): 1}
+dd_exit_sched                        stock-only {('off', 'ldr', 2866): 2, ('off', 'str', 2866): 2} | ours-only {('off', 'ldr', 1970): 2, ('off', 'str', 1970): 2}
+del_nbp                              stock-only {('off', 'ldr', 3277): 1, ('off', 'str', 3277): 1} | ours-only {('off', 'ldr', 2381): 1, ('off', 'str', 2381): 1}
+dequeue_task                         stock-only {('off', 'ldr', 2644): 1, ('off', 'str', 2644): 1} | ours-only {('off', 'ldr', 1748): 1, ('off', 'str', 1748): 1}
+dev_set_mac_address                  stock-only {('off', 'ldr', 3088): 1, ('off', 'str', 3088): 1} | ours-only {('off', 'ldr', 2192): 1, ('off', 'str', 2192): 1}
+dir_rename_wrap                      stock-only {('off', 'str', 2856): 1} | ours-only {('off', 'str', 1960): 1}
+disable_pa_spk_left                  TOKENS_EQUAL
+disable_pa_spk_right                 TOKENS_EQUAL
+dma_direct_map_sg                    stock-only {('off', 'str', 2700): 1} | ours-only {('off', 'str', 1804): 1}
+early_fixmap_init                    stock-only {('off', 'ldr', 224): 1} | ours-only {('off', 'ldr', 1088): 1}
+elants_a_report                      stock-only {('off', 'str', 1024): 1} | ours-only {('off', 'str', 1016): 1}
+enable_pa_spk_left                   stock-only {('imm', -50): 1} | ours-only {('imm', 50): 1}
+enable_pa_spk_right                  stock-only {('imm', -50): 1} | ours-only {('imm', 50): 1}
+enqueue_task_dl                      stock-only {('off', 'ldr', 2661): 6, ('off', 'str', 2661): 6} | ours-only {('off', 'ldr', 1765): 6, ('off', 'str', 1765): 6}
+free_large_kmalloc                   stock-only {('off', 'ldr', 2767): 1, ('off', 'str', 2767): 1} | ours-only {('off', 'ldr', 1871): 1, ('off', 'str', 1871): 1}
+free_percpu                          stock-only {('off', 'ldr', 608): 2, ('off', 'ldr', 600): 2} | ours-only {('off', 'ldr', 1472): 2, ('off', 'ldr', 1464): 2}
+g_touch_sync                         TOKENS_EQUAL
+goodix_ts_probe                      stock-only {('imm', 2563): 1, ('imm', 2640): 1} | ours-only {('imm', 2894): 1, ('imm', 2971): 1}
+goodix_ts_work_func                  stock-only {('imm', 678): 2, ('imm', 493): 1, ('imm', 701): 1} | ours-only {('imm', 946): 2, ('imm', 520): 1, ('imm', 1066): 1}
+gpio_keys_gpio_report_event          TOKENS_EQUAL
+gtp_init_panel                       stock-only {('imm', 1148): 1, ('imm', 1188): 1, ('imm', 1263): 1, ('imm', 1267): 1, ('imm', 1326): 1, ('imm', 1333): 1, ('imm', 1335): 1, ('imm', 1374): 1} | ours-only {('imm', 1518): 1, ('imm', 1558): 1, ('imm', 1633): 1, ('imm', 1637): 1, ('imm', 1696): 1, ('imm', 1702): 1, ('imm', 1704): 1, ('imm', 1743): 1, ('call', '<__CortexA53843419_FFFFFFC008CC1004>'): 1}
+gtp_read_version                     stock-only {('imm', 1501): 1} | ours-only {('imm', 1868): 1}
+gtp_request_irq                      stock-only {('imm', 1610): 1, ('imm', 1624): 1, ('imm', 1654): 1} | ours-only {('imm', 1977): 1, ('imm', 1991): 1, ('imm', 2021): 1}
+gtp_touch_up                         stock-only {('imm', 24): 1} | ours-only {('off', 'ldr', 24): 1}
+hdmirx_dma_irq_handler               stock-only {('off', 'ldr', 1228): 12} | ours-only {('off', 'ldr', 1220): 12}
+hdmirx_dqbuf                         stock-only {('off', 'ldr', 1228): 2} | ours-only {('off', 'ldr', 1220): 2}
+hdmirx_stop_streaming                stock-only {('off', 'ldr', 1228): 2} | ours-only {('off', 'ldr', 1220): 2}
+htb_change_class                     stock-only {('off', 'str', 3143): 1} | ours-only {('off', 'str', 2247): 1}
+htb_graft                            stock-only {('off', 'ldr', 3142): 1, ('off', 'str', 3142): 1} | ours-only {('off', 'ldr', 2246): 1, ('off', 'str', 2246): 1}
+hyn_boot_update_fw                   stock-only {('imm', 2585): 1, ('imm', 2093): 1} | ours-only {('imm', 2293): 1, ('imm', 1792): 1}
+hyn_detect_bootloader                stock-only {('imm', 2778): 1, ('imm', 2814): 1, ('imm', 2595): 1, ('imm', 2696): 1, ('imm', 2858): 1, ('imm', 2637): 1, ('imm', 2739): 1, ('imm', 2901): 1} | ours-only {('imm', 2486): 1, ('imm', 2522): 1, ('imm', 2303): 1, ('imm', 2404): 1, ('imm', 2566): 1, ('imm', 2345): 1, ('imm', 2447): 1, ('imm', 2609): 1}
+hyn_find_fw_idx                      stock-only {('imm', 2428): 1} | ours-only {('imm', 2139): 1}
+hyn_firmware_info                    stock-only {('imm', 2455): 1} | ours-only {('imm', 2166): 1}
+hyn_input_dev_int                    stock-only {('imm', 1312): 1} | ours-only {('imm', 1284): 1}
+hyn_irq_init                         stock-only {('imm', 609): 1} | ours-only {('imm', 608): 1}
+hyn_platform_data_init               stock-only {('imm', 1535): 1} | ours-only {('imm', 1504): 1}
+hyn_pm_resume                        stock-only {('imm', 195): 1} | ours-only {('imm', 198): 1}
+hyn_pm_suspend                       stock-only {('imm', 1639): 1} | ours-only {('imm', 1607): 1}
+hyn_probe                            stock-only {('imm', 1414): 1, ('imm', 1403): 1, ('imm', 1922): 1, ('imm', 1888): 1} | ours-only {('imm', 1387): 1, ('imm', 1376): 1, ('imm', 1944): 1, ('imm', 1911): 1}
+hyn_remove                           stock-only {('imm', 1957): 1} | ours-only {('imm', 1979): 1}
+hyn_ts_data_init                     stock-only {('imm', 1577): 1} | ours-only {('imm', 1546): 1}
+hyn_update_firmware_init             stock-only {('imm', 1219): 1} | ours-only {('imm', 1191): 1}
+hynitron_driver_exit                 stock-only {('imm', 2017): 1} | ours-only {('imm', 2040): 1}
+hynitron_driver_init                 stock-only {('imm', 2003): 1} | ours-only {('imm', 2026): 1}
+ieee80211_sta_ps_deliver_wakeup      stock-only {('off', 'str', 3345): 1, ('off', 'ldr', 3345): 1} | ours-only {('off', 'str', 2449): 1, ('off', 'ldr', 2449): 1}
+joypad2touchpanel_abs                TOKENS_EQUAL
+joypad2touchpanel_abs_ext            stock-only {('off', 'stp', 8): 1, ('off', 'str', 2960): 1} | ours-only {('off', 'str', 2956): 1}
+joypad2touchpanel_abs_z              TOKENS_EQUAL
+joypad2touchpanel_abs_z_ext          stock-only {('off', 'stp', 8): 1, ('off', 'str', 2976): 1} | ours-only {('off', 'str', 2972): 1}
+joypad2touchpanel_abs_z_mode2        TOKENS_EQUAL
+joypad_adc_check                     stock-only {('off', 'ldu', -8): 1, ('off', 'ldr', 76): 4, ('off', 'str', 8): 1, ('off', 'ldr', 2056): 2, ('off', 'ldr', 2080): 1, ('off', 'ldr', 2084): 1, ('off', 'ldr', 2096): 1, ('off', 'ldr', 2100): 1, ('off', 'ldr', 2060): 2, ('off', 'ldr', 2144): 1, ('off', 'ldr', 2148): 1, ('off', 'ldr', 2160): 1, ('off', 'ldr', 2164): 1, ('imm', 34079): 3, ('imm', 19923): 2, ('imm', 98): 1, ('imm', 20971): 3, ('imm', 16): 5, ('imm', 4194): 2, ('off', 'ldr', 2072): 4, ('off', 'str', 4): 7, ('imm', 8): 1} | ours-only {('off', 'ldr', 24): 1, ('off', 'ldr', 32): 35, ('imm', 3): 2, ('imm', 0): 1, ('imm', 76): 1, ('off', 'stu', -76): 1, ('off', 'ldu', -76): 1, ('off', 'stu', -68): 1, ('off', 'ldr', 1824): 1, ('off', 'ldr', 1828): 1, ('off', 'ldr', 1840): 1, ('off', 'ldr', 1844): 1, ('off', 'ldr', 1808): 4, ('off', 'ldr', 1888): 1, ('off', 'ldr', 1892): 1, ('off', 'ldr', 1904): 1, ('off', 'ldr', 1908): 1, ('off', 'ldr', 1816): 4, ('off', 'ldr', 1812): 2, ('imm', 4): 1}
+joypad_adc_read                      TOKENS_EQUAL
+joypad_gpio_check                    stock-only {('off', 'ldr', 48): 7, ('imm', 120): 1, ('off', 'ldr', 33): 20, ('off', 'ldr', 24): 14, ('off', 'str', 32): 1, ('off', 'ldr', 16): 2, ('off', 'ldr', 32): 1, ('off', 'ldr', 1808): 2, ('off', 'ldr', 28): 9, ('off', 'str', 64): 2, ('off', 'ldr', 2208): 12, ('off', 'ldr', 20): 3} | ours-only {('imm', 16): 1, ('off', 'str', 120): 2, ('off', 'ldr', 144): 13, ('off', 'str', 152): 1, ('off', 'ldr', 136): 2, ('off', 'ldr', 152): 1, ('off', 'ldr', 2756): 2, ('off', 'ldr', 153): 15, ('off', 'ldr', 148): 13, ('off', 'str', 184): 2, ('off', 'ldr', 2832): 10, ('imm', 14): 2, ('off', 'ldr', 140): 3}
+joypad_probe                         stock-only {('imm', 16): 2, ('off', 'ldr', 24): 2, ('imm', 511): 3, ('off', 'ldr', 8): 1, ('off', 'ldr', 12): 1, ('off', 'ldr', 16): 2, ('off', 'ldr', 40): 1, ('off', 'ldr', 48): 3, ('off', 'str', 24): 1, ('off', 'ldp', 12): 1, ('off', 'ldr', 2216): 2, ('off', 'ldr', 25): 1} | ours-only {('imm', 1): 2, ('imm', 24): 1, ('imm', 100): 4, ('imm', 4294967294): 1, ('imm', 4): 1, ('imm', 696): 1, ('imm', 92): 2, ('imm', -22): 1, ('imm', 6): 1, ('imm', 12): 1, ('imm', 512): 3, ('imm', 20): 1, ('imm', 25): 1, ('off', 'ldp', -4): 1, ('off', 'ldr', 88): 1, ('imm', 57): 1}
+kbase_mem_umm_map_attachment         stock-only {('off', 'ldr', 2936): 1, ('off', 'ldr', 2937): 1, ('off', 'str', 2936): 1, ('off', 'str', 2937): 1} | ours-only {('off', 'ldr', 2040): 1, ('off', 'ldr', 2041): 1, ('off', 'str', 2040): 1, ('off', 'str', 2041): 1}
+keypad2touchpanel_abs                stock-only {('imm', 0): 4} | ours-only {}
+led_update_charger_soc_status        stock-only {('call', '<gpiod_set_raw_value>'): 1, ('imm', 1): 2} | ours-only {('imm', 22): 1, ('call', '<gpio_to_desc>'): 1}
+lg4ff_init                           stock-only {('off', 'ldr', 1352): 2} | ours-only {('off', 'ldr', 1336): 2}
+mir3da_chip_resume                   stock-only {('off', 'str', 1288): 1, ('off', 'ldr', 624): 16, ('off', 'ldr', 644): 1, ('off', 'ldr', 640): 1, ('off', 'str', 648): 1} | ours-only {('off', 'str', 1248): 1, ('off', 'ldr', 616): 16, ('off', 'ldr', 636): 1, ('off', 'ldr', 632): 1, ('off', 'str', 640): 1}
+mir3da_write_offset                  stock-only {} | ours-only {('call', '<__CortexA53843419_FFFFFFC008CF3008>'): 1, ('off', 'ldr', 624): 8, ('off', 'ldr', 644): 8, ('off', 'ldr', 616): 8}
+netem_graft                          stock-only {('off', 'ldr', 3147): 1, ('off', 'str', 3147): 1} | ours-only {('off', 'ldr', 2251): 1, ('off', 'str', 2251): 1}
+nvme_init_ctrl_finish                stock-only {('off', 'ldr', 2960): 1, ('off', 'str', 2960): 1} | ours-only {('off', 'ldr', 2064): 1, ('off', 'str', 2064): 1}
+paging_init                          stock-only {('off', 'ldr', 224): 7, ('off', 'ldr', 236): 1, ('off', 'ldr', 56): 3} | ours-only {('off', 'ldr', 1088): 7, ('off', 'ldr', 1100): 1, ('off', 'ldr', 920): 3}
+pick_next_task_fair                  stock-only {('off', 'ldr', 2651): 3, ('off', 'str', 2651): 3} | ours-only {('off', 'ldr', 1755): 3, ('off', 'str', 1755): 3}
+prb_reserve_in_last                  stock-only {('off', 'ldr', 2681): 1, ('off', 'ldr', 2682): 1, ('off', 'str', 2681): 1, ('off', 'str', 2682): 1} | ours-only {('off', 'ldr', 1785): 1, ('off', 'ldr', 1786): 1, ('off', 'str', 1785): 1, ('off', 'str', 1786): 1}
+prio_graft                           stock-only {('off', 'ldr', 3146): 1, ('off', 'str', 3146): 1} | ours-only {('off', 'ldr', 2250): 1, ('off', 'str', 2250): 1}
+proc_tcp_available_ulp               stock-only {('call', '<__CortexA53843419_FFFFFFC0092D7008>'): 1} | ours-only {}
+put_prev_task_rt                     stock-only {('off', 'ldr', 2661): 1, ('off', 'str', 2661): 1} | ours-only {('off', 'ldr', 1765): 1, ('off', 'str', 1765): 1}
+qdisc_class_hash_grow                stock-only {('off', 'ldr', 3135): 1, ('off', 'str', 3135): 1} | ours-only {('off', 'ldr', 2239): 1, ('off', 'str', 2239): 1}
+reg_process_hint                     stock-only {('off', 'ldr', 3488): 5} | ours-only {('off', 'ldr', 2592): 5}
+replenish_dl_entity                  stock-only {('off', 'ldr', 2661): 2, ('off', 'str', 2661): 2} | ours-only {('off', 'ldr', 1765): 2, ('off', 'str', 1765): 2}
+rk817_battery_probe                  stock-only {('off', 'ldr', 8): 1, ('off', 'str', 1760): 1, ('imm', 1896): 1} | ours-only {('imm', 1728): 1}
+rk817_battery_work                   stock-only {('imm', 0): 1, ('imm', 10): 1, ('imm', 9): 1, ('imm', 18): 1, ('imm', 3247): 1} | ours-only {('imm', 31): 1, ('imm', 3009): 1}
+rk817_charge_probe                   stock-only {('off', 'ldr', 2792): 12} | ours-only {('off', 'ldr', 2780): 12}
+rk817_hw_params                      stock-only {('imm', 1149): 1} | ours-only {('imm', 1139): 1}
+rk818_battery_work                   stock-only {('off', 'ldr', 2800): 3} | ours-only {('off', 'ldr', 2784): 3}
+rkcif_irq_pingpong_v1                stock-only {('off', 'ldr', 736): 6} | ours-only {('off', 'ldr', 728): 6}
+rkisp_sd_s_rx_buffer                 stock-only {('off', 'ldr', 828): 1} | ours-only {('off', 'ldr', 820): 1}
+rkisp_stats_send_meas_v32            stock-only {('off', 'ldr', 828): 1} | ours-only {('off', 'ldr', 820): 1}
+rockchip_pwm_irq                     stock-only {('off', 'ldr', 236): 1} | ours-only {('off', 'ldr', 228): 1}
+run_state_machine                    stock-only {('imm', 13): 1} | ours-only {}
+sc7u22_set_acc_odr                   TOKENS_EQUAL
+sc7u22_set_gyro_odr                  TOKENS_EQUAL
+scheduler_tick                       stock-only {('off', 'ldr', 2643): 1, ('off', 'str', 2643): 1} | ours-only {('off', 'ldr', 1747): 1, ('off', 'str', 1747): 1}
+scsi_log_print_sense_hdr             stock-only {('off', 'ldr', 672): 1} | ours-only {('off', 'ldr', 1536): 1}
+set_next_task_dl                     stock-only {('off', 'ldr', 2661): 1, ('off', 'str', 2661): 1} | ours-only {('off', 'ldr', 1765): 1, ('off', 'str', 1765): 1}
+set_next_task_rt                     stock-only {('off', 'ldr', 2661): 2, ('off', 'str', 2661): 2} | ours-only {('off', 'ldr', 1765): 2, ('off', 'str', 1765): 2}
+set_regdom                           stock-only {('off', 'ldr', 3488): 4} | ours-only {('off', 'ldr', 2592): 4}
+setup_arch                           stock-only {('off', 'ldr', 224): 1} | ours-only {('off', 'ldr', 1088): 1}
+sha256_block_data_order              stock-only {('off', 'ldr', 1456): 1, ('imm', 562958543486978): 1, ('off', 'prf', 24): 1, ('imm', -6873): 1, ('imm', 62187): 1, ('imm', 16): 1, ('off', 'ldp', -184): 1, ('call', '<__traceiter_ata_link_hardreset_end>'): 1, ('imm', 67092480): 1, ('off', 'str', 1795): 1} | ours-only {}
+smb3_fs_context_parse_param          stock-only {('off', 'str', 2848): 1} | ours-only {('off', 'str', 1952): 1}
+snd_card_init                        stock-only {('off', 'ldr', 20): 1, ('off', 'str', 20): 1} | ours-only {('off', 'ldr', 4): 1, ('off', 'str', 4): 1}
+syscore_suspend                      stock-only {('off', 'ldr', 2947): 1, ('off', 'str', 2947): 1} | ours-only {('off', 'ldr', 2051): 1, ('off', 'str', 2051): 1}
+task_non_contending                  stock-only {('off', 'ldr', 2661): 1, ('off', 'str', 2661): 1} | ours-only {('off', 'ldr', 1765): 1, ('off', 'str', 1765): 1}
+task_tick_rt                         stock-only {('off', 'ldr', 2661): 1, ('off', 'str', 2661): 1} | ours-only {('off', 'ldr', 1765): 1, ('off', 'str', 1765): 1}
+tbf_change                           stock-only {('off', 'ldr', 3145): 1, ('off', 'str', 3145): 1} | ours-only {('off', 'ldr', 2249): 1, ('off', 'str', 2249): 1}
+tbf_graft                            stock-only {('off', 'ldr', 3145): 1, ('off', 'str', 3145): 1} | ours-only {('off', 'ldr', 2249): 1, ('off', 'str', 2249): 1}
+tcf_node_bind                        stock-only {('off', 'ldr', 3135): 1, ('off', 'str', 3135): 1} | ours-only {('off', 'ldr', 2239): 1, ('off', 'str', 2239): 1}
+tcp_v6_get_syncookie                 stock-only {} | ours-only {('call', '<__CortexA53843419_FFFFFFC00935C004>'): 1}
+tenpad2touchpanel_abs                stock-only {('imm', 0): 5} | ours-only {}
+thermal_zone_device_update           stock-only {('off', 'ldr', 2888): 1, ('off', 'ldr', 3280): 1} | ours-only {('off', 'ldr', 2872): 1, ('off', 'ldr', 2384): 1}
+tick_nohz_idle_stop_tick             stock-only {('off', 'ldr', 2716): 1, ('off', 'str', 2716): 1} | ours-only {('off', 'ldr', 1820): 1, ('off', 'str', 1820): 1}
+timed_output_dev_register            stock-only {('off', 'ldr', 3128): 1} | ours-only {('off', 'ldr', 3112): 1}
+tramp_vectors                        TOKENS_EQUAL
+u32_bind_filter                      stock-only {('off', 'ldr', 3149): 1, ('off', 'str', 3149): 1} | ours-only {('off', 'ldr', 2253): 1, ('off', 'str', 2253): 1}
+udp_tunnel_nic_device_sync_work      stock-only {('off', 'ldr', 3230): 1, ('off', 'str', 3230): 1} | ours-only {('off', 'ldr', 2334): 1, ('off', 'str', 2334): 1}
+ufshcd_queuecommand                  stock-only {('off', 'ldr', 3030): 1, ('off', 'str', 3030): 1} | ours-only {('off', 'ldr', 2134): 1, ('off', 'str', 2134): 1}
+unregister_netdevice_many            stock-only {('off', 'ldr', 3112): 1, ('off', 'str', 3112): 1} | ours-only {('off', 'ldr', 2216): 1, ('off', 'str', 2216): 1}
+update_curr_rt                       stock-only {('off', 'ldr', 2661): 1, ('off', 'str', 2661): 1} | ours-only {('off', 'ldr', 1765): 1, ('off', 'str', 1765): 1}
+update_dl_revised_wakeup             stock-only {('off', 'str', 2661): 1, ('off', 'ldr', 2661): 1} | ours-only {('off', 'str', 1765): 1, ('off', 'ldr', 1765): 1}
+update_parent_pgds                   stock-only {('off', 'ldr', 56): 3} | ours-only {('off', 'ldr', 920): 3}
+update_rq_clock                      stock-only {('off', 'ldr', 2643): 2, ('off', 'str', 2643): 2} | ours-only {('off', 'ldr', 1747): 2, ('off', 'str', 1747): 2}
