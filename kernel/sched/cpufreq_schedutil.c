@@ -160,20 +160,19 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
 	struct cpufreq_policy *policy = sg_policy->policy;
 	unsigned int freq = arch_scale_freq_invariant() ?
 				policy->cpuinfo.max_freq : policy->cur;
-	unsigned long next_freq = 0;
 
 #ifdef CONFIG_ARCH_ROCKCHIP
 	util = 100 * util / sg_policy->tunables->target_load;
 #else
 	util = map_util_perf(util);
 #endif
+	/*
+	 * RG DS stock (get_next_freq inlined in sugov_update_single_freq,
+	 * ffffffc0080bab54..ab84): one map_util_freq() and no
+	 * android_vh_map_util_freq hook, as in Rockchip develop-6.1. The ACK
+	 * merge had kept both, scaling freq by util/max twice.
+	 */
 	freq = map_util_freq(util, freq, max);
-	trace_android_vh_map_util_freq(util, freq, max, &next_freq, policy,
-			&sg_policy->need_freq_update);
-	if (next_freq)
-		freq = next_freq;
-	else
-		freq = map_util_freq(util, freq, max);
 
 	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
 		return sg_policy->next_freq;
