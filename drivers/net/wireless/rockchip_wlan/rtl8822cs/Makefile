@@ -20,7 +20,6 @@ EXTRA_CFLAGS += -Wno-unused-variable
 ifeq ($(CC), clang)
 EXTRA_CFLAGS += -Wno-uninitialized
 EXTRA_CFLAGS += -Wno-enum-conversion
-EXTRA_CFLAGS += -Wno-date-time -Wno-unknown-directives
 EXTRA_CFLAGS += -Wno-fortify-source
 EXTRA_CFLAGS += -Wno-invalid-source-encoding
 EXTRA_CFLAGS += -Wno-tautological-pointer-compare
@@ -138,7 +137,7 @@ CONFIG_RTW_DISABLE_HW_PDN = n
 CONFIG_RTKM ?= n
 ########################## Android ###########################
 # CONFIG_RTW_ANDROID - 0: no Android, 4/5/6/7/8/9/10/11 : Android version
-CONFIG_RTW_ANDROID = 11
+CONFIG_RTW_ANDROID = 14
 
 ifeq ($(shell test $(CONFIG_RTW_ANDROID) -gt 0; echo $$?), 0)
 EXTRA_CFLAGS += -DCONFIG_RTW_ANDROID=$(CONFIG_RTW_ANDROID)
@@ -1847,6 +1846,8 @@ EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE
 ifeq ($(CONFIG_SDIO_HCI), y)
 EXTRA_CFLAGS += -DRTW_SUPPORT_PLATFORM_SHUTDOWN
 endif
+EXTRA_CFLAGS += -DCONFIG_RTW_IOCTL_SET_COUNTRY
+EXTRA_CFLAGS += -DCONFIG_RTW_HOSTAPD_ACS
 # default setting for Special function
 ARCH := arm
 CROSS_COMPILE := /home/android_sdk/Rockchip/Rk3188/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-

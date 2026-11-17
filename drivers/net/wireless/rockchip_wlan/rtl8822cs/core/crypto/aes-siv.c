@@ -2,7 +2,7 @@
  * AES SIV (RFC 5297)
  * Copyright (c) 2013 Cozybit, Inc.
  *
- * This software may be distributed under the terms of the BSD license.
+ * This software  distributed under the terms of the BSD license.
  * See README for more details.
  */
 

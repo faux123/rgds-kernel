@@ -2,7 +2,7 @@
  * wlantest - IEEE 802.11 protocol monitoring and testing tool
  * Copyright (c) 2010-2013, Jouni Malinen <j@w1.fi>
  *
- * This software may be distributed under the terms of the BSD license.
+ * This software  distributed under the terms of the BSD license.
  * See README for more details.
  */
 
