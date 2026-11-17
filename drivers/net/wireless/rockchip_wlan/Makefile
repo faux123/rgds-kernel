@@ -25,4 +25,6 @@ export CONFIG_AP6XXX = m
 obj-m += bcmdhd/
 export CONFIG_RTL8852BS = m
 obj-m += rtl8852bs/
+export CONFIG_SWT6621S = y
+obj-m += swt6621s/
 endif
