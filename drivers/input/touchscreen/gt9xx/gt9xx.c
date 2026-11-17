@@ -489,11 +489,9 @@ static void gtp_touch_up(struct goodix_ts_data* ts, s32 id)
     input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID, -1);
     GTP_DEBUG("Touch id[%2d] release!", id);
 #else
-    input_report_key(ts->input_dev, BTN_TOUCH, 0);
+    /* stock gtp_touch_up @ffffffc008cc1500: one BTN_TOUCH=0, to the swap-selected device */
+    input_report_key(gtp_out_dev(ts), BTN_TOUCH, 0);
 #endif
-    /* stock gtp_touch_up @ffffffc008cc1500: BTN_TOUCH=0 goes to the swap-selected device */
-    if (gt9xx_touch_swap && gtp_out_dev(ts))
-        input_report_key(gtp_out_dev(ts), BTN_TOUCH, 0);
 }
 
 #if GTP_WITH_PEN
