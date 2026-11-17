@@ -435,7 +435,7 @@ static const struct reg_field rk817_battery_reg_fields[] = {
 	[NEW_FCC_REG0] = REG_FIELD(0xA0, 0, 7),
 	[NEW_FCC_REG1] = REG_FIELD(0xA1, 0, 7),
 	[NEW_FCC_REG2] = REG_FIELD(0xA2, 0, 7),
-	[RESET_MODE] = REG_FIELD(0xA3, 0, 3),
+	[RESET_MODE] = REG_FIELD(0xA3, 0, 7),	/* stock rk817_battery_reg_fields[200] = {0xa3, 0, 7}; upstream 0..3 */
 	[FG_INIT] = REG_FIELD(0xA5, 7, 7),
 
 	[HALT_CNT_REG] = REG_FIELD(0xA6, 0, 7),
