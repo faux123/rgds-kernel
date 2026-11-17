@@ -1958,8 +1958,12 @@ static noinline void joypad_adc_check(struct input_dev *input)
 		default: goto d1_done;	/* channels 4/5 keep their value (@..7653c) */
 		}
 d1_plain:						/* switch off, shared tail @..76634 */
-		if (!out)
+		if (out) {
+			v = e->value;				/* ldr @..76638 */
+		} else {
+			e->value = 0;				/* str wzr @..76640 */
 			v = 0;
+		}
 		v = v * jokstick_cal_scale / 1000;
 		e->value = v;
 		e->shown = e->invert ? -v : v;
