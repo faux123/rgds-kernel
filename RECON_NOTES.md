@@ -621,3 +621,7 @@ message only in the stock capture).
   land on rgds-v1.21 from here as ordinary commits.
 - GitHub release for the tag: not created (the gh release call was refused by the auto-mode
   classifier; needs Paul's explicit go).
+- `main` created (no `main` existed; Paul: "make that tag as our main branch ... our main trunk going
+  forward"): first pushed at v1.21-recon-baseline cccbcebdd82d, then fast-forwarded to rgds-v1.21
+  b325cd86e6e9 (baseline + the 3 FIX commits). GitHub default branch is now `main`. All future fixes
+  and enhancements land on `main`; rgds-v1.21-stock stays the frozen stock reconstruction.
