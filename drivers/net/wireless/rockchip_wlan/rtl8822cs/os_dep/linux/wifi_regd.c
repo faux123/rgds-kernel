@@ -143,7 +143,7 @@ static void rtw_regd_schedule_dfs_chan_update(struct wiphy *wiphy)
 	struct rtw_wiphy_data *wiphy_data = rtw_wiphy_priv(wiphy);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 2))
     unsigned int link_id = 0; /*TBD*/
-    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0))
+    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)) || defined(CONFIG_MLD_KERNEL_PATCH)
     u16 punct_bitmap = 0; /*TBD*/
     #endif
 #endif
