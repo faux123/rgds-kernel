@@ -30,6 +30,22 @@ def iparent(tree, p):
             return PH[id(tree)].get(u32(tree, q, 'interrupt-parent'))
         if q == '/': return None
         q = q.rsplit('/', 1)[0] or '/'
+def cru_macros():
+    """value -> name maps from rk3568-cru.h, per section (pmucru/cru clocks, pmucru/cru resets)."""
+    import os
+    h = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), '../../../include/dt-bindings/clock/rk3568-cru.h')
+    sec, maps = None, {}
+    for line in open(h):
+        if 'pmucru-clocks indices' in line: sec = ('pmucru', 'clk')
+        elif 'cru-clocks indices' in line: sec = ('cru', 'clk')
+        elif 'pmu soft-reset indices' in line: sec = ('pmucru', 'rst')
+        elif 'soft-reset indices' in line: sec = ('cru', 'rst')
+        m = re.match(r'#define\s+(\w+)\s+(\d+)\s*$', line)
+        if m and sec and not m.group(1).endswith('NR_CLKS'):
+            maps.setdefault(sec, {}).setdefault(int(m.group(2)), m.group(1))
+    return maps
+CRU = cru_macros()
+CLKPROPS = ('clocks', 'assigned-clocks', 'assigned-clock-parents')
 def pretty(tree, path, k, v):
     """Return a macro-based rendering, or None to fall back to the generic one."""
     ph = PH.setdefault(id(tree), phmap(tree)); c = cells(v)
@@ -52,6 +68,17 @@ def pretty(tree, path, k, v):
         if n == 2 and 'gpio-controller' in tree[ip] and len(c) == 2 and c[1] in IRQT:
             return '<%s %s>' % (pin(c[0]), IRQT[c[1]])
         return None
+    if k in SPEC and SPEC[k]:
+        out = []; i = 0
+        while i < len(c):
+            h = c[i]; l = lbl(h)
+            if h == 0: out.append('0'); i += 1; continue
+            if not l or SPEC[k] not in tree[ph[h]]: return None
+            nc = u32(tree, ph[h], SPEC[k]); args = c[i+1:i+1+nc]; i += 1 + nc
+            kind = 'clk' if k in CLKPROPS else 'rst' if k == 'resets' else None
+            m = CRU.get((l[1:], kind), {}) if kind and nc == 1 else {}
+            out.append(' '.join([l] + [m.get(a, str(a)) for a in args]))
+        return '<' + '>, <'.join(out) + '>'
     if k == 'rockchip,pins' and len(c) % 4 == 0:
         out = []
         for i in range(0, len(c), 4):
