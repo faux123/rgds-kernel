@@ -70,8 +70,8 @@ static u8 gtp_y_reverse = TRUE;
 /* Stock exports gt9xx_touch_swap (EXPORT_SYMBOL); the *_status globals are written by the joypad driver's touch_mode sysfs. */
 int gt9xx_touch_swap;
 EXPORT_SYMBOL(gt9xx_touch_swap);
-int gt9xx_touch_swap_status;
-int gt9xx_touch_combo_status;
+extern int gt9xx_touch_swap_status;	/* defined in singleadcjoy.c, stock @ffffffc00a4d5a98 */
+extern int gt9xx_touch_combo_status;	/* defined in singleadcjoy.c, stock @ffffffc00a4d5a9c */
 struct input_dev *input_gt9xx_0;
 struct input_dev *input_gt9xx_1;
 
