@@ -75,10 +75,12 @@ static int gtp_i2c_write(struct i2c_client *client, u8 *buf)
 
 int disable_pa_spk_left(void)
 {
-	u8 buf[2] = { 0x01, 0x00 };
+	u8 buf[2];
 
 	if (dev_init_done == 1) {
 		printk(" disable_pa_spk_left \n");
+		buf[0] = 0x01;
+		buf[1] = 0x00;
 		gtp_i2c_write(pa_dev, buf);
 	}
 	return -1;
@@ -106,8 +108,7 @@ EXPORT_SYMBOL(enable_pa_spk_left);
 
 static int aw87391_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-	struct i2c_msg msgs[2];
-	u8 buf[2] = { 0x00, 0x00 };
+	u8 buf[2];
 	int ret = -1;
 	int retries;
 
@@ -116,15 +117,13 @@ static int aw87391_probe(struct i2c_client *client, const struct i2c_device_id *
 		return -ENODEV;
 
 	pa_dev = client;
-
-	msgs[0].addr = client->addr;
-	msgs[0].flags = 0;
-	msgs[0].len = 1;
-	msgs[0].buf = &buf[0];
-	msgs[1].addr = client->addr;
-	msgs[1].flags = I2C_M_RD;
-	msgs[1].len = 1;
-	msgs[1].buf = &buf[1];
+	buf[0] = 0;
+	buf[1] = 0;
+	{
+	struct i2c_msg msgs[2] = {
+		{ .addr = client->addr, .flags = 0, .len = 1, .buf = &buf[0] },
+		{ .addr = client->addr, .flags = I2C_M_RD, .len = 1, .buf = &buf[1] },
+	};
 
 	for (retries = 0; retries < 5; retries++) {
 		ret = i2c_transfer(client->adapter, msgs, 2);
@@ -141,11 +140,12 @@ static int aw87391_probe(struct i2c_client *client, const struct i2c_device_id *
 	if (buf[1] == 0xc1)
 		dev_init_done = 1;
 	printk("AW_PA_LEFT IC Version: %02x", buf[1]);
+	}
 
 reset:
-	udelay(5000);
 	buf[0] = 0x00;
 	buf[1] = 0xaa;
+	udelay(5000);
 	if (gtp_i2c_write(client, buf) < 0)
 		printk("AW_PA_LEFT read version failed");
 	return 0;
