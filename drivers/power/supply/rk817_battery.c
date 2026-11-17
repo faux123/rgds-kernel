@@ -2454,6 +2454,7 @@ static void rk817_bat_lowpwr_check(struct rk817_battery_device *battery)
 		int diff = battery->dsoc / 1000 - battery->rsoc / 1000;
 
 		if (abs(diff) >= 10) {
+			DBG("lower power correct battery.\n");
 			battery->dsoc = battery->rsoc;
 			battery->smooth_soc = battery->rsoc;
 			correct_count = 1;
