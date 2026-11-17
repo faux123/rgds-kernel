@@ -1167,7 +1167,17 @@ static u32 rk817_bat_get_capacity_uah(struct rk817_battery_device *battery)
 		capacity = ADC_TO_CAPACITY_UAH(val, battery->res_div);
 	}
 
-	DBG("xxxxxxxxxxxxx capacity = %d\n", capacity);
+	/*
+	 * Stock (ffffffc008ee0688..0794): debug print of val, then the four
+	 * Q_PRESS registers are read again unconditionally for a second print.
+	 */
+	DBG("value = 0x%x\n", val);
+	val = rk817_bat_field_read(battery, Q_PRESS_H3) << 24;
+	val |= rk817_bat_field_read(battery, Q_PRESS_H2) << 16;
+	val |= rk817_bat_field_read(battery, Q_PRESS_L1) << 8;
+	val |= rk817_bat_field_read(battery, Q_PRESS_L0) << 0;
+	DBG("xxxxxxxxxxxxxxvalue = 0x%x\n", val);
+	DBG("20190621 capacity = %d\n", capacity);
 	return  capacity;
 }
 
