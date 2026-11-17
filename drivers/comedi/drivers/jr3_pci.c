@@ -764,7 +764,7 @@ static void jr3_pci_detach(struct comedi_device *dev)
 		spin_lock_bh(&dev->spinlock);
 		devpriv->timer_enable = false;
 		spin_unlock_bh(&dev->spinlock);
-		timer_delete_sync(&devpriv->timer);
+		del_timer_sync(&devpriv->timer);
 	}
 
 	comedi_pci_detach(dev);

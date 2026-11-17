@@ -951,7 +951,6 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
 	}
 	uvc->video.ep = ep;
 
-	uvc_fs_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 	uvc_hs_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 	uvc_ss_streaming_ep.bEndpointAddress = uvc->video.ep->address;
 

@@ -26,6 +26,9 @@
 #define UVC_STRING_CONTROL_IDX			0
 #define UVC_STRING_STREAMING_IDX		1
 
+#define UVC_STRING_CONTROL_IDX			0
+#define UVC_STRING_STREAMING_IDX		1
+
 struct uvc_request_data {
 	__s32 length;
 	__u8 data[60];
