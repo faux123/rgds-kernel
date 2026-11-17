@@ -1,30 +1,21 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
- * aw87391.h -- AW87391 speaker-PA hooks for the RG DS.
- *
- * The stock RG DS DTB does not wire the two AW87391 PAs into the ASoC card as
- * aux-devs, so there is no DAPM event to gate them.  Stock instead drives the
- * PAs straight from the RK817 codec's mute_stream callback (enable LAST on the
- * speaker unmute, disable FIRST on mute).  These hooks let rk817_codec.c do the
- * same, which is what avoids the cold-boot / resume enable-into-idle-DAC pop.
+ * Speaker PA hooks exported by sound/soc/rockchip/aw_pa_{left,right}.c (stock
+ * RG DS layout), called from rk817_digital_mute.
  */
 #ifndef __SOUND_AW87391_H__
 #define __SOUND_AW87391_H__
 
 #if IS_ENABLED(CONFIG_SND_SOC_AW87391)
-void aw87391_speakers_enable(void);
-void aw87391_speakers_disable(void);
-void enable_pa_spk_left(void);
-void disable_pa_spk_left(void);
-void enable_pa_spk_right(void);
-void disable_pa_spk_right(void);
+int enable_pa_spk_left(void);
+int disable_pa_spk_left(void);
+int enable_pa_spk_right(void);
+int disable_pa_spk_right(void);
 #else
-static inline void aw87391_speakers_enable(void) { }
-static inline void aw87391_speakers_disable(void) { }
-static inline void enable_pa_spk_left(void) { }
-static inline void disable_pa_spk_left(void) { }
-static inline void enable_pa_spk_right(void) { }
-static inline void disable_pa_spk_right(void) { }
+static inline int enable_pa_spk_left(void) { return -1; }
+static inline int disable_pa_spk_left(void) { return -1; }
+static inline int enable_pa_spk_right(void) { return -1; }
+static inline int disable_pa_spk_right(void) { return -1; }
 #endif
 
 #endif /* __SOUND_AW87391_H__ */
