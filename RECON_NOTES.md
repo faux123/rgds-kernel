@@ -591,6 +591,21 @@ sets schedutil / dmc_ondemand at boot_completed; kernel default schedutil (runni
 except 3 pahole lines). No stock drain measured under the same conditions yet, so a kernel cause is
 not ruled out. Next: 10-minute discharge-current log on stock and ours, same screens, app, cpu_mode.
 
+Battery drain round 1 (2026-11-17 13:50, desk work; device shared with paul-d7, passive reads only,
+on charger at 100%, so no discharge numbers yet). Live: CPU policy0 `performance` 1992 MHz, GPU
+`performance` 800 MHz, VOP `performance` 500 MHz, rkvdec `performance` (single 400 MHz OPP, moot).
+No `dmc` devfreq node exists, so the vendor rc writes to /sys/class/devfreq/dmc are no-ops.
+cpuidle works (cpu0 WFI and cpu-sleep both counting). Two Anbernic writers, both stock firmware:
+1. services.jar PhoneWindowManager.finishedWakingUp(): on EVERY screen wake, unconditionally writes
+   `performance` to rkvdec, vop, gpu and cpu policy0 (plus joypad enable=1). startedGoingToSleep()
+   only turns off backlight_1 and the joypad; no governor is ever restored. Not gated on a setting.
+2. SystemUI com.ylm.main.qs.tiles.CpuTile (quick-settings CPU tile): toggles Settings.System
+   cpu_mode 0/1 and writes CPU `schedutil` (0, default) or `performance` (1), also on every tile
+   refresh. CPU only; nothing puts GPU or VOP back on a dynamic governor. This device: cpu_mode=1.
+Conclusion: fixed max clocks after any wake are stock Anbernic behaviour, not a kernel regression.
+Cost in mA not measured yet. Next, once paul-d7 releases the device and it is unplugged: 10-min
+dense current_now logs, arm A as-is, arm B CPU schedutil + GPU/VOP simple_ondemand, same screens.
+
 ## Round 7 (2026-11-17): runtime inventory, stock kernel vs ours on the same device
 
 Stock image b07cfac1 (stock kernel; hyn_probe @0xcc2f50) and ours a3242b17 (rgds-v1.21 d1cfee9e280a;
