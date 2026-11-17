@@ -636,3 +636,13 @@ stepping, sysfs die_temp_band / thermal_chrg_current / thermal_action_band, from
 was already on main as the 12 W FIX. Build EXIT 0; boot b61b15b9 gated, flashed, booted: thermal work
 present, die_temp_band "<85", thermal_chrg_current 3500, thermal_action_band 2, 0xE4 = 0xde (CT_EN set).
 Plug-in check (0xE5 back to 3000 mA + voltage threshold, LED yellow at 80%) pending.
+
+## BORE on main (2026-11-17)
+
+8864c15dacd8: BORE 5.1.0 (firelzrd, legacy linux-6.1 patch), sched_bore default 0, runtime guards,
+sysctl 0..1, BORE fields hidden from genksyms. First build without the genksyms guard: 117 of the
+225 8821cs imports changed version (not flashed). With it: 225/225 match, all exports equal stock
+except gts_dev. Boot image 312cae1b (bootlab/boot-rgds-main-8864c15dacd8-charge3a.img), gate PASS,
+flashed with read-back hash: boots, "sched_bore=0", 8821cs loaded, wlan0 up. Armed: hog burst_score
+12/14/16 at 2/5/10 s, 9 tasks scored; disarmed: hog 0 (sleeping tasks unwind when they next run);
+writing 2 rejected. BORE is not armed at boot yet (no userspace hook).
