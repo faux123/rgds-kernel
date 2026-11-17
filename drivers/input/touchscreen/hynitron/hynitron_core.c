@@ -1079,7 +1079,10 @@ static void cst8xx_touch_report(struct work_struct *work)
                 }
                 else
                 {
-                    tpd_up(cinfo.x[0], cinfo.y[0]);
+                    /* stock @ffffffc008cc24e0..2514: report all-up directly instead of tpd_up() */
+                    HYN_DEBUG("[A]All Up!");
+                    input_report_key(hyn_ts_data->input_dev, BTN_TOUCH, 0);
+                    input_mt_sync(hyn_ts_data->input_dev);
                 }
                 input_sync(hyn_ts_data->input_dev);
             }
