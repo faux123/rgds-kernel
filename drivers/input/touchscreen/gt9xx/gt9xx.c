@@ -443,15 +443,37 @@ Output:
 *********************************************************/
 static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 {
-	if (gtp_change_x2y)
+	struct input_dev *dev;
+
+	/*
+	 * Stock coordinate mapping, inlined in goodix_ts_work_func
+	 * @ffffffc008cc08a0..093c: swap when gtp_change_x2y is NOT set
+	 * (csel @08b4/08b8), reverse only on non-GT911, then the RG DS
+	 * dual-panel fixups: flip_report_tp mirrors both axes, com_lcd_tp
+	 * maps the panel's full Y range onto half of abs_y_max (ext_lcd_tp
+	 * panel: top half, y/2; other panel: bottom half, y/2 + abs_y_max/2).
+	 */
+	if (!gtp_change_x2y)
 		GTP_SWAP(x, y);
 
-	if (!bgt911 && !bgt970) {
-		if (gtp_x_reverse)
+	if (!bgt911) {
+		if (gtp_x_reverse == 1)
 			x = ts->abs_x_max - x;
 
-		if (gtp_y_reverse)
+		if (!gtp_y_reverse)
 			y = ts->abs_y_max - y;
+	}
+
+	if (ts->flip_report_tp) {
+		x = ts->abs_x_max - x;
+		y = ts->abs_y_max - y;
+	}
+
+	if (ts->com_lcd_tp) {
+		if (ts->ext_lcd_tp)
+			y = y / 2;
+		else
+			y = y / 2 + ts->abs_y_max / 2;
 	}
 
 #if GTP_ICS_SLOT_REPORT
@@ -462,13 +484,22 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
     input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, w);
     input_report_abs(ts->input_dev, ABS_MT_WIDTH_MAJOR, w);
 #else
-    input_report_key(ts->input_dev, BTN_TOUCH, 1);
-    input_report_abs(ts->input_dev, ABS_MT_POSITION_X, x);
-    input_report_abs(ts->input_dev, ABS_MT_POSITION_Y, y);
-    input_report_abs(ts->input_dev, ABS_MT_TOUCH_MAJOR, w);
-    input_report_abs(ts->input_dev, ABS_MT_WIDTH_MAJOR, w);
-    input_report_abs(ts->input_dev, ABS_MT_TRACKING_ID, id);
-    input_mt_sync(ts->input_dev);
+    /* stock @ffffffc008cc093c..0a3c: all events go to the swap-selected device */
+    if (gt9xx_touch_swap) {
+        dev = ts->ext_lcd_tp ? input_gt9xx_0 : input_gt9xx_1;
+        if (!dev)
+            goto out;
+    } else {
+        dev = ts->input_dev;
+    }
+    input_report_key(dev, BTN_TOUCH, 1);
+    input_report_abs(dev, ABS_MT_POSITION_X, x);
+    input_report_abs(dev, ABS_MT_POSITION_Y, y);
+    input_report_abs(dev, ABS_MT_TOUCH_MAJOR, w);
+    input_report_abs(dev, ABS_MT_WIDTH_MAJOR, w);
+    input_report_abs(dev, ABS_MT_TRACKING_ID, id);
+    input_mt_sync(dev);
+out:
 #endif
 
     GTP_DEBUG("ID:%d, X:%d, Y:%d, W:%d", id, x, y, w);
@@ -1034,10 +1065,14 @@ static void goodix_ts_work_func(struct work_struct *work)
     else
 #endif
     {
-        input_sync(ts->input_dev);
-        /* stock goodix_ts_work_func @ffffffc008cc0a68: SYN_REPORT on the swap-selected device */
-        if (gt9xx_touch_swap && gtp_out_dev(ts))
-            input_sync(gtp_out_dev(ts));
+        /* stock goodix_ts_work_func @ffffffc008cc0a68: one SYN_REPORT, on the swap-selected device */
+        if (gt9xx_touch_swap) {
+            struct input_dev *dev = ts->ext_lcd_tp ? input_gt9xx_0 : input_gt9xx_1;
+            if (dev)
+                input_sync(dev);
+        } else {
+            input_sync(ts->input_dev);
+        }
     }
 
 exit_work_func:
