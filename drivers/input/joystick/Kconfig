@@ -33,14 +33,6 @@ config JOYSTICK_ANALOG
 	  To compile this driver as a module, choose M here: the
 	  module will be called analog.
 
-config JOYSTICK_SINGLEADCJOY
-	tristate "Anbernic singleadc-joypad gamepad"
-	depends on IIO
-	help
-	  Gamepad driver of the Anbernic RG DS stock kernel: analog sticks
-	  read through a multiplexed SARADC channel, GPIO buttons, and the
-	  key-to-touch mapping exposed in sysfs.
-
 config JOYSTICK_A3D
 	tristate "Assassin 3D and MadCatz Panther devices"
 	select GAMEPORT
@@ -419,5 +411,13 @@ config JOYSTICK_SENSEHAT
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called sensehat_joystick.
+
+config JOYSTICK_SINGLEADCJOY
+	tristate "Anbernic singleadc-joypad gamepad"
+	depends on IIO
+	help
+	  Gamepad driver of the Anbernic RG DS stock kernel: analog sticks
+	  read through a multiplexed SARADC channel, GPIO buttons, and the
+	  key-to-touch mapping exposed in sysfs.
 
 endif
