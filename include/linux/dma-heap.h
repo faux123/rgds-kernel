@@ -27,10 +27,10 @@ struct dma_heap_ops {
 				    unsigned long len,
 				    unsigned long fd_flags,
 				    unsigned long heap_flags);
-#if IS_ENABLED(CONFIG_NO_GKI)
+	long (*get_pool_size)(struct dma_heap *heap);
+#if IS_ENABLED(CONFIG_NO_GKI)	/* stock order: get_phys after get_pool_size (dma_heap_ioctl+0x230: ops+0x10) */
 	int (*get_phys)(struct dma_heap *heap, struct dma_heap_phys_data *phys);
 #endif
-	long (*get_pool_size)(struct dma_heap *heap);
 };
 
 /**
