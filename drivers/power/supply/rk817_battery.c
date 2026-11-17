@@ -3170,20 +3170,14 @@ void led_chargr_status(int status)
 	led_charger_status = status != 0;
 	led_update_charger_soc_status();
 }
+EXPORT_SYMBOL(led_chargr_status);
 
 int get_led_chargr_status(void)
 {
 	return led_charger_status;
 }
+EXPORT_SYMBOL(get_led_chargr_status);
 
-/*
- * Stock calls get_cw2015_soc() from an Anbernic-modified CW2015 gauge driver
- * (not in this tree yet). Weak fallback keeps the rk817 SOC until it lands.
- */
-int __weak get_cw2015_soc(void)
-{
-	return rk817_soc;
-}
 
 static struct kobject *rk817_kobj;
 
