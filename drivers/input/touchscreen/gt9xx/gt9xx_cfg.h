@@ -20,8 +20,8 @@
 
 /* CFG for GT911 */
 static u8 gtp_dat_gt11[] = {
-	/* <1200, 1920>*/
-	#include "WGJ89006B_GT911_Config_20140625_085816_0X43.cfg"
+	/* <640, 480> RG DS: the 186 bytes of stock gtp_dat_gt11 @ffffffc00a2e4fb8, read from the ELF (config 0x5B) */
+	#include "RGDS_GT911_Config_stock_0X5B.cfg"
 };
 
 static u8 gtp_dat_gt9110[] = {
