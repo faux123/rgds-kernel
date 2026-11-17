@@ -1668,29 +1668,49 @@ static __always_inline void stock_gpio_buttons(void)
 			 * -1 slot for sel 2 @..759ac) as 1, and release touch slot 2 if this direction's mode == 1.
 			 * Then tenpad2touchpanel_abs(sel, code, val) and old = val. Only codes 0x10 / 0x11 act. */
 			/* written out per selector and axis as stock (four tenpad2touchpanel_abs call sites) */
-#define SEL_HALF(SEL, AX, MODE, OPP, NB)						\
+/* After the neighbour mark stock re-reads code and selector and picks the direction's mode again
+			 * (@..758ec..7591c, @..75c44..75c90); pressed is recomputed from b->not_active_low each use (cset). */
+#define SEL_NB_RELEASE()								\
 			do {								\
-				abs_value_##AX##_value = (SEL) == 1 ? pressed : -pressed; \
-				if (abs_value_##AX##_value_old == (OPP) && pressed) {	\
-					(b + (NB))->raw_not_high = 1;			\
-					if (remapkey_##MODE##_mode == 1 && gts_dev)	\
-						*(u64 *)&touch_data[8] = 1;		\
+				int m_ = 0;						\
+				if (b->code == 0x10) {					\
+					if (b->abs_value == 1) m_ = remapkey_right_mode; \
+					else if (b->abs_value == 2) m_ = remapkey_left_mode; \
+					else break;					\
+				} else if (b->code == 0x11) {				\
+					if (b->abs_value == 1) m_ = remapkey_down_mode; \
+					else if (b->abs_value == 2) m_ = remapkey_up_mode; \
+					else break;					\
+				} else {						\
+					break;						\
 				}							\
-				tenpad2touchpanel_abs(b->abs_value, b->code, (SEL) == 1 ? pressed : -pressed); \
-				abs_value_##AX##_value_old = (SEL) == 1 ? pressed : -pressed; \
+				if (m_ == 1 && gts_dev)					\
+					*(u64 *)&touch_data[8] = 1;			\
+			} while (0)
+#define SEL_HALF(SEL, AX, OPP, NB)							\
+			do {								\
+				abs_value_##AX##_value = (SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low); \
+				if (abs_value_##AX##_value_old == (OPP) && v == b->not_active_low) { \
+					(b + (NB))->raw_not_high = 1;			\
+					SEL_NB_RELEASE();				\
+				}							\
+				tenpad2touchpanel_abs(b->abs_value, b->code,	\
+					(SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low)); \
+				abs_value_##AX##_value_old = (SEL) == 1 ? (v == b->not_active_low) : -(v == b->not_active_low); \
 			} while (0)
 			if (b->abs_value == 1) {			/* @..758a0 */
 				if (b->code == 0x10)
-					SEL_HALF(1, x, right, -1, 1);
+					SEL_HALF(1, x, -1, 1);
 				if (b->code == 0x11)
-					SEL_HALF(1, y, down, -1, 1);
+					SEL_HALF(1, y, -1, 1);
 			} else if (b->abs_value == 2) {			/* @..75968 */
 				if (b->code == 0x10)
-					SEL_HALF(2, x, left, 1, -1);
+					SEL_HALF(2, x, 1, -1);
 				if (b->code == 0x11)
-					SEL_HALF(2, y, up, 1, -1);
+					SEL_HALF(2, y, 1, -1);
 			}
 #undef SEL_HALF
+#undef SEL_NB_RELEASE
 		}
 		b->raw_not_high = (v != 0);			/* strb @..75830 */
 	}
