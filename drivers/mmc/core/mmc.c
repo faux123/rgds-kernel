@@ -2259,7 +2259,6 @@ static int _mmc_resume(struct mmc_host *host)
 {
 	int err = 0;
 	int i;
-	bool resume_success = false;
 
 	mmc_claim_host(host);
 
