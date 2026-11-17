@@ -1744,18 +1744,18 @@ static __always_inline void stock_gpio_buttons(void)
 		}								\
 		input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);		\
 	} while (0)
+/* hat values re-read from gpio_hat_value_new[] at each test, as stock (no locals, @..7505c) */
 #define HAT_BLOCK(IDX, ST, CODE, SLOT, NK, PK, L)				\
 	do {									\
-		int n0 = gpio_hat_value_new[IDX], n1 = gpio_hat_value_new[(IDX) + 1]; \
-		if (gpio_hat_value_old[IDX] == n0 && gpio_hat_value_old[(IDX) + 1] == n1) \
+		if (gpio_hat_value_old[IDX] == gpio_hat_value_new[IDX] && gpio_hat_value_old[(IDX) + 1] == gpio_hat_value_new[(IDX) + 1]) \
 			break;							\
-		if (!(n0 | n1)) {						\
+		if (!(gpio_hat_value_new[IDX] | gpio_hat_value_new[(IDX) + 1])) {						\
 			if (ST) {						\
 				ST = 0;						\
 				HAT_DEBOUNCE();					\
 				HAT_LEAVE(CODE, SLOT, NK, PK);			\
 			}							\
-		} else if (n0 == 1 && n1 == 0) {				\
+		} else if (gpio_hat_value_new[IDX] == 1 && gpio_hat_value_new[(IDX) + 1] == 0) {				\
 			if (ST == -1) {						\
 				ST = 1;						\
 				HAT_DEBOUNCE();					\
@@ -1765,7 +1765,7 @@ static __always_inline void stock_gpio_buttons(void)
 				ST = 1;						\
 				goto L##_neg;					\
 			}							\
-		} else if (n0 == 0 && n1 == 1) {				\
+		} else if (gpio_hat_value_new[IDX] == 0 && gpio_hat_value_new[(IDX) + 1] == 1) {				\
 			if (ST == 1) {						\
 				ST = -1;					\
 				HAT_DEBOUNCE();					\
@@ -1780,8 +1780,8 @@ static __always_inline void stock_gpio_buttons(void)
 L##_neg:	HAT_PRESS(CODE, SLOT, NK, -1);					\
 		goto L##_copy;							\
 L##_pos:	HAT_PRESS(CODE, SLOT, PK, 1);					\
-L##_copy:	gpio_hat_value_old[IDX] = n0;					\
-		gpio_hat_value_old[(IDX) + 1] = n1;				\
+L##_copy:	gpio_hat_value_old[IDX] = gpio_hat_value_new[IDX];					\
+		gpio_hat_value_old[(IDX) + 1] = gpio_hat_value_new[(IDX) + 1];				\
 	} while (0)
 static noinline void joypad_gpio_check(struct input_dev *input)
 {
