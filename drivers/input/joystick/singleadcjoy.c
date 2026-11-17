@@ -1498,15 +1498,15 @@ extern int remapkey_xbox_switch, remapkey_xbox_switch_bt_tr;	/* @..5714, @..5718
  * stock B tests `tst mask, #0xfffffffb` (@..70080 for abxy_z_mask, @..700c8 for abxy_mask), i.e. mask in {0, 4},
  * which is Y's slot, then stores 6. Y uses the same test correctly (@..701a8/@..701f0). Kept as in stock.
  * The RG556 .ko keypad2touchpanel_abs has the same 4 `tst ..., #0xfffffffb` sites, so the quirk predates the RG DS. */
-static __always_inline void stock_slot_down(int slot, int x, int y)
+static __always_inline void stock_slot_down(int slot, int y, int x)
 {
 	*(u64 *)&touch_data[slot * 4] = 0x100000001ULL;
 	touch_data[slot * 4 + 2] = y;
 	touch_data[slot * 4 + 3] = x;
 }
-static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
+static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[(long)slot * 4] = 1; }	/* ldrsw + lsl #4 @..6ff88 */
 /* Written out per key, as stock does (each key has its own copy of the logic @ffffffc008c6f828..7064c). */
-#define KP_DOWN(SLOT, K)	do { if (gts_dev) stock_slot_down(SLOT, remapkey_##K##_x, remapkey_##K##_y); } while (0)
+#define KP_DOWN(SLOT, K)	do { if (gts_dev) stock_slot_down(SLOT, remapkey_##K##_y, remapkey_##K##_x); } while (0)
 #define KP_UP(SLOT)		do { if (gts_dev) stock_slot_up(SLOT); } while (0)
 #define KP_MASKED(MASK, SLOT, K, ACC)						\
 	do {									\
@@ -1713,7 +1713,7 @@ static __always_inline void stock_gpio_buttons(void)
 		} else {							\
 			HAT_DEBOUNCE();						\
 			if (remapkey_##K##_mode == 1 && gts_dev)		\
-				stock_slot_down(SLOT, remapkey_##K##_x, remapkey_##K##_y); \
+				stock_slot_down(SLOT, remapkey_##K##_y, remapkey_##K##_x); \
 			g_touch_sync();						\
 		}								\
 		input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);		\
