@@ -787,6 +787,8 @@ static void rk817_charge_set_otg_in(struct rk817_charger *charge, int online)
 	charge->otg_in = online;
 }
 
+void led_chargr_status(int status);	/* rk817_battery.c, exported */
+
 static void rk817_charge_set_chrg_param(struct rk817_charger *charge,
 					enum charger_t charger)
 {
@@ -851,6 +853,10 @@ static void rk817_charge_set_chrg_param(struct rk817_charger *charge,
 		rk817_charge_set_input_current(charge, INPUT_450MA);
 		break;
 	}
+
+	/* stock: charge LED follows the plug state on every call, default case included
+	 * (bl led_chargr_status @ffffffc008ee4058, arg = (ac_in | usb_in | dc_in) != 0) */
+	led_chargr_status(rk817_charge_online(charge) != 0);
 
 	if (rk817_charge_online(charge) && rk817_charge_get_dsoc(charge) == 100)
 		charge->prop_status = POWER_SUPPLY_STATUS_FULL;
