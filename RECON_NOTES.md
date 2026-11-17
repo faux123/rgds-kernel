@@ -667,3 +667,20 @@ Plug-in check on main 33879857d96e (2026-11-17, Paul): LED yellow at 87% chargin
 soc=87, gpio-21 battery_charging high, gpio-20 low; 0xE5 back to 0xdf after the replug (3000 mA,
 voltage threshold re-applied by 65bd4bacb137), 0xE4 0xde, die band <85, 3500 mA, 1.73 A into the
 cell at 4.29 V. Charge LED states all seen: yellow below 90, green at 90+, off unplugged.
+
+## microSD IO and zram (2026-11-17)
+
+SD card SN256 (256 GB, SDR104 148.5 MHz, exFAT, 1,189 NDS ROMs up to 256 MiB) on mmcblk0
+(fe2b0000.dwmmc). bench/sd: probe sdprobe.c, driver sd-ab.sh, 3 interleaved rounds, page cache dropped
+before every run. Medians (range in the summary file):
+- 256 MiB ROM load: stock mq-deadline/128 4.97 s; mq-deadline/512 4.43 s; bfq/512 4.49 s.
+- 300 ROM header scans (16 KiB each): 0.83 s at 128, 0.95..1.02 s at 512, 0.94..0.96 s at 2048.
+- 32 KiB random reads, idle: similar across settings (21..28 MB/s).
+- Random reads while 256 MiB is written to the card: mq-deadline 3.2 MB/s, p99 43.6 ms, worst 1.21 s;
+  bfq 22.3 MB/s, p99 7.7 ms, worst 64 ms.
+Chosen: bfq + read_ahead_kb 512 (device/rgds-tune.sh, Magisk service.d). Verified after a reboot:
+mmcblk0 [bfq] ra=512, eMMC untouched. zram: lz4 only (zstd/lzo/lz4hc not built), ratio 3.2:1,
+page-cluster 0, swappiness 100, no allocation stalls since boot. The script grows zram from 75% of
+RAM (2.33 GB) to MemTotal (3.10 GB). First boot: resize FAILED because Android's own zram swapon came
+after sys.boot_completed (disksize 0 when the script ran); fixed to wait for zram0 in /proc/swaps.
+Not re-verified yet: the reboot is on hold for a peer session's ROM scan on the device.

@@ -1,0 +1,267 @@
+orig sched=mq-deadline ra=128
+arm round=1 sched=mq-deadline ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=4.973
+  seq_mbps=51.5
+  rand_mbps=27.89
+  rand_p50_ms=1.085
+  rand_p99_ms=4.843
+  rand_max_ms=16.204
+  scan_files=300
+  scan_s=0.647
+  scan_p50_ms=2.059
+  scan_p99_ms=6.829
+  scan_max_ms=9.293
+arm round=1 sched=bfq ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=5.563
+  seq_mbps=46.0
+  rand_mbps=20.85
+  rand_p50_ms=1.308
+  rand_p99_ms=9.024
+  rand_max_ms=17.676
+  scan_files=300
+  scan_s=0.811
+  scan_p50_ms=2.156
+  scan_p99_ms=17.455
+  scan_max_ms=28.061
+arm round=1 sched=mq-deadline ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.468
+  seq_mbps=57.3
+  rand_mbps=23.54
+  rand_p50_ms=1.266
+  rand_p99_ms=7.372
+  rand_max_ms=18.646
+  scan_files=300
+  scan_s=0.946
+  scan_p50_ms=2.707
+  scan_p99_ms=14.533
+  scan_max_ms=21.959
+arm round=1 sched=bfq ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.490
+  seq_mbps=57.0
+  rand_mbps=21.76
+  rand_p50_ms=1.320
+  rand_p99_ms=8.731
+  rand_max_ms=16.497
+  scan_files=300
+  scan_s=1.042
+  scan_p50_ms=2.869
+  scan_p99_ms=14.779
+  scan_max_ms=31.489
+arm round=1 sched=mq-deadline ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.485
+  seq_mbps=57.1
+  rand_mbps=22.24
+  rand_p50_ms=1.293
+  rand_p99_ms=7.823
+  rand_max_ms=36.013
+  scan_files=300
+  scan_s=0.956
+  scan_p50_ms=2.755
+  scan_p99_ms=23.687
+  scan_max_ms=32.156
+arm round=1 sched=bfq ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.594
+  seq_mbps=55.7
+  rand_mbps=24.31
+  rand_p50_ms=1.312
+  rand_p99_ms=4.096
+  rand_max_ms=14.531
+  scan_files=300
+  scan_s=0.935
+  scan_p50_ms=2.760
+  scan_p99_ms=17.283
+  scan_max_ms=31.370
+arm round=1 sched=mq-deadline ra=512 kind=write
+  rand_mbps=3.27
+  rand_p50_ms=1.104
+  rand_p99_ms=43.562
+  rand_max_ms=1214.455
+arm round=1 sched=bfq ra=512 kind=write
+  rand_mbps=19.53
+  rand_p50_ms=1.132
+  rand_p99_ms=9.548
+  rand_max_ms=64.090
+arm round=2 sched=bfq ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.410
+  seq_mbps=58.1
+  rand_mbps=30.27
+  rand_p50_ms=1.033
+  rand_p99_ms=3.102
+  rand_max_ms=14.920
+  scan_files=300
+  scan_s=0.866
+  scan_p50_ms=2.605
+  scan_p99_ms=12.057
+  scan_max_ms=16.430
+arm round=2 sched=mq-deadline ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.537
+  seq_mbps=56.4
+  rand_mbps=20.91
+  rand_p50_ms=1.292
+  rand_p99_ms=13.627
+  rand_max_ms=32.637
+  scan_files=300
+  scan_s=1.098
+  scan_p50_ms=2.801
+  scan_p99_ms=31.850
+  scan_max_ms=42.718
+arm round=2 sched=bfq ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.519
+  seq_mbps=56.6
+  rand_mbps=20.94
+  rand_p50_ms=1.323
+  rand_p99_ms=9.402
+  rand_max_ms=20.106
+  scan_files=300
+  scan_s=0.861
+  scan_p50_ms=2.766
+  scan_p99_ms=6.879
+  scan_max_ms=15.301
+arm round=2 sched=mq-deadline ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.432
+  seq_mbps=57.8
+  rand_mbps=21.74
+  rand_p50_ms=1.306
+  rand_p99_ms=8.966
+  rand_max_ms=23.852
+  scan_files=300
+  scan_s=1.011
+  scan_p50_ms=2.934
+  scan_p99_ms=14.137
+  scan_max_ms=15.994
+arm round=2 sched=bfq ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=5.445
+  seq_mbps=47.0
+  rand_mbps=21.01
+  rand_p50_ms=1.330
+  rand_p99_ms=9.435
+  rand_max_ms=18.739
+  scan_files=300
+  scan_s=0.687
+  scan_p50_ms=2.140
+  scan_p99_ms=6.621
+  scan_max_ms=22.545
+arm round=2 sched=mq-deadline ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=5.427
+  seq_mbps=47.2
+  rand_mbps=22.54
+  rand_p50_ms=1.301
+  rand_p99_ms=7.620
+  rand_max_ms=16.574
+  scan_files=300
+  scan_s=0.826
+  scan_p50_ms=2.234
+  scan_p99_ms=13.397
+  scan_max_ms=27.972
+arm round=2 sched=mq-deadline ra=512 kind=write
+  rand_mbps=3.21
+  rand_p50_ms=1.163
+  rand_p99_ms=37.122
+  rand_max_ms=1134.087
+arm round=2 sched=bfq ra=512 kind=write
+  rand_mbps=22.30
+  rand_p50_ms=1.161
+  rand_p99_ms=7.678
+  rand_max_ms=25.075
+arm round=3 sched=mq-deadline ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=4.943
+  seq_mbps=51.8
+  rand_mbps=24.07
+  rand_p50_ms=1.103
+  rand_p99_ms=8.387
+  rand_max_ms=42.363
+  scan_files=300
+  scan_s=0.834
+  scan_p50_ms=2.211
+  scan_p99_ms=16.392
+  scan_max_ms=23.395
+arm round=3 sched=bfq ra=128 kind=idle
+  seq_mb=256.0
+  seq_s=4.945
+  seq_mbps=51.8
+  rand_mbps=24.98
+  rand_p50_ms=1.166
+  rand_p99_ms=6.954
+  rand_max_ms=13.255
+  scan_files=300
+  scan_s=0.804
+  scan_p50_ms=2.228
+  scan_p99_ms=10.041
+  scan_max_ms=22.566
+arm round=3 sched=mq-deadline ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.313
+  seq_mbps=59.4
+  rand_mbps=26.31
+  rand_p50_ms=1.130
+  rand_p99_ms=3.937
+  rand_max_ms=12.532
+  scan_files=300
+  scan_s=0.802
+  scan_p50_ms=2.640
+  scan_p99_ms=4.638
+  scan_max_ms=10.173
+arm round=3 sched=bfq ra=512 kind=idle
+  seq_mb=256.0
+  seq_s=4.440
+  seq_mbps=57.7
+  rand_mbps=23.98
+  rand_p50_ms=1.178
+  rand_p99_ms=8.405
+  rand_max_ms=16.295
+  scan_files=300
+  scan_s=1.016
+  scan_p50_ms=2.710
+  scan_p99_ms=17.461
+  scan_max_ms=28.230
+arm round=3 sched=mq-deadline ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.365
+  seq_mbps=58.6
+  rand_mbps=22.90
+  rand_p50_ms=1.138
+  rand_p99_ms=12.617
+  rand_max_ms=30.972
+  scan_files=300
+  scan_s=0.857
+  scan_p50_ms=2.615
+  scan_p99_ms=13.109
+  scan_max_ms=31.696
+arm round=3 sched=bfq ra=2048 kind=idle
+  seq_mb=256.0
+  seq_s=4.503
+  seq_mbps=56.8
+  rand_mbps=27.88
+  rand_p50_ms=1.106
+  rand_p99_ms=2.957
+  rand_max_ms=26.093
+  scan_files=300
+  scan_s=1.018
+  scan_p50_ms=2.699
+  scan_p99_ms=26.209
+  scan_max_ms=35.113
+arm round=3 sched=mq-deadline ra=512 kind=write
+  rand_mbps=3.22
+  rand_p50_ms=1.148
+  rand_p99_ms=45.436
+  rand_max_ms=1228.754
+arm round=3 sched=bfq ra=512 kind=write
+  rand_mbps=22.53
+  rand_p50_ms=1.098
+  rand_p99_ms=7.337
+  rand_max_ms=111.784
+restored sched=[mq-deadline] kyber bfq none ra=128
+ALL_DONE
