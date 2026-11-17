@@ -2665,10 +2665,8 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
 	int min_gap_xsoc;
 	int powerpatch_res;
 
-	if ((abs(battery->current_avg) < 400) && (battery->dsoc / 1000 > 5))
-		pwroff_vol = battery->pdata->pwroff_vol + 50;
-	else
-		pwroff_vol = battery->pdata->pwroff_vol;
+	/* stock: no +50 mV light-load margin (ffffffc008ee0bcc..0bd0) */
+	pwroff_vol = battery->pdata->pwroff_vol;
 
 	/* calc estimate ocv voltage */
 	voltage_avg = rk817_bat_get_battery_voltage(battery);
