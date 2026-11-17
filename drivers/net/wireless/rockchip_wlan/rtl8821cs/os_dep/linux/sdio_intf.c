@@ -1490,6 +1490,5 @@ int rtw_sdio_set_power(int on)
 }
 #endif /* CONFIG_PLATFORM_INTEL_BYT */
 
-MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 module_init(rtw_drv_entry);
 module_exit(rtw_drv_halt);
