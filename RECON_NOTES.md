@@ -663,3 +663,7 @@ behaviour). 16 hogs, stock CFS -> BORE, medians: 60 Hz frames missed 35.2% -> 0.
 6 ms CPU p50 12.1 -> 6.0 ms, p99 25.7 -> 6.1 ms; 100 fork+exec 11.09 -> 3.79 s; hog throughput
 -4.3% (frame test) and -9.2% (fork test). 4 hogs: fork+exec -4.3%, everything else within spread.
 0 hogs: no difference. Synthetic probe: shows scheduler behaviour under contention, not game FPS.
+Plug-in check on main 33879857d96e (2026-11-17, Paul): LED yellow at 87% charging. Driver: charger=1
+soc=87, gpio-21 battery_charging high, gpio-20 low; 0xE5 back to 0xdf after the replug (3000 mA,
+voltage threshold re-applied by 65bd4bacb137), 0xE4 0xde, die band <85, 3500 mA, 1.73 A into the
+cell at 4.29 V. Charge LED states all seen: yellow below 90, green at 90+, off unplugged.
