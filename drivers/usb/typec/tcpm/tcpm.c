@@ -1492,6 +1492,13 @@ static void tcpm_queue_vdm(struct tcpm_port *port, const u32 header,
 static void tcpm_queue_vdm_unlocked(struct tcpm_port *port, const u32 header,
 				    const u32 *data, int cnt)
 {
+	/*
+	 * RG DS stock (tcpm_queue_vdm_unlocked, ffffffc008c59514..9520):
+	 * only queue a VDM in SRC_READY or SNK_READY; return before taking
+	 * any lock otherwise.
+	 */
+	if (port->state != SRC_READY && port->state != SNK_READY)
+		return;
 #ifdef CONFIG_NO_GKI
 	mutex_lock(&port->pd_handler_lock);
 	if (tcpm_port_is_disconnected(port))
