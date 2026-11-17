@@ -462,3 +462,24 @@ Publishing note: after tag v1.21-recon-1 the fixes branch was force-pushed when 
 new stock tips (against the agreement to stop force-pushing). From e41c061b8b96 on, stock commits are
 added to both branches as ordinary commits (no force); the fixes branch tree equals stock + the 3
 FIX commits (6 lines, 3 files).
+
+## Round 4 (2026-11-17): every named data object compared
+
+`audit/objcmp.py` compares each uniquely named initialized data object (.rodata, .data, init data)
+in both kernels word by word, pointers resolved to symbol+offset or to the string they point at,
+no alignment skip and no length cap (answers Gemini round 2's constant-data gaps). On build r9:
+35,232 objects, 878,435 words, 8 objects differing. Fixes on the stock branch:
+
+| Object | Stock | Tree before | Commit |
+|---|---|---|---|
+| gtp_dat_gt11 (sent to the GT911 at init) | RG DS config 0x5B, 640x480, 186 bytes, checksum valid | upstream example 0x43 (1200x1920) | 57c205fe11d9 |
+| hynitron_i2c_driver.remove | hyn_remove | NULL (__exit_p, built in) | 3b405091fc47 |
+| hyn_ts_pm_ops | suspend/resume only | + freeze/thaw/poweroff/restore | 3b405091fc47 |
+| rk817 RESET_MODE reg field | 0xa3 bits 0..7 | 0..3 (upstream) | 8629e57d90c6 |
+| sc7u22 acc/gyro ops int_status_reg | 0 | -1 (read by the IRQ path) | a718c35ef570 |
+| sc7u22_gyro_range order | 125..2000 | 2000..125 | a718c35ef570 |
+
+Build r10 (stock tip a718c35ef570): objects differing 1 (shipped_regdb_certs order, build-machine
+directory order); EXACT 45,557, ADDR 24,202, ADDR_MAPPED 91, DIFF 73, address conflicts 0;
+constant-data words: the 6 build-metadata items only. Fixes branch rgds-v1.21 = 10fa63ded8ab, still
+stock + 3 FIX commits (6 lines, 3 files). None of this is boot-tested yet.
