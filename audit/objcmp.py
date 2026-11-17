@@ -61,21 +61,40 @@ def meaning(v, rd, A, N):
     return ('sym', nm, off)
 
 cnt_s = collections.Counter(sn); cnt_o = collections.Counter(x[2] for x in O_all)
-stock_at = {n: (a, sa[i + 1] - a if i + 1 < len(sa) else 0) for i, (a, n) in enumerate(zip(sa, sn)) if cnt_s[n] == 1}
+occ_s = collections.defaultdict(list)
+for i, (a, n) in enumerate(zip(sa, sn)):
+    if LO <= a < 0xffffffc00b500000:
+        occ_s[n].append((a, sa[i + 1] - a if i + 1 < len(sa) else 0))
+occ_o = collections.defaultdict(list)
+for a, size, n in O_all:
+    if LO <= a < 0xffffffc00b500000:
+        occ_o[n].append(a)
+# k-th of a repeated name in stock <-> k-th in ours, only when both kernels have the same count
+stock_at = {}
+for n, lst in occ_o.items():
+    if len(occ_s.get(n, ())) == len(lst):
+        for k, a in enumerate(lst):
+            stock_at[(n, a)] = occ_s[n][k]
+dup_mismatch = sorted(n for n in occ_o if n in occ_s and len(occ_s[n]) != len(occ_o[n]))
 compared = words = 0
 bad = []
 sizebad = []
 for a, size, n in O_all:
-    if not (LO <= a < HI) or cnt_o[n] != 1 or n not in stock_at or size == 0 or n in POOL:
+    if not (LO <= a < 0xffffffc00b500000) or (n, a) not in stock_at or size == 0 or n in POOL:
         continue
-    x, sgap = stock_at[n]
+    x, sgap = stock_at[(n, a)]
+    if a >= HI:                       # .bss: zero-initialized, only the size can differ
+        compared += 1
+        if (sgap < size or sgap > size + 64) and sgap < 1 << 20:
+            sizebad.append((n, sgap, size))
+        continue
     if not (LO <= x < HI):
         continue
     bs, bo = rs(x, size), ro(a, size)
     if bs is None or bo is None:
         continue
     compared += 1
-    if sgap < size or (sgap > size + 64 and sgap < 4096 and False):
+    if sgap < size or sgap > size + 64:
         sizebad.append((n, sgap, size))
     # word-aligned objects compare word by word, others byte-wise
     step = 8 if a % 8 == 0 and x % 8 == 0 else 1
@@ -91,8 +110,9 @@ for a, size, n in O_all:
         if step == 8 and size % 8:
             if bs[size - size % 8:] != bo[size - size % 8:]:
                 bad.append((n, size - size % 8, bs[-8:], bo[-8:]))
+print('names whose occurrence count differs (not compared):', len(dup_mismatch), dup_mismatch[:30])
 print('objects compared', compared, 'words', words, 'objects differing', len(bad), 'stock smaller than ours', len(sizebad))
 for b in bad:
     print('DIFF %-40s +%-5d %s | %s' % (b[0], b[1], str(b[2])[:70], str(b[3])[:70]))
-for b in sizebad[:40]:
+for b in sizebad:
     print('SIZE %-40s stock<=%d ours=%d' % b)

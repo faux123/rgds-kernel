@@ -483,3 +483,36 @@ Build r10 (stock tip a718c35ef570): objects differing 1 (shipped_regdb_certs ord
 directory order); EXACT 45,557, ADDR 24,202, ADDR_MAPPED 91, DIFF 73, address conflicts 0;
 constant-data words: the 6 build-metadata items only. Fixes branch rgds-v1.21 = 10fa63ded8ab, still
 stock + 3 FIX commits (6 lines, 3 files). None of this is boot-tested yet.
+
+## Round 5 (2026-11-17): answers to Gemini round 3 (reviews/2026-11-17-gemini-round3.md)
+
+Fixed in the tools, then rerun on build r10:
+- objcmp.py now pairs repeated static names by occurrence order (only when both kernels have the
+  same count; 19 names have different counts and are listed, not compared), checks .bss object
+  sizes, and the stock-larger size check is on (the `and False` was a real bug). Result: 41,606
+  objects compared, 926,179 words, 1 differing (shipped_regdb_certs order).
+- Layout check by gaps (`audit/gapcmp-r10.txt`): for 57,040 paired symbols, the distance to the
+  next symbol is identical in 56,882. The 158 others are section-boundary alias symbols (gap 0 on one
+  side), anonymous string pools, alignment padding before 64-byte-aligned objects, and build
+  metadata (kernel_config_data -16 = the 3 pahole lines, linux_proc_banner, the MPP revision
+  string, .notes build-id).
+
+Checked and rejected:
+- "cma_activate_area 0x38 vs 0xf8 is a struct-layout divergence": both kernels load the page of
+  memstart_addr (adrp) and read memstart_addr itself (stock d04000+0x38, ours d04000+0xd8 in r10).
+  Same global, different page offset because the ro_after_init area starts 0xa0 later in ours. The
+  same holds for read_cons_helper and hso_probe (same page, same pattern).
+- "tramp_vectors is 1 KiB different": both at ffffffc009de2000; the 0x2040 bytes are byte-identical.
+  Also byte-identical: _text (64 KiB head), __primary_switch, cpu_resume, sha256_block_data_order,
+  __entry_tramp_text_end. The length difference was objdump decoding the stock blob differently.
+- run_state_machine (tcpm): the SNK_ATTACH_WAIT block is laid out differently (the
+  "disconnected -> SNK_UNATTACHED" and "sink -> SNK_DEBOUNCED" arms swap places); same conditions,
+  same targets, 3 instructions longer in stock.
+
+Still open, stated plainly:
+- No formal (SMT) equivalence proof for the reconstructed-driver functions that differ in code
+  layout (joypad mapping functions, keypad/tenpad, gpio_check/adc_check/probe, rk817_battery_work,
+  led_update_charger_soc_status, speaker enable/disable). Reviewed by instruction trace and Ghidra.
+- __LINE__ values in gt9xx, hynitron, cst, rk817_battery, rk817 codec: stock's line layout is not
+  recoverable from the binary.
+- Nothing has run on the device. A boot test needs Paul's go.

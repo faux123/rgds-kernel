@@ -1,0 +1,159 @@
+paired objects 57040 same gap to next symbol 56882 different 158
+-813252 __alt_instructions                                 stock 0xffffffc009e4b6cc gap 0 | ours 0xffffffc009e4b6cc gap 813252
+-182172 __start___bug_table                                stock 0xffffffc00a3d7180 gap 0 | ours 0xffffffc00a3d7180 gap 182172
+-69656 __rela_end                                         stock 0xffffffc009faa398 gap 0 | ours 0xffffffc009faa398 gap 69656
+-20480 __initdata_begin                                   stock 0xffffffc009f20000 gap 0 | ours 0xffffffc009f20000 gap 20480
+-20480 __inittext_end                                     stock 0xffffffc009f20000 gap 0 | ours 0xffffffc009f20000 gap 20480
+-16384 __init_end                                         stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-16384 __initdata_end                                     stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-16384 __start_init_task                                  stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-16384 _data                                              stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-16384 _sdata                                             stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-16384 init_stack                                         stock 0xffffffc009fc0000 gap 0 | ours 0xffffffc009fc0000 gap 16384
+-14688 __start___ex_table                                 stock 0xffffffc009dddee8 gap 0 | ours 0xffffffc009dddf88 gap 14688
+ -8192 __end_rodata                                       stock 0xffffffc009de2000 gap 0 | ours 0xffffffc009de2000 gap 8192
+ -8192 __hyp_events_end                                   stock 0xffffffc009de2000 gap 0 | ours 0xffffffc009de2000 gap 8192
+ -8192 __hyp_events_start                                 stock 0xffffffc009de2000 gap 0 | ours 0xffffffc009de2000 gap 8192
+ -6288 __end_ro_after_init                                stock 0xffffffc009d4bde8 gap 0 | ours 0xffffffc009d4be88 gap 6288
+ -6288 __start___tracepoints_ptrs                         stock 0xffffffc009d4bde8 gap 0 | ours 0xffffffc009d4be88 gap 6288
+ -4976 __end_pci_fixups_header                            stock 0xffffffc009d566a0 gap 0 | ours 0xffffffc009d56740 gap 4976
+ -4096 __end_init_task                                    stock 0xffffffc009fc4000 gap 0 | ours 0xffffffc009fc4000 gap 4096
+ -4096 __nosave_begin                                     stock 0xffffffc009fc4000 gap 0 | ours 0xffffffc009fc4000 gap 4096
+ -4096 __nosave_end                                       stock 0xffffffc009fc4000 gap 0 | ours 0xffffffc009fc4000 gap 4096
+ -4096 vdso32_start                                       stock 0xffffffc009578000 gap 0 | ours 0xffffffc009578000 gap 4096
+ -3600 __end_pci_fixups_early                             stock 0xffffffc009d55890 gap 0 | ours 0xffffffc009d55930 gap 3600
+ -2048 __early_cpu_boot_status                            stock 0xffffffc00a404000 gap 0 | ours 0xffffffc00a404000 gap 2048
+ -2040 __bss_start                                        stock 0xffffffc00a404808 gap 0 | ours 0xffffffc00a404808 gap 2040
+ -2040 __mmuoff_data_end                                  stock 0xffffffc00a404808 gap 0 | ours 0xffffffc00a404808 gap 2040
+  -928 __initramfs_size                                   stock 0xffffffc009f96c60 gap 0 | ours 0xffffffc009f96c60 gap 928
+  -544 __end_pci_fixups_resume                            stock 0xffffffc009d57af0 gap 0 | ours 0xffffffc009d57b90 gap 544
+  -512 __con_initcall_end                                 stock 0xffffffc009f96a60 gap 0 | ours 0xffffffc009f96a60 gap 512
+  -512 __initramfs_start                                  stock 0xffffffc009f96a60 gap 0 | ours 0xffffffc009f96a60 gap 512
+  -358 task_index_to_char.state_char                      stock 0xffffffc009c79630 gap 558948 | ours 0xffffffc009c79562 gap 559306
+  -358 task_index_to_char.state_char                      stock 0xffffffc009c79630 gap 558948 | ours 0xffffffc009c79562 gap 559306
+  -358 task_index_to_char.state_char                      stock 0xffffffc009c79630 gap 558948 | ours 0xffffffc009c79562 gap 559306
+  -358 task_index_to_char.state_char                      stock 0xffffffc009c79630 gap 558948 | ours 0xffffffc009c79562 gap 559306
+  -256 __cert_list_end                                    stock 0xffffffc009f88c00 gap 0 | ours 0xffffffc009f88c00 gap 256
+  -256 __cert_list_start                                  stock 0xffffffc009f88c00 gap 0 | ours 0xffffffc009f88c00 gap 256
+  -256 __module_cert_end                                  stock 0xffffffc009f88c00 gap 0 | ours 0xffffffc009f88c00 gap 256
+  -256 __module_cert_start                                stock 0xffffffc009f88c00 gap 0 | ours 0xffffffc009f88c00 gap 256
+  -256 aes_inv_sbox                                       stock 0xffffffc009fc8840 gap 0 | ours 0xffffffc009fc8840 gap 256
+  -256 aes_sbox                                           stock 0xffffffc009fc8740 gap 0 | ours 0xffffffc009fc8740 gap 256
+  -256 crypto_sm4_sbox                                    stock 0xffffffc0095ec4c0 gap 0 | ours 0xffffffc0095ec4c0 gap 256
+  -256 system_certificate_list                            stock 0xffffffc009f88c00 gap 0 | ours 0xffffffc009f88c00 gap 256
+  -216 __sched_class_highest                              stock 0xffffffc009d035e0 gap 0 | ours 0xffffffc009d03680 gap 216
+  -200 __clk_of_table                                     stock 0xffffffc009f92568 gap 0 | ours 0xffffffc009f92568 gap 200
+  -200 __dtb_end                                          stock 0xffffffc009f93900 gap 0 | ours 0xffffffc009f93900 gap 200
+  -200 __dtb_start                                        stock 0xffffffc009f93900 gap 0 | ours 0xffffffc009f93900 gap 200
+  -200 __irqchip_of_table                                 stock 0xffffffc009f93900 gap 0 | ours 0xffffffc009f93900 gap 200
+  -200 __of_table_cma                                     stock 0xffffffc009f931e8 gap 0 | ours 0xffffffc009f931e8 gap 200
+  -200 __of_table_fixed_factor_clk                        stock 0xffffffc009f92568 gap 0 | ours 0xffffffc009f92568 gap 200
+  -200 __of_table_rk3288_timer                            stock 0xffffffc009f93440 gap 0 | ours 0xffffffc009f93440 gap 200
+  -152 __UNIQUE_ID___earlycon_uart8250401                 stock 0xffffffc009f941b8 gap 0 | ours 0xffffffc009f941b8 gap 152
+  -152 __earlycon_table                                   stock 0xffffffc009f941b8 gap 0 | ours 0xffffffc009f941b8 gap 152
+  -144 __end_pci_fixups_enable                            stock 0xffffffc009d57a60 gap 0 | ours 0xffffffc009d57b00 gap 144
+  -128 ck                                                 stock 0xffffffc0095ec440 gap 0 | ours 0xffffffc0095ec440 gap 128
+   -98 f_midi_shortname                                   stock 0xffffffc009b852be gap 363946 | ours 0xffffffc009b851c1 gap 364044
+   -96 event_handlers                                     stock 0xffffffc0096fad78 gap 0 | ours 0xffffffc0096fadb8 gap 96
+   -80 __end_pci_fixups_final                             stock 0xffffffc009d57a10 gap 0 | ours 0xffffffc009d57ab0 gap 80
+   -72 __modver_attr                                      stock 0xffffffc009ddd630 gap 0 | ours 0xffffffc009ddd6d0 gap 72
+   -72 __start___modver                                   stock 0xffffffc009ddd630 gap 0 | ours 0xffffffc009ddd6d0 gap 72
+   -64 __kuser_cmpxchg64                                  stock 0xffffffc009576440 gap 0 | ours 0xffffffc009576460 gap 64
+   -64 jiffies                                            stock 0xffffffc009fc69c0 gap 0 | ours 0xffffffc009fc69c0 gap 64
+   -64 nr_files                                           stock 0xffffffc009fc8540 gap 0 | ours 0xffffffc009fc8540 gap 64
+   -56 __start___dyndbg_classes                           stock 0xffffffc00a3ca780 gap 0 | ours 0xffffffc00a3ca780 gap 56
+   -56 __start___tracepoint_str                           stock 0xffffffc00a3d6c80 gap 0 | ours 0xffffffc00a3d6c80 gap 56
+   -56 __stop__bpf_raw_tp                                 stock 0xffffffc00a3d6c80 gap 0 | ours 0xffffffc00a3d6c80 gap 56
+   -48 __earlycon_table_end                               stock 0xffffffc009f94548 gap 0 | ours 0xffffffc009f94548 gap 48
+   -48 __lsm_capability                                   stock 0xffffffc009f94548 gap 0 | ours 0xffffffc009f94548 gap 48
+   -48 __per_cpu_end                                      stock 0xffffffc009faa368 gap 0 | ours 0xffffffc009faa368 gap 48
+   -48 arpt_do_table.nulldevname                          stock 0xffffffc009d01e88 gap 0 | ours 0xffffffc009d01f20 gap 48
+   -48 drm_fb_xfrm.default_dst_pitch                      stock 0xffffffc009d01e88 gap 0 | ours 0xffffffc009d01f20 gap 48
+   -48 f_midi_cin_length                                  stock 0xffffffc009d024d8 gap 0 | ours 0xffffffc009d02570 gap 48
+   -48 ip6t_do_table.nulldevname                          stock 0xffffffc009d01e88 gap 0 | ours 0xffffffc009d01f20 gap 48
+   -40 __param_initcall_debug                             stock 0xffffffc009dd7eb0 gap 0 | ours 0xffffffc009dd7f50 gap 40
+   -40 syscon_ids                                         stock 0xffffffc0096bfbb0 gap 80 | ours 0xffffffc0096bfbc8 gap 120
+   -32 __bpf_trace_tp_map_initcall_level                  stock 0xffffffc00a3ca800 gap 0 | ours 0xffffffc00a3ca800 gap 32
+   -32 ext4_type_by_mode                                  stock 0xffffffc009d02178 gap 0 | ours 0xffffffc009d02210 gap 32
+   -32 init_idmap_pg_end                                  stock 0xffffffc009f25000 gap 0 | ours 0xffffffc009f25000 gap 32
+   -32 speed_unit                                         stock 0xffffffc009d031c0 gap 0 | ours 0xffffffc009d03260 gap 32
+   -32 speed_val                                          stock 0xffffffc009d02048 gap 0 | ours 0xffffffc009d020e0 gap 32
+   -28 mmc_select_bus_width.ext_csd_bits                  stock 0xffffffc009d03364 gap 0 | ours 0xffffffc009d03404 gap 28
+   -27 max_tt_usecs                                       stock 0xffffffc009bde068 gap 124926 | ours 0xffffffc009bddfcd gap 124953
+   -24 __drm_universal_plane_init.default_modifiers       stock 0xffffffc009d025f0 gap 0 | ours 0xffffffc009d02688 gap 24
+   -24 __param_str_mpp_dev_debug                          stock 0xffffffc009625930 gap 96 | ours 0xffffffc009625930 gap 120
+   -24 __setup_set_reset_devices                          stock 0xffffffc009f945e0 gap 0 | ours 0xffffffc009f945e0 gap 24
+   -24 __start_notes                                      stock 0xffffffc009de1848 gap 0 | ours 0xffffffc009de18e8 gap 24
+   -24 __stop___ex_table                                  stock 0xffffffc009de1848 gap 0 | ours 0xffffffc009de18e8 gap 24
+   -24 linux_proc_banner                                  stock 0xffffffc009570018 gap 1240 | ours 0xffffffc009570018 gap 1264
+   -16 __cpu_method_of_table                              stock 0xffffffc009f938f0 gap 0 | ours 0xffffffc009f938f0 gap 16
+   -16 __end_pci_fixups_resume_early                      stock 0xffffffc009d57d10 gap 0 | ours 0xffffffc009d57db0 gap 16
+   -16 __sched_class_lowest                               stock 0xffffffc009d03a18 gap 0 | ours 0xffffffc009d03ab8 gap 16
+   -16 __start___dyndbg                                   stock 0xffffffc00a3ca7f0 gap 0 | ours 0xffffffc00a3ca7f0 gap 16
+   -16 __start___trace_bprintk_fmt                        stock 0xffffffc00a3ca7f0 gap 0 | ours 0xffffffc00a3ca7f0 gap 16
+   -16 __start_ro_after_init                              stock 0xffffffc009d03a18 gap 0 | ours 0xffffffc009d03ab8 gap 16
+   -16 __stop___dyndbg                                    stock 0xffffffc00a3ca7f0 gap 0 | ours 0xffffffc00a3ca7f0 gap 16
+   -16 __stop___dyndbg_classes                            stock 0xffffffc00a3ca7f0 gap 0 | ours 0xffffffc00a3ca7f0 gap 16
+   -16 kernel_config_data                                 stock 0xffffffc00957e390 gap 45167 | ours 0xffffffc00957e390 gap 45183
+   -16 loopback_addr                                      stock 0xffffffc009d02328 gap 0 | ours 0xffffffc009d023c0 gap 16
+   -16 playback_tlv                                       stock 0xffffffc009802b70 gap 0 | ours 0xffffffc009802bb0 gap 16
+   -16 spi_codec_dapm_routes                              stock 0xffffffc009802b70 gap 0 | ours 0xffffffc009802bb0 gap 16
+   -15 __stop___tracepoints_ptrs                          stock 0xffffffc009d4d678 gap 0 | ours 0xffffffc009d4d718 gap 15
+   -12 __end_builtin_fw                                   stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+   -12 __end_pci_fixups_suspend                           stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+   -12 __end_pci_fixups_suspend_late                      stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+   -12 __ksymtab_ANDROID_GKI_struct_dwc3                  stock 0xffffffc009d6b454 gap 0 | ours 0xffffffc009d6b56c gap 12
+   -12 __ksymtab_I_BDEV                                   stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+   -12 __start___ksymtab                                  stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+   -12 __start___ksymtab_gpl                              stock 0xffffffc009d6b454 gap 0 | ours 0xffffffc009d6b56c gap 12
+   -12 __start_builtin_fw                                 stock 0xffffffc009d57d20 gap 0 | ours 0xffffffc009d57dc0 gap 12
+    -9 __start_rodata                                     stock 0xffffffc009570000 gap 0 | ours 0xffffffc009570000 gap 9
+    -8 TRACE_SYSTEM_HI_SOFTIRQ                            stock 0xffffffc009f91930 gap 0 | ours 0xffffffc009f91930 gap 8
+    -8 __aarch32_sigret_code_end                          stock 0xffffffc009576438 gap 8 | ours 0xffffffc009576450 gap 16
+    -8 __end_early_lsm_info                               stock 0xffffffc009f945d8 gap 0 | ours 0xffffffc009f945d8 gap 8
+    -8 __end_lsm_info                                     stock 0xffffffc009f945d8 gap 0 | ours 0xffffffc009f945d8 gap 8
+    -8 __event_initcall_level                             stock 0xffffffc009f8e7d8 gap 0 | ours 0xffffffc009f8e7d8 gap 8
+    -8 __governor_thermal_table                           stock 0xffffffc009f94198 gap 0 | ours 0xffffffc009f94198 gap 8
+    -8 __kunit_suites_end                                 stock 0xffffffc009f945d8 gap 0 | ours 0xffffffc009f945d8 gap 8
+    -8 __kunit_suites_start                               stock 0xffffffc009f945d8 gap 0 | ours 0xffffffc009f945d8 gap 8
+    -8 __per_cpu_load                                     stock 0xffffffc009f97000 gap 0 | ours 0xffffffc009f97000 gap 8
+    -8 __per_cpu_start                                    stock 0xffffffc009f97000 gap 0 | ours 0xffffffc009f97000 gap 8
+    -8 __start_ftrace_eval_maps                           stock 0xffffffc009f91930 gap 0 | ours 0xffffffc009f91930 gap 8
+    -8 ext4_filetype_table                                stock 0xffffffc009d025c0 gap 0 | ours 0xffffffc009d02658 gap 8
+    -8 ext4_filetype_table                                stock 0xffffffc009d025c0 gap 0 | ours 0xffffffc009d02658 gap 8
+    -8 trace_fops                                         stock 0xffffffc0097b6ed8 gap 296 | ours 0xffffffc0097b6f10 gap 304
+    -8 uvc_control_classes                                stock 0xffffffc009d02608 gap 24 | ours 0xffffffc009d026a0 gap 32
+    -4 __con_initcall_start                               stock 0xffffffc009f96a5c gap 0 | ours 0xffffffc009f96a5c gap 4
+    -4 __initcall0_start                                  stock 0xffffffc009f957e0 gap 0 | ours 0xffffffc009f957e0 gap 4
+    -4 __initcall0s_start                                 stock 0xffffffc009f957f4 gap 0 | ours 0xffffffc009f957f4 gap 4
+    -4 __initcall1_start                                  stock 0xffffffc009f957f4 gap 0 | ours 0xffffffc009f957f4 gap 4
+    -4 __initcall1s_start                                 stock 0xffffffc009f958c0 gap 0 | ours 0xffffffc009f958c0 gap 4
+    -4 __initcall2_start                                  stock 0xffffffc009f958c0 gap 0 | ours 0xffffffc009f958c0 gap 4
+    -4 __initcall2s_start                                 stock 0xffffffc009f9594c gap 0 | ours 0xffffffc009f9594c gap 4
+    -4 __initcall3_start                                  stock 0xffffffc009f95950 gap 0 | ours 0xffffffc009f95950 gap 4
+    -4 __initcall3s_start                                 stock 0xffffffc009f95980 gap 0 | ours 0xffffffc009f95980 gap 4
+    -4 __initcall4_start                                  stock 0xffffffc009f95988 gap 0 | ours 0xffffffc009f95988 gap 4
+    -4 __initcall4s_start                                 stock 0xffffffc009f95bc0 gap 0 | ours 0xffffffc009f95bc0 gap 4
+    -4 __initcall5_start                                  stock 0xffffffc009f95bd0 gap 0 | ours 0xffffffc009f95bd0 gap 4
+    -4 __initcall5s_start                                 stock 0xffffffc009f95c9c gap 0 | ours 0xffffffc009f95c9c gap 4
+    -4 __initcall6_start                                  stock 0xffffffc009f95cbc gap 0 | ours 0xffffffc009f95cbc gap 4
+    -4 __initcall6s_start                                 stock 0xffffffc009f96870 gap 0 | ours 0xffffffc009f96870 gap 4
+    -4 __initcall7_start                                  stock 0xffffffc009f968e8 gap 0 | ours 0xffffffc009f968e8 gap 4
+    -4 __initcall7s_start                                 stock 0xffffffc009f96a20 gap 0 | ours 0xffffffc009f96a20 gap 4
+    -4 __initcall__kmod_8250__406_692_univ8250_console_initcon stock 0xffffffc009f96a5c gap 0 | ours 0xffffffc009f96a5c gap 4
+    -4 __initcall__kmod_initramfs__420_781_populate_rootfsrootfs stock 0xffffffc009f95cb4 gap 0 | ours 0xffffffc009f95cb4 gap 4
+    -4 __initcall__kmod_ptrace__433_42_trace_init_flags_sys_enterearly stock 0xffffffc009f95780 gap 0 | ours 0xffffffc009f95780 gap 4
+    -4 __initcall__kmod_setup__424_444_register_arm64_panic_block6 stock 0xffffffc009f95cbc gap 0 | ours 0xffffffc009f95cbc gap 4
+    -4 __initcall_start                                   stock 0xffffffc009f95780 gap 0 | ours 0xffffffc009f95780 gap 4
+    -4 __start___kcrctab                                  stock 0xffffffc009d81090 gap 0 | ours 0xffffffc009d81130 gap 4
+    -4 __start___kcrctab_gpl                              stock 0xffffffc009d8784c gap 0 | ours 0xffffffc009d87914 gap 4
+    -1 __start_once                                       stock 0xffffffc00a3aea38 gap 0 | ours 0xffffffc00a3aea38 gap 1
+    +8 xpadone_ack_mode_report.mode_report_ack            stock 0xffffffc00971955c gap 148 | ours 0xffffffc00971959c gap 140
+   +16 dynptr_types                                       stock 0xffffffc009593410 gap 304 | ours 0xffffffc009593420 gap 288
+   +32 str__emulation__trace_system_name                  stock 0xffffffc009576d20 gap 736 | ours 0xffffffc009576d40 gap 704
+   +78 f_midi_longname                                    stock 0xffffffc009bfc866 gap 165041 | ours 0xffffffc009bfc7e6 gap 164963
+  +160 __stop_notes                                       stock 0xffffffc009de189c gap 1892 | ours 0xffffffc009de193c gap 1732
++26552 __stop___ksymtab_gpl                               stock 0xffffffc009d81090 gap 26556 | ours 0xffffffc009d81130 gap 4
++29712 __stop___kcrctab                                   stock 0xffffffc009d8784c gap 29716 | ours 0xffffffc009d87914 gap 4
++299586 __stop___kcrctab_gpl                               stock 0xffffffc009d8ec60 gap 299600 | ours 0xffffffc009d8ed00 gap 14
++3221811 linux_banner                                       stock 0xffffffc009869f80 gap 3222115 | ours 0xffffffc009869fc0 gap 304
