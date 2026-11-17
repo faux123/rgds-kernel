@@ -2737,49 +2737,55 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
     	return -EINVAL;
     }
 
+	/*
+	 * Stock table, goodix_ts_probe @ffffffc008cc01e4..033c (stores to
+	 * m89or101, bgt9xx flags, gtp_change_x2y/gtp_x_reverse/gtp_y_reverse). Read with
+	 * the inverted x2y and y_reverse tests in gtp_touch_down; the 911 and
+	 * 910 bgt911 values are as stock stores them.
+	 */
 	if (val == 89) {
 		m89or101 = TRUE;
-		gtp_change_x2y = TRUE;
+		gtp_change_x2y = FALSE;
 		gtp_x_reverse = FALSE;
-		gtp_y_reverse = TRUE;
+		gtp_y_reverse = FALSE;
 	} else if (val == 101) {
 		m89or101 = FALSE;
-		gtp_change_x2y = TRUE;
+		gtp_change_x2y = FALSE;
 		gtp_x_reverse = TRUE;
-		gtp_y_reverse = FALSE;
+		gtp_y_reverse = TRUE;
 	} else if (val == 911) {
 		m89or101 = FALSE;
-		bgt911 = TRUE;
+		bgt911 = FALSE;
 		gtp_change_x2y = TRUE;
 		gtp_x_reverse = FALSE;
 		gtp_y_reverse = TRUE;
 	} else if (val == 9110) {
 		m89or101 = FALSE;
 		bgt9110 = TRUE;
-		gtp_change_x2y = FALSE;
+		gtp_change_x2y = TRUE;
 		gtp_x_reverse = FALSE;
-		gtp_y_reverse = FALSE;
+		gtp_y_reverse = TRUE;
 	} else if (val == 9111) {
 		m89or101 = FALSE;
 		bgt9111 = TRUE;
 		gtp_change_x2y = TRUE;
-		gtp_x_reverse = FALSE;
+		gtp_x_reverse = TRUE;
 		gtp_y_reverse = FALSE;
 	} else if (val == 970) {
 		m89or101 = FALSE;
-		bgt911 = FALSE;
+		bgt911 = TRUE;
 		bgt970 = TRUE;
-		gtp_change_x2y = FALSE;
-		gtp_x_reverse = FALSE;
-		gtp_y_reverse = TRUE;
-	} else if (val == 910) {
-		m89or101 = FALSE;
-		bgt911 = FALSE;
-		bgt970 = FALSE;
-		bgt910 = TRUE;
 		gtp_change_x2y = TRUE;
 		gtp_x_reverse = FALSE;
-		gtp_y_reverse = TRUE;
+		gtp_y_reverse = FALSE;
+	} else if (val == 910) {
+		m89or101 = FALSE;
+		bgt911 = TRUE;
+		bgt970 = FALSE;
+		bgt910 = TRUE;
+		gtp_change_x2y = FALSE;
+		gtp_x_reverse = FALSE;
+		gtp_y_reverse = FALSE;
 	}
 
     ts->irq_pin = of_get_named_gpio_flags(np, "touch-gpio", 0, (enum of_gpio_flags *)(&ts->irq_flags));
