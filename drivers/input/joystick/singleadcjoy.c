@@ -1528,7 +1528,6 @@ extern int remapkey_xbox_switch, remapkey_xbox_switch_bt_tr;	/* @..5714, @..5718
  * stock B tests `tst mask, #0xfffffffb` (@..70080 for abxy_z_mask, @..700c8 for abxy_mask), i.e. mask in {0, 4},
  * which is Y's slot, then stores 6. Y uses the same test correctly (@..701a8/@..701f0). Kept as in stock.
  * The RG556 .ko keypad2touchpanel_abs has the same 4 `tst ..., #0xfffffffb` sites, so the quirk predates the RG DS. */
-struct stock_key { int code, slot, *mode, *x, *y; int accept; };
 static __always_inline void stock_slot_down(int slot, int x, int y)
 {
 	*(u64 *)&touch_data[slot * 4] = 0x100000001ULL;
@@ -1536,74 +1535,100 @@ static __always_inline void stock_slot_down(int slot, int x, int y)
 	touch_data[slot * 4 + 3] = x;
 }
 static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
+/* Written out per key, as stock does (each key has its own copy of the logic @ffffffc008c6f828..7064c). */
+#define KP_DOWN(SLOT, K)	do { if (gts_dev) stock_slot_down(SLOT, remapkey_##K##_x, remapkey_##K##_y); } while (0)
+#define KP_UP(SLOT)		do { if (gts_dev) stock_slot_up(SLOT); } while (0)
+#define KP_MASKED(MASK, SLOT, K, ACC)						\
+	do {									\
+		if (pressed) {							\
+			if ((MASK) == (ACC) || (MASK) == 0) {			\
+				KP_DOWN(SLOT, K);				\
+				(MASK) = (SLOT);				\
+			}							\
+		} else if ((MASK) == (SLOT)) {					\
+			KP_UP(SLOT);						\
+			(MASK) = 0;						\
+		}								\
+	} while (0)
+#define KP_KEY(CODE, K, SLOT, ACC)						\
+	case CODE:								\
+		if (pressed) {							\
+			if (remapkey_##K##_mode == 1) {				\
+				KP_DOWN(SLOT, K);				\
+			} else if (remapkey_##K##_mode == 2) {			\
+				if (abxy_mask == (ACC) || abxy_mask == 0) {	\
+					KP_DOWN(SLOT, K);			\
+					abxy_mask = (SLOT);			\
+				}						\
+			} else if (remapkey_##K##_mode == 3) {			\
+				if (abxy_z_mask == (ACC) || abxy_z_mask == 0) {	\
+					KP_DOWN(SLOT, K);			\
+					abxy_z_mask = (SLOT);			\
+				}						\
+			}							\
+		} else {							\
+			if (remapkey_##K##_mode == 1) {				\
+				KP_UP(SLOT);					\
+			} else if (remapkey_##K##_mode == 2) {			\
+				if (abxy_mask == (SLOT)) {			\
+					KP_UP(SLOT);				\
+					abxy_mask = 0;				\
+				}						\
+			} else if (remapkey_##K##_mode == 3) {			\
+				if (abxy_z_mask == (SLOT)) {			\
+					KP_UP(SLOT);				\
+					abxy_z_mask = 0;			\
+				}						\
+			}							\
+		}								\
+		return 0;
+#define KP_MODE1_ONLY(CODE, K, SLOT)						\
+	case CODE:								\
+		if (remapkey_##K##_mode == 1) {					\
+			if (pressed) KP_DOWN(SLOT, K); else KP_UP(SLOT);	\
+		}								\
+		return 0;
+#define KP_THUMB(CODE, K, SLOT, WANT, MASK, SAVED)				\
+	case CODE:								\
+		if (pressed) {							\
+			if (remapkey_##K##_mode == 1) {				\
+				KP_DOWN(SLOT, K);				\
+			} else if (remapkey_##K##_mode == (WANT)) {		\
+				if (MASK) {					\
+					(SAVED) = (MASK);			\
+					(MASK) = (SLOT);			\
+				}						\
+			}							\
+		} else {							\
+			if (remapkey_##K##_mode == 1) {				\
+				KP_UP(SLOT);					\
+			} else if (remapkey_##K##_mode == (WANT)) {		\
+				if ((MASK) == (SLOT)) {				\
+					if (gts_dev)				\
+						stock_slot_up(SAVED);		\
+					(MASK) = 0;				\
+				}						\
+			}							\
+		}								\
+		return 0;
 int keypad2touchpanel_abs(int code, int pressed)
 {
-	struct stock_key kk, *k = &kk;
-	int mode;
-
 	switch (code) {	/* halfword jump table @ffffffc0097195a0 */
-	case 0x130: kk = (struct stock_key){ 0x130, 5,  &remapkey_a_mode,      &remapkey_a_x,      &remapkey_a_y, 5 }; break;
-	case 0x131: kk = (struct stock_key){ 0x131, 6,  &remapkey_b_mode,      &remapkey_b_x,      &remapkey_b_y, 4 }; break;
-	case 0x133: kk = (struct stock_key){ 0x133, 3,  &remapkey_x_mode,      &remapkey_x_x,      &remapkey_x_y, 3 }; break;
-	case 0x134: kk = (struct stock_key){ 0x134, 4,  &remapkey_y_mode,      &remapkey_y_x,      &remapkey_y_y, 4 }; break;
-	case 0x136: kk = (struct stock_key){ 0x136, 14, &remapkey_l1_mode,     &remapkey_l1_x,     &remapkey_l1_y, 14 }; break;
-	case 0x137: kk = (struct stock_key){ 0x137, 10, &remapkey_r1_mode,     &remapkey_r1_x,     &remapkey_r1_y, 10 }; break;
-	case 0x138: kk = (struct stock_key){ 0x138, 9,  &remapkey_l2_mode,     &remapkey_l2_x,     &remapkey_l2_y, 9 }; break;
-	case 0x139: kk = (struct stock_key){ 0x139, 11, &remapkey_r2_mode,     &remapkey_r2_x,     &remapkey_r2_y, 11 }; break;
-	case 0x13a: kk = (struct stock_key){ 0x13a, 7,  &remapkey_select_mode, &remapkey_select_x, &remapkey_select_y, 7 }; break;
-	case 0x13b: kk = (struct stock_key){ 0x13b, 8,  &remapkey_start_mode,  &remapkey_start_x,  &remapkey_start_y, 8 }; break;
-	case 0x13d: kk = (struct stock_key){ 0x13d, 12, &remapkey_left_joy_mid_mode,  &remapkey_left_joy_mid_x,  &remapkey_left_joy_mid_y, 12 }; break;
-	case 0x13e: kk = (struct stock_key){ 0x13e, 13, &remapkey_right_joy_mid_mode, &remapkey_right_joy_mid_x, &remapkey_right_joy_mid_y, 13 }; break;
-	default: return 0;	/* 0x132, 0x135, 0x13c and outside 0x130..0x13e */
+	KP_KEY(0x130, a, 5, 5)
+	KP_KEY(0x131, b, 6, 4)	/* stock quirk: B accepts a mask of 4 (Y's slot), see above */
+	KP_KEY(0x133, x, 3, 3)
+	KP_KEY(0x134, y, 4, 4)
+	KP_KEY(0x136, l1, 14, 14)
+	KP_KEY(0x137, r1, 10, 10)
+	KP_KEY(0x138, l2, 9, 9)
+	KP_KEY(0x139, r2, 11, 11)
+	KP_MODE1_ONLY(0x13a, select, 7)	/* SELECT/START: mode 1 only (@..6faa8, @..6faec) */
+	KP_MODE1_ONLY(0x13b, start, 8)
+	KP_THUMB(0x13d, left_joy_mid, 12, 2, abxy_mask, abxy_mask_l3)
+	KP_THUMB(0x13e, right_joy_mid, 13, 3, abxy_z_mask, abxy_z_mask_r3)
+	default:
+		return 0;	/* 0x132, 0x135, 0x13c and outside 0x130..0x13e */
 	}
-	mode = *k->mode;
-
-	if (mode == 1) {
-		if (gts_dev) {
-			if (pressed)
-				stock_slot_down(k->slot, *k->x, *k->y);
-			else
-				stock_slot_up(k->slot);
-		}
-		return 0;
-	}
-	if (code == 0x13d || code == 0x13e) {			/* thumb keys */
-		int want = (code == 0x13d) ? 2 : 3;
-		int *mask = (code == 0x13d) ? &abxy_mask : &abxy_z_mask;
-		int *saved = (code == 0x13d) ? &abxy_mask_l3 : &abxy_z_mask_r3;
-
-		if (mode != want)
-			return 0;
-		if (pressed) {
-			if (*mask) {
-				*saved = *mask;
-				*mask = k->slot;
-			}
-		} else if (*mask == k->slot) {
-			if (gts_dev)
-				stock_slot_up(*saved);
-			*mask = 0;
-		}
-		return 0;
-	}
-	if (code == 0x13a || code == 0x13b)	/* SELECT/START: mode 1 only (@..6faa8, @..6faec; same in the RG556 .ko) */
-		return 0;
-	if (mode == 2 || mode == 3) {
-		int *mask = (mode == 2) ? &abxy_mask : &abxy_z_mask;
-
-		if (pressed) {
-			if (*mask == k->accept || *mask == 0) {
-				if (gts_dev)
-					stock_slot_down(k->slot, *k->x, *k->y);
-				*mask = k->slot;
-			}
-		} else if (*mask == k->slot) {
-			if (gts_dev)
-				stock_slot_up(k->slot);
-			*mask = 0;
-		}
-	}
-	return 0;
 }
 static __always_inline void stock_report_trigger(struct stock_button *b, int code, int abs, int pressed)
 {
