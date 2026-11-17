@@ -1954,6 +1954,37 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
 			dev_err(dev, "not have to register chg psy!\n");
 	}
 
+	if (!of_find_property(np, "ntc_table", &length)) {
+		pdata->ntc_size = 0;
+	} else {
+		/* get ntc degree base value */
+		ret = of_property_read_u32_index(np, "ntc_degree_from", 1,
+						 &pdata->ntc_degree_from);
+		if (ret) {
+			dev_err(dev, "invalid ntc_degree_from\n");
+			return -EINVAL;
+		}
+
+		of_property_read_u32_index(np, "ntc_degree_from", 0, &out_value);
+		if (out_value)
+			pdata->ntc_degree_from = -pdata->ntc_degree_from;
+
+		pdata->ntc_size = length / sizeof(u32);
+	}
+
+	if (pdata->ntc_size) {
+		pdata->ntc_table = devm_kzalloc(dev, pdata->ntc_size * sizeof(u32),
+						GFP_KERNEL);
+		if (!pdata->ntc_table)
+			return -ENOMEM;
+
+		ret = of_property_read_u32_array(np, "ntc_table",
+						 pdata->ntc_table,
+						 pdata->ntc_size);
+		if (ret < 0)
+			return ret;
+	}
+
 	DBG("the battery dts info dump:\n"
 	    "bat_res:%d\n"
 	    "res_sample:%d\n"
@@ -2961,30 +2992,85 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
 {
 	/*
-	 * Stock inlines this into rk817_battery_work; its static keeps the name
-	 * rk817_bat_update_temperature.last_temp (@ffffffc00a4dbad8, store @ffffffc008edf250).
+	 * Reconstructed from stock rk817_battery_work (ffffffc008edeeb0..f250),
+	 * where this is inlined; the static keeps the stock name
+	 * rk817_bat_update_temperature.last_temp (@ffffffc00a4dbad8).
 	 */
 	static int last_temp;
-	int t = battery->temperature;	/* tenths of a degree C in stock (raw * 10 @ffffffc008edf1e0) */
+	u32 ntc_size = battery->pdata->ntc_size;
+	u32 *ntc_table = battery->pdata->ntc_table;
+	int vcalib0, vcalib1, adc, bat_ts_vol, res, i;
+
+	if (ntc_size) {
+		battery->temperature = VIRTUAL_TEMPERATURE;
+
+		vcalib0 = rk817_bat_get_vaclib0(battery);
+		vcalib1 = rk817_bat_get_vaclib1(battery);
+		adc = rk817_bat_field_read(battery, BAT_TS_H) << 8;
+		adc |= rk817_bat_field_read(battery, BAT_TS_L);
+		DBG("xxxxxxxxxxxxx adc value: 0x%x\n", adc);
+		DBG("xxxxxxxxxxxxx K : %d  b: 0x%x\n",
+		    (1050 - 600) * 1000 / DIV(vcalib1 - vcalib0),
+		    1050 - ((1050 - 600) * 1000 / DIV(vcalib1 - vcalib0)) * vcalib1 / 1000);
+
+		bat_ts_vol = adc * 1200 / 65536;
+		DBG("++++++++++++ bat_ts_vol: %d, ntc_factor: %d\n",
+		    bat_ts_vol, battery->pdata->ntc_factor);
+		if (bat_ts_vol < 1180) {
+			rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, 1);
+			battery->pdata->ntc_factor = 21;
+		} else {
+			rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, 0);
+			battery->pdata->ntc_factor = 11;
+		}
+		DBG("VOL_ADC_TSCUR_SEL =  %x, ntc_factor = %d\n",
+		    rk817_bat_field_read(battery, VOL_ADC_TSCUR_SEL),
+		    battery->pdata->ntc_factor);
+
+		res = bat_ts_vol * 1000 / battery->pdata->ntc_factor;
+		DBG("res value: %d\n", res);
+		if (!res)
+			return;
+
+		if (res < ntc_table[ntc_size - 1]) {
+			battery->temperature = 750;
+			DBG("bat ntc upper max degree: R=%d\n", res);
+		} else if (res > ntc_table[0]) {
+			battery->temperature = -200;
+			DBG("bat ntc lower min degree: R=%d\n", res);
+		} else {
+			for (i = 0; i < ntc_size; i++) {
+				if (res >= ntc_table[i])
+					break;
+			}
+
+			if (i <= 0)
+				battery->temperature = battery->pdata->ntc_degree_from * 10;
+			else
+				battery->temperature = (i + battery->pdata->ntc_degree_from) * 10;
+		}
+	}
 
 	/*
-	 * Stock ffffffc008edf1ec..f23c, written via rmap_fields[143] with mask -1:
-	 *   t <= 0 or t >= 500          -> 5      (ffffffc008edf204)
-	 *   3 <= t <= 479               -> 0xfa   (ffffffc008edf220)
-	 *   t in 1..2 or 480..499       -> no write
-	 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8) only when
-	 * pdata->ntc_size != 0. Its probe sets ntc_size = 0 when the DT has no
-	 * "ntc_table" (ffffffc008edb990) and temperature = 188 (ffffffc008edca24).
-	 * The RG DS DT has no ntc_table, so t stays 188 and 0xE9 is rewritten
-	 * to 0xfa each cycle; the 5 branch is unreachable on this device.
+	 * Charge gate on RK817 reg 0xE9 (BAT_LTS_TS), stock ffffffc008edf1ec..f23c:
+	 *   t <= 0 or t >= 500 -> 5, 3 <= t <= 479 -> 0xfa, otherwise no write.
+	 * Without an ntc_table in the DT (the RG DS case) probe sets
+	 * ntc_size = 0 (ffffffc008edb990) and temperature = 188
+	 * (ffffffc008edca24), so only the 0xfa branch runs.
 	 */
-	if (t <= 0 || t >= 500)
+	if (battery->temperature <= 0 || battery->temperature >= 500) {
+		DBG("disable  temperature <= 0 ||  temperature >= 500)\n ");
 		rk817_bat_field_write(battery, BAT_LTS_TS, 5);
-	else if (t >= 3 && t <= 479)
+		DBG("disable charging\n");
+	} else if (battery->temperature > 2 && battery->temperature < 480) {
+		DBG("disable  temperature > 2 ||  temperature < 480)\n ");
 		rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
+		DBG("enable charging\n");
+	}
 
 	DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
 	last_temp = battery->temperature;
+	DBG("++++++++++++++ %d\n", last_temp);
 }
 
 static void rk817_battery_work(struct work_struct *work)
