@@ -1632,7 +1632,7 @@ static void hyn_resume(struct hynitron_ts_data *ts)
 	hyn_proximity_resume();	
 #endif
 
-    hyn_reset_proc(20);
+    hyn_reset_proc(40);	/* stock hyn_pm_resume @ffffffc008cc36b4: mov w0, #0x28 */
 
     hyn_release_all_finger();
    
@@ -1932,13 +1932,13 @@ err_end:
 #endif
    //if point is null,may cause dump
 	if(hyn_ts_data->use_irq!=0)
-	free_irq(hyn_ts_data->use_irq,hyn_ts_data);
+	free_irq(hyn_ts_data->use_irq, NULL);	/* stock hyn_probe+0x574: mov x1, xzr (no dev_id) */
 	//if(ts_data->input_dev!=NULL)
      //input_unregister_device(ts_data->input_dev);
 
-	if(ts_data->hyn_workqueue!=NULL)
-	destroy_workqueue(ts_data->hyn_workqueue);
-	kfree(ts_data->pdata);
+	/* stock does not destroy hyn_workqueue on this path (hyn_probe+0x57c..0x58c) */
+	/* destroy_workqueue(ts_data->hyn_workqueue); */
+	if (ts_data->pdata)	kfree(ts_data->pdata);	/* stock hyn_probe+0x57c: cbz */
 	if(ts_data!=NULL)
 	kfree(ts_data);
     HYN_FUNC_EXIT();

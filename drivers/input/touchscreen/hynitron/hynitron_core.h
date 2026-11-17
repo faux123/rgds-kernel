@@ -76,12 +76,12 @@
 
 //please config the chip series before using.
 
-#define HYN_CHIP_TYPE_CONFIG						CST328
+#define HYN_CHIP_TYPE_CONFIG						3340	/* stock hyn_ts_data_init @ffffffc008cc27dc: strh 0xd0c (CST3340 series) */
 #define HYN_IRQ_TRIGGER_RISING_CONFIG	    	    0x01 
 #define HYN_MAIN_IIC_ADDR_CONFIG		    	    0x1A 
 
-#define HYN_X_DISPLAY_DEFAULT              	 	    480
-#define HYN_Y_DISPLAY_DEFAULT               	    1170
+#define HYN_X_DISPLAY_DEFAULT					720	/* stock hyn_platform_data_init+0x154: 0x2d0 */
+#define HYN_Y_DISPLAY_DEFAULT					1280	/* stock: 0x500 */
 #define HYN_X_REVERT		              	 	    0
 #define HYN_Y_REVERT		               	        0
 #define HYN_XY_EXCHANGE		               	        0
