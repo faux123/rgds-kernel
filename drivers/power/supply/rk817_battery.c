@@ -1234,7 +1234,7 @@ static void  fuel_gauge_q_init_info(struct rk817_battery_device *battery)
 static void rk817_bat_init_coulomb_cap(struct rk817_battery_device *battery,
 				       u32 capacity)
 {
-	u8 buf;
+	u8 buf, val;
 	u32 cap;
 
 	fuel_gauge_q_init_info(battery);
@@ -1247,6 +1247,15 @@ static void rk817_bat_init_coulomb_cap(struct rk817_battery_device *battery,
 	buf = (cap >> 8) & 0xff;
 	rk817_bat_field_write(battery, Q_INIT_L1, buf);
 	buf = (cap >> 0) & 0xff;
+
+	/*
+	 * Stock (ffffffc008edf6f8..f738): rewrite L0 with buf | 1 when the
+	 * register already holds buf, compared as u8 (uxtb), as in
+	 * Rockchip develop-6.1 but without its sm_remain_cap update.
+	 */
+	val = rk817_bat_field_read(battery, Q_INIT_L0);
+	if (val == buf)
+		buf++;
 	rk817_bat_field_write(battery, Q_INIT_L0, buf);
 
 	battery->rsoc = capacity * 1000 * 100 / battery->fcc;
