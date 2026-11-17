@@ -33,14 +33,6 @@ config JOYSTICK_ANALOG
 	  To compile this driver as a module, choose M here: the
 	  module will be called analog.
 
-config JOYSTICK_SINGLEADCJOY
-	tristate "Single SARADC dual-joystick gamepad driver"
-	depends on IIO
-	help
-	  The 1-in 4-out SARADC joypad driver used by Anbernic RK356x handhelds
-	  (retrogame_joypad / singleadc-joypad). Say Y here for the RG DS analog
-	  sticks and gamepad buttons.
-
 config JOYSTICK_A3D
 	tristate "Assassin 3D and MadCatz Panther devices"
 	select GAMEPORT
@@ -419,5 +411,13 @@ config JOYSTICK_SENSEHAT
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called sensehat_joystick.
+
+config JOYSTICK_SINGLEADCJOY
+	tristate "Single SARADC dual-joystick gamepad driver"
+	depends on IIO
+	help
+	  The 1-in 4-out SARADC joypad driver used by Anbernic RK356x handhelds
+	  (retrogame_joypad / singleadc-joypad). Say Y here for the RG DS analog
+	  sticks and gamepad buttons.
 
 endif
