@@ -98,7 +98,8 @@ int gt9xx_touch_combo_status;          /* T @ffffffc00a4d5a9c */
 static ssize_t joypad_show_adc_deadzone(struct device *dev, struct device_attribute *attr, char *buf)
 { return sprintf(buf, "%d\n", *(int *)(DRV(dev) + 0x48)); }
 static ssize_t joypad_store_adc_deadzone(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
-{ *(int *)(DRV(dev) + 0x48) = simple_strtoul(buf, NULL, 10); return count; }
+{ char *j = DRV(dev);	/* stock reads drvdata before parsing */
+  *(int *)(j + 0x48) = simple_strtoul(buf, NULL, 10); return count; }
 #define ADC_SHOW(fn, off) static ssize_t fn(struct device *dev, struct device_attribute *attr, char *buf) \
 { return sprintf(buf, "%d\n", CH_INT(dev, off)); }
 ADC_SHOW(joypad_show_adc_lx, 0x4)    ADC_SHOW(joypad_show_adc_lx_p, 0x8)
@@ -457,9 +458,17 @@ static noinline int joypad_adc_read(struct stock_amux *amux, void *button)	/* st
 	}
 	{
 		/* sel-A {1,1,0,0}, sel-B {1,0,0,1} by idx (stock: unnamed rodata @ffffffc009d024e8 / @ffffffc009d02208) */
-		/* compound literals: anonymous rodata, no symbol names, as in stock */
-		gpiod_set_raw_value(gpio_to_desc(amux->sel_a_gpio), ((const int[4]){ 1, 1, 0, 0 })[idx]);
-		gpiod_set_raw_value(gpio_to_desc(amux->sel_b_gpio), ((const int[4]){ 1, 0, 0, 1 })[idx]);
+		int a, b;
+
+		switch (idx) {	/* clang turns this into two anonymous lookup tables, as stock */
+		case 0: a = 1; b = 1; break;
+		case 1: a = 1; b = 0; break;
+		case 2: a = 0; b = 0; break;
+		case 3: a = 0; b = 1; break;
+		default: __builtin_unreachable();	/* idx >= 4 returned above */
+		}
+		gpiod_set_raw_value(gpio_to_desc(amux->sel_a_gpio), a);
+		gpiod_set_raw_value(gpio_to_desc(amux->sel_b_gpio), b);
 	}
 	usleep_range(10, 20);
 	iio_read_channel_processed(amux->chan, &val);	/* return value ignored in stock */
@@ -701,16 +710,18 @@ void g_touch_down(int id, int a1, int a2)
 {
 	if (!gts_dev)
 		return;
-	*(u64 *)&touch_data[id * 4] = 0x100000001ULL;	/* str x @..6e604 */
-	touch_data[id * 4 + 2] = a2;			/* stp w2, w1 @..6e608 */
-	touch_data[id * 4 + 3] = a1;
+	int *slot = (int *)((char *)touch_data + ((long)id << 4));	/* 16-byte slots (sxtw #4 @..6e5fc) */
+
+	*(u64 *)slot = 0x100000001ULL;			/* str x @..6e604 */
+	slot[2] = a2;					/* stp w2, w1 @..6e608 */
+	slot[3] = a1;
 }
 /* g_touch_up @ffffffc008c6e610 (leaf) */
 void g_touch_up(int id)
 {
 	if (!gts_dev)
 		return;
-	*(u64 *)&touch_data[id * 4] = 1;		/* [0]=1,[1]=0 @..6e62c */
+	*(u64 *)((char *)touch_data + ((long)id << 4)) = 1;	/* [0]=1,[1]=0 (sbfiz #4 @..6e61c, str @..6e62c) */
 }
 
 /* ---- joypad2touchpanel_abs_z @ffffffc008c6f408 (0x294). Returns 0 on every path (exit @..6f474).
