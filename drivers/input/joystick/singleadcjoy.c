@@ -1554,8 +1554,14 @@ static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[(long)
 		return 0;
 #define KP_MODE1_ONLY(CODE, K, SLOT)						\
 	case CODE:								\
-		if (remapkey_##K##_mode == 1) {					\
-			if (pressed) KP_DOWN(SLOT, K); else KP_UP(SLOT);	\
+		{	/* mode == 1 && gts_dev folded into one flag (cmp/ccmp/cset @..6fab4) */ \
+			bool on = remapkey_##K##_mode == 1 && gts_dev;		\
+			if (pressed) {						\
+				if (on)						\
+					stock_slot_down(SLOT, remapkey_##K##_y, remapkey_##K##_x); \
+			} else if (on) {					\
+				stock_slot_up(SLOT);				\
+			}							\
 		}								\
 		return 0;
 #define KP_THUMB(CODE, K, SLOT, WANT, MASK, SAVED)				\
