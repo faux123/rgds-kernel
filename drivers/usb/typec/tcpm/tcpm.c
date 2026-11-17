@@ -6411,7 +6411,7 @@ static int tcpm_fw_get_caps(struct tcpm_port *port, struct fwnode_handle *fwnode
 	unsigned int nr_src_pdo, nr_snk_pdo;
 	const char *opmode_str;
 	int ret = 0, i;
-	u32 mw, uw, frs_current, pd_revision;
+	u32 uw, frs_current, pd_revision;
 	u32 *src_pdo, *snk_pdo;
 	int mode;
 
