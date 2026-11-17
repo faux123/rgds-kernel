@@ -3412,7 +3412,7 @@ static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute 
 {
 	struct regulator *otg;
 	char c = 0;
-	int ret, i;
+	int ret;
 
 	otg = regulator_get(NULL, "otg_switch");
 	if (IS_ERR(otg))	/* STOCK QUIRK: stock passes the kobject as the device and carries on */
@@ -3428,19 +3428,21 @@ static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute 
 		regmap_field_write(g_battery->rmap_fields[F_F4_2], 1);
 		DBG("%s-----%d: rsoc = %d, dsoc = %d, smooth_soc = %d\n", __func__, __LINE__,
 		    g_battery->rsoc, g_battery->dsoc, g_battery->smooth_soc);
-		for (i = 0; i < 100; i++)
-			udelay(1000);
+		mdelay(100);	/* stock: 64-bit count of 100 x __const_udelay(1 ms) = mdelay's loop (@..ee19a8) */
 		regmap_field_write(g_battery->rmap_fields[F_F4_2], 1);
 		break;
-	case '2':
+	case '2': {
+		struct rk817_battery_device *bat = g_battery;	/* stock loads it before the DBG test (@..ee18f8) */
+
 		DBG("rk817-bat: enable charging\n");
-		regmap_field_write(g_battery->rmap_fields[BAT_LTS_TS], 0xfa);
+		regmap_field_write(bat->rmap_fields[BAT_LTS_TS], 0xfa);
 		if (regulator_is_enabled(otg)) {	/* STOCK QUIRK: no IS_ERR check */
 			ret = regulator_disable(otg);
 			if (ret)
 				DBG("rk817-bat: disable sw1 failed:%d\n", ret);
 		}
 		break;
+	}
 	}
 	return count;
 }
