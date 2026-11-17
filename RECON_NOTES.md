@@ -566,3 +566,10 @@ both sticks ABS_X/Y/RX/RY -16384..16384, triggers ABS_Z/RZ 0..16384. The GPIO wa
 presses on the button lines. Not seen in this capture: stick clicks (THUMBL/THUMBR), RG_KEY, volume
 keys (adc-keys / gpio-keys silent). Earlier "no joypad input" captures were timing misses, not a bug;
 stock reads the same `adc value = 0` in amux_debug at rest.
+
+Second key pass, 2026-11-17 09:33 (GamepadTest open, device/joypad-capture-20261117b.txt and
+device/gpio-watch-20261117b.txt): every input reported. retrogame_joypad: A/B/X/Y, START, SELECT,
+TL/TR, TL2/TR2, THUMBL/THUMBR (stick clicks), KEY_F10 (RG_KEY, home), HAT0X/Y -1..1, sticks full range,
+triggers 0..16384. gpio-keys: KEY_VOLUMEUP, KEY_VOLUMEDOWN. adc-keys: KEY_BACK. The GPIO watcher saw
+the matching lines (BTN_THUMBL/R, RG_KEY, ...). Joypad and keys: pass. Left by hand: charge LED below
+full and 12 W at the meter.
