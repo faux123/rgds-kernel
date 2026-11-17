@@ -557,6 +557,13 @@ struct rk817_battery_device {
 	int				qmax;
 	int				dsoc;
 	int				rsoc;
+	/*
+	 * Stock-only pair right after rsoc (stock battery+0x6e0/0x6e4, which
+	 * moves every later member by 8 bytes); names are ours. Set by the
+	 * linek block at the end of rk817_bat_smooth_algorithm.
+	 */
+	int				sm_linek_fast;
+	int				sm_linek_normal;
 	int				poffset;
 	int				fake_offline;
 	int				age_ocv_soc;
@@ -2505,12 +2512,9 @@ static void rk817_bat_calc_smooth_dischrg(struct rk817_battery_device *battery)
 static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
 {
 	int ydsoc = 0, delta_cap = 0, old_cap = 0, tmp_soc;
-	/*int linek;*/
+	int linek;
 	int diff, delta;
-	/*int current_avg = rk817_bat_get_avg_current(battery);*/
-
-	delta = abs(battery->dsoc - battery->rsoc);
-	diff = delta * 3;/* speed:3/4 */
+	int current_avg = rk817_bat_get_avg_current(battery);
 
 	/* charge and discharge switch */
 	if ((battery->sm_linek * battery->current_avg <= 0)) {
@@ -2549,7 +2553,8 @@ static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
 		DBG("<%s>. ydsoc = 0\n", __func__);
 		return;
 	}
-	battery->sm_remain_cap = battery->remain_cap;
+	/* stock calls rk817_bat_calc_sm_linek here (ffffffc008ede5cc) */
+	rk817_bat_calc_sm_linek(battery);
 
 	DBG("<%s>. k=%d, ydsoc=%d; cap:old=%d, new:%d; delta_cap=%d\n",
 	    __func__, battery->sm_linek, ydsoc, old_cap,
@@ -2578,9 +2583,49 @@ static void rk817_bat_smooth_algorithm(struct rk817_battery_device *battery)
 		}
 	}
 
-	if (battery->s2r) {
+	if (battery->s2r || battery->current_avg > 0) {
 		battery->s2r = false;
 		rk817_bat_calc_sm_linek(battery);
+	}
+
+	/*
+	 * Stock-only linek block, reconstructed from rk817_battery_work
+	 * (inlined, ffffffc008ede914..ede9c8, ffffffc008edeca8..eded80,
+	 * ffffffc008edf480..f4b8).
+	 */
+	delta = abs(battery->dsoc - battery->rsoc);
+	diff = delta * 3;/* speed:3/4 */
+	if (delta > 1500) {
+		if (!battery->sm_linek_fast) {
+			if (current_avg > 0) {
+				if (battery->dsoc / 1000 < battery->rsoc / 1000)
+					linek = 1000 * (delta + diff) / DIV(diff);
+				else if (battery->dsoc / 1000 > battery->rsoc / 1000)
+					linek = 1000 * diff / DIV(delta + diff);
+				else
+					linek = 1000;
+			} else {
+				if (battery->dsoc / 1000 < battery->rsoc / 1000)
+					linek = -1000 * diff / DIV(delta + diff);
+				else if (battery->dsoc / 1000 > battery->rsoc / 1000)
+					linek = -1000 * (delta + diff) / DIV(diff);
+				else
+					linek = -1000;
+			}
+			battery->sm_linek = linek;
+			battery->sm_linek_fast = 1;
+			battery->sm_linek_normal = 0;
+		}
+	} else if (delta < 1000 && abs(battery->sm_linek) != 1000 &&
+		   !battery->sm_linek_normal) {
+		battery->sm_linek = 1000;
+		battery->sm_linek_fast = 0;
+		battery->sm_linek_normal = 1;
+	}
+
+	if (battery->dsoc / 1000 == 100 && battery->rsoc / 1000 == 100) {
+		battery->sm_linek_fast = 0;
+		battery->sm_linek_normal = 1;
 	}
 
 	DBG("smooth: smooth_soc = %d, dsoc = %d\n",
@@ -3057,13 +3102,9 @@ static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
 		bat_ts_vol = adc * 1200 / 65536;
 		DBG("++++++++++++ bat_ts_vol: %d, ntc_factor: %d\n",
 		    bat_ts_vol, battery->pdata->ntc_factor);
-		if (bat_ts_vol < 1180) {
-			rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, 1);
-			battery->pdata->ntc_factor = 21;
-		} else {
-			rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, 0);
-			battery->pdata->ntc_factor = 11;
-		}
+		/* one write with cset at ffffffc008edefd0, then factor via csel */
+		rk817_bat_field_write(battery, VOL_ADC_TSCUR_SEL, bat_ts_vol < 1180);
+		battery->pdata->ntc_factor = bat_ts_vol < 1180 ? 21 : 11;
 		DBG("VOL_ADC_TSCUR_SEL =  %x, ntc_factor = %d\n",
 		    rk817_bat_field_read(battery, VOL_ADC_TSCUR_SEL),
 		    battery->pdata->ntc_factor);
@@ -3101,12 +3142,12 @@ static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
 	 */
 	if (battery->temperature <= 0 || battery->temperature >= 500) {
 		DBG("disable  temperature <= 0 ||  temperature >= 500)\n ");
-		rk817_bat_field_write(battery, BAT_LTS_TS, 5);
 		DBG("disable charging\n");
+		rk817_bat_field_write(battery, BAT_LTS_TS, 5);
 	} else if (battery->temperature > 2 && battery->temperature < 480) {
 		DBG("disable  temperature > 2 ||  temperature < 480)\n ");
-		rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 		DBG("enable charging\n");
+		rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 	}
 
 	DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
