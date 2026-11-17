@@ -282,7 +282,7 @@ static ssize_t joypad_store_enable(struct device *dev, struct device_attribute *
 static DEVICE_ATTR(enable, 0644, joypad_show_enable, joypad_store_enable);
 
 /* Names and order = stock joypad_attrs @ffffffc00a2a3cb0 / joypad_attr_group @ffffffc00a2a3c88; (121 entries, read from the ELF). hall_status is NOT in stock's
- * joypad group (it lives with gpio_keys). Entries marked TODO need their handlers written. */
+ * joypad group (it lives with gpio_keys). */
 /* tentative definitions; the DEVICE_ATTRs are at the end of the file, after the structs they use */
 static struct device_attribute dev_attr_poll_interval, dev_attr_adc_fuzz, dev_attr_adc_flat, dev_attr_adc_cal,
 	dev_attr_amux_debug;
@@ -1266,7 +1266,7 @@ int gpio_hat_value_old[16];
 int hat_y;					/* T @ffffffc00a4d5b8c */
 int hat_x;					/* T @ffffffc00a4d5b88 */
 static void joypad_gpio_check(struct input_dev *input);
-static void joypad_adc_check(struct input_dev *input);	/* @ffffffc008c75eb4 (0xaa8), stock static; not yet written */
+static void joypad_adc_check(struct input_dev *input);	/* @ffffffc008c75eb4 (0xaa8), stock static */
 short lx_g, ly_g, rx_g, ry_g, lt_g, rt_g;	/* T @ffffffc00a4d5b94.. (strh, 16-bit) */
 /* joypad_poll @ffffffc008c74ee4: if (poll_dev_private->enable) { gpio_check; adc_check } with input passed through in x0. */
 static void joypad_poll(struct input_dev *input)
@@ -1838,7 +1838,7 @@ static noinline void joypad_gpio_check(struct input_dev *input)
  *        (@..758a0..75cf0). Not decoded further yet.
  * NOTE: the annotator's "=0xffffffc00a4d50xx" names in this range are struct-field offsets, not globals. */
 
-/* ---- joypad_adc_check @ffffffc008c75eb4 (0xaa8). Blocks A+B (@..75ed8..762ac) written; rest TODO. */
+/* ---- joypad_adc_check @ffffffc008c75eb4 (0xaa8). Blocks A-D reconstructed from the stock listing. */
 static noinline void joypad_adc_check(struct input_dev *input)
 {
 	struct stock_joypad *joypad = poll_dev_private;
@@ -1985,8 +1985,8 @@ d1_done:
 				e->value = w8;
 			v = w8;
 		}
-		if (e->shown > e->max || e->shown < e->min)	/* @..76794..767b4 */
-			e->shown = e->shown > e->max ? e->max : e->min;
+		if (e->shown > e->max || e->shown < e->min)	/* @..76794..767b4: stock clamps min first, then max */
+			e->shown = max_t(int, min_t(int, e->shown, e->max), e->min);
 
 		/* D3 @..767b8 */
 		if (v != e->last) {
