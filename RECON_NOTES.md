@@ -573,3 +573,6 @@ TL/TR, TL2/TR2, THUMBL/THUMBR (stick clicks), KEY_F10 (RG_KEY, home), HAT0X/Y -1
 triggers 0..16384. gpio-keys: KEY_VOLUMEUP, KEY_VOLUMEDOWN. adc-keys: KEY_BACK. The GPIO watcher saw
 the matching lines (BTN_THUMBL/R, RG_KEY, ...). Joypad and keys: pass. Left by hand: charge LED below
 full and 12 W at the meter.
+Charge LED, 2026-11-17 09:38 (Paul's eyes plus driver log): plugged in at 100%: green
+(led_update_charger_soc_status charger=1 soc=100); unplugged at 100%: no LED lit (charger=0,
+gpio-21 battery_charging low). Charging colour below full and 12 W at the meter: still to check.
