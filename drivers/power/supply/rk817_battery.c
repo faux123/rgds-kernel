@@ -21,6 +21,7 @@
 #include <linux/extcon.h>
 #include <linux/fb.h>
 #include <linux/gpio.h>
+#include <linux/gpio/consumer.h>
 #include <linux/iio/consumer.h>
 #include <linux/iio/iio.h>
 #include <linux/irq.h>
@@ -3049,6 +3050,105 @@ static const struct of_device_id rk817_bat_of_match[] = {
 	{ },
 };
 #endif
+
+/*
+ * Anbernic RG DS LED layer, reconstructed from stock.elf (rk817_battery.o):
+ *   led_red_on @ffffffc008edb1fc (gpio 22), led_green_on @ffffffc008edb238 (gpio 20),
+ *   led_yellow_on @ffffffc008edb274 (gpio 21), led_update_charger_soc_status @ffffffc008edb2b0,
+ *   led_update_soc @ffffffc008edb3c4, led_chargr_status @ffffffc008edb3f4,
+ *   get_led_chargr_status @ffffffc008edb43c. Globals @ffffffc00a4dbaa0..ac0 are global (nm T).
+ * factory_led_status (@ffffffc00a4d5a94) sits in another object's data (next to
+ * gt9xx_touch_swap_status, likely the joypad driver); weak here until that lands.
+ */
+int fg_init_done;
+int led_charger_status;
+int led_bat_soc;
+int rk817_soc;
+int led_red_status;
+int led_green_status;
+int led_yellow_status;
+struct rk817_battery_device *g_battery;
+int __weak factory_led_status;
+
+#define RGDS_LED_RED_GPIO	22
+#define RGDS_LED_GREEN_GPIO	20
+#define RGDS_LED_YELLOW_GPIO	21
+
+void led_red_on(int on)
+{
+	gpiod_set_raw_value(gpio_to_desc(RGDS_LED_RED_GPIO), on);
+	led_red_status = on;
+}
+
+void led_green_on(int on)
+{
+	gpiod_set_raw_value(gpio_to_desc(RGDS_LED_GREEN_GPIO), on);
+	led_green_status = on;
+}
+
+void led_yellow_on(int on)
+{
+	gpiod_set_raw_value(gpio_to_desc(RGDS_LED_YELLOW_GPIO), on);
+	led_yellow_status = on;
+}
+
+void led_update_charger_soc_status(void)
+{
+	int soc = led_bat_soc;
+	int green, yellow;
+
+	printk("   led_update_charger_soc_status   charger=%d     soc= %d    factory=%d \n",
+	       led_charger_status, soc, factory_led_status);
+	if (factory_led_status)
+		return;
+
+	if (led_charger_status) {
+		gpiod_set_raw_value(gpio_to_desc(RGDS_LED_RED_GPIO), 0);
+		led_red_status = 0;
+		if (soc >= 90) {
+			gpiod_set_raw_value(gpio_to_desc(RGDS_LED_GREEN_GPIO), 1);
+			green = 1;
+			yellow = 0;
+		} else {
+			gpiod_set_raw_value(gpio_to_desc(RGDS_LED_GREEN_GPIO), 0);
+			green = 0;
+			yellow = 1;
+		}
+	} else {
+		if (soc >= 20) {
+			gpiod_set_raw_value(gpio_to_desc(RGDS_LED_RED_GPIO), 0);
+			led_red_status = 0;
+		} else {
+			gpiod_set_raw_value(gpio_to_desc(RGDS_LED_RED_GPIO), 1);
+			led_red_status = 1;
+		}
+		gpiod_set_raw_value(gpio_to_desc(RGDS_LED_GREEN_GPIO), 0);
+		green = 0;
+		yellow = 0;
+	}
+	led_green_status = green;
+	gpiod_set_raw_value(gpio_to_desc(RGDS_LED_YELLOW_GPIO), yellow);
+	led_yellow_status = yellow;
+}
+
+void led_update_soc(int soc)
+{
+	led_bat_soc = soc;
+	if (fg_init_done)
+		led_update_charger_soc_status();
+}
+
+void led_chargr_status(int status)
+{
+	printk(" led_chargr_status  %d \n", status);
+	led_charger_status = status != 0;
+	led_update_charger_soc_status();
+}
+
+int get_led_chargr_status(void)
+{
+	return led_charger_status;
+}
 
 static int rk817_battery_probe(struct platform_device *pdev)
 {
