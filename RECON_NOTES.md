@@ -582,3 +582,11 @@ high, gpio-21 low. Stock led_update_charger_soc_status (stock.elf @ffffffc008edb
 when unplugged. Same thresholds in our source. Charger: ac online, 0xE4=0xde, 0xE5=0xcf (ilim 7 =
 3000 mA), 1.79 A into the cell at 4.33 V (CV taper at 90%). Yellow (below 90) and 12 W at the meter
 need a lower state of charge.
+
+Open issue, not fixed (Paul, 2026-11-17: document, fix later): battery drain on rgds-v1.21 d1cfee9e280a
+100% -> 90% in about 43 min, -575 mA, both screens on, Wi-Fi + wireless adb, GamepadTest open.
+Paul: too harsh. Observed: Anbernic system_server (WindowManager, settings system cpu_mode=1) writes
+`performance` to the CPU, GPU, rkvdec and VOP governors after boot (logcat 10:18:42); vendor init
+sets schedutil / dmc_ondemand at boot_completed; kernel default schedutil (running config = stock
+except 3 pahole lines). No stock drain measured under the same conditions yet, so a kernel cause is
+not ruled out. Next: 10-minute discharge-current log on stock and ours, same screens, app, cpu_mode.
