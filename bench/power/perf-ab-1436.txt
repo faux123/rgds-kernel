@@ -1,0 +1,45 @@
+ARM=A round=1 cpu performance gpu performance vop performance vdec performance
+frame_n=1199
+frame_p50_us=6000.2
+frame_p90_us=6000.5
+frame_p99_us=6016.5
+frame_p999_us=14150.8
+frame_max_us=19635.6
+frame_missed=1
+frame_missed_pct=0.08
+hog_kiters_per_s=544.3
+done=1
+ARM=B round=1 cpu schedutil gpu simple_ondemand vop simple_ondemand vdec performance
+frame_n=1189
+frame_p50_us=6000.2
+frame_p90_us=6000.5
+frame_p99_us=7652.2
+frame_p999_us=20346.1
+frame_max_us=20764.6
+frame_missed=11
+frame_missed_pct=0.93
+hog_kiters_per_s=541.7
+done=1
+ARM=A round=2 cpu performance gpu performance vop performance vdec performance
+frame_n=1200
+frame_p50_us=6000.2
+frame_p90_us=6000.5
+frame_p99_us=6000.5
+frame_p999_us=7418.0
+frame_max_us=7900.4
+frame_missed=0
+frame_missed_pct=0.00
+hog_kiters_per_s=540.7
+done=1
+ARM=B round=2 cpu schedutil gpu simple_ondemand vop simple_ondemand vdec performance
+frame_n=1200
+frame_p50_us=6000.2
+frame_p90_us=6000.5
+frame_p99_us=6004.0
+frame_p999_us=7320.0
+frame_max_us=8914.8
+frame_missed=0
+frame_missed_pct=0.00
+hog_kiters_per_s=541.1
+done=1
+cpu performance gpu performance vop performance vdec performance

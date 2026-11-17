@@ -606,6 +606,15 @@ Conclusion: fixed max clocks after any wake are stock Anbernic behaviour, not a 
 Cost in mA not measured yet. Next, once paul-d7 releases the device and it is unplugged: 10-min
 dense current_now logs, arm A as-is, arm B CPU schedutil + GPU/VOP simple_ondemand, same screens.
 
+Battery drain round 2 (2026-11-17 14:34-14:56, window lent by paul-d7; device stayed on AC, so no
+current logs). bore/power/arm.sh (save/A/B/restore/log). frame 2 hogs 20 s x2 rounds
+(perf-ab-1436.txt): missed A 0.08%/0.00%, B 0.93%/0.00%; p99 A 6.02/6.00 ms, B 7.65/6.00 ms; hog
+throughput 541-544 both (2 hogs pin the CPU at max in both arms, so this test barely separates
+them). Idle wakeup latency lat 0 hogs 15 s x2 (lat-ab-*.txt): p50 A 62 us, B 110-113 us; p99 A 78-84,
+B 147-250 us; max A 0.28-0.6 ms, B 0.83-2.1 ms. First run (perf-1434.txt) was void: shell quoting left
+every run on arm A. State restored 14:56 (performance x4, owners/modes as saved, cpu_mode=1).
+Open: discharge current per arm (needs the cable out), a real game workload (paul-d7's save-state test).
+
 ## Round 7 (2026-11-17): runtime inventory, stock kernel vs ours on the same device
 
 Stock image b07cfac1 (stock kernel; hyn_probe @0xcc2f50) and ours a3242b17 (rgds-v1.21 d1cfee9e280a;

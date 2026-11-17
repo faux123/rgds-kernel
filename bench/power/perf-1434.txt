@@ -1,0 +1,21 @@
+usage: arm.sh save|A|B|restore|show|log <secs> <tag>
+ARM= round=
+frame_missed_pct=0.00
+hog_kiters_per_s=543.2
+done=1
+usage: arm.sh save|A|B|restore|show|log <secs> <tag>
+ARM= round=
+frame_missed_pct=0.17
+hog_kiters_per_s=544.6
+done=1
+usage: arm.sh save|A|B|restore|show|log <secs> <tag>
+ARM= round=
+frame_missed_pct=0.00
+hog_kiters_per_s=543.9
+done=1
+usage: arm.sh save|A|B|restore|show|log <secs> <tag>
+ARM= round=
+frame_missed_pct=0.00
+hog_kiters_per_s=543.3
+done=1
+arm.sh[55]: arm.sh: inaccessible or not found

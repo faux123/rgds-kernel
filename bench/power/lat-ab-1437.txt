@@ -1,0 +1,37 @@
+ARM=A round=1 cpu performance gpu performance vop performance vdec performance
+lat_n=15000
+lat_p50_us=61.8
+lat_p90_us=62.8
+lat_p99_us=78.1
+lat_p999_us=150.3
+lat_max_us=599.8
+hog_kiters_per_s=0.0
+done=1
+ARM=B round=1 cpu schedutil gpu simple_ondemand vop simple_ondemand vdec performance
+lat_n=15000
+lat_p50_us=113.0
+lat_p90_us=123.8
+lat_p99_us=249.9
+lat_p999_us=532.6
+lat_max_us=2121.1
+hog_kiters_per_s=0.0
+done=1
+ARM=A round=2 cpu performance gpu performance vop performance vdec performance
+lat_n=15000
+lat_p50_us=61.8
+lat_p90_us=65.6
+lat_p99_us=83.5
+lat_p999_us=143.6
+lat_max_us=278.0
+hog_kiters_per_s=0.0
+done=1
+ARM=B round=2 cpu schedutil gpu simple_ondemand vop simple_ondemand vdec performance
+lat_n=15000
+lat_p50_us=109.7
+lat_p90_us=117.5
+lat_p99_us=147.4
+lat_p999_us=282.3
+lat_max_us=834.9
+hog_kiters_per_s=0.0
+done=1
+cpu performance gpu performance vop performance vdec performance
