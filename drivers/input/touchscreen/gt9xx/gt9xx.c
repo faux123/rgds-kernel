@@ -2756,10 +2756,10 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
     	dev_err(&client->dev, "no device tree\n");
     	return -EINVAL;
     }
-    /* stock reads these three u32 DT props into ts+0x130/0x131/0x132 and fails probe if absent; optional here */
-    if (!of_property_read_u32(np, "ext_lcd_tp", &val)) ts->ext_lcd_tp = val;
-    if (!of_property_read_u32(np, "flip_report_tp", &val)) ts->flip_report_tp = val;
-    if (!of_property_read_u32(np, "com_lcd_tp", &val)) ts->com_lcd_tp = val;
+    /* stock @ffffffc008cc0168/0190/01b8: each read failing branches to the tp-size error exit at goodix_ts_probe+0x404 */
+    if (of_property_read_u32(np, "ext_lcd_tp", &val)) { dev_err(&client->dev, "no max-x defined\n"); return -EINVAL; } ts->ext_lcd_tp = val;
+    if (of_property_read_u32(np, "flip_report_tp", &val)) { dev_err(&client->dev, "no max-x defined\n"); return -EINVAL; } ts->flip_report_tp = val;
+    if (of_property_read_u32(np, "com_lcd_tp", &val)) { dev_err(&client->dev, "no max-x defined\n"); return -EINVAL; } ts->com_lcd_tp = val;
     if (of_property_read_u32(np, "tp-size", &val)) {
     	dev_err(&client->dev, "no max-x defined\n");
     	return -EINVAL;
