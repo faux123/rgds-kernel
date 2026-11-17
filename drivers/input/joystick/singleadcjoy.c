@@ -1023,11 +1023,10 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 void *poll_dev_private;			/* T @ffffffc00a4d5708, 8 bytes (next symbol @..5710) */
 
 
-/* Inlined into joypad_probe in stock (@..707b8..70b70). Returns 0 or -errno. */
+/* Inlined into joypad_probe in stock (@..707b8..708d4). Returns 0 or -ENOMEM. */
 static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **out)
 {
 	struct stock_joypad *joypad;
-	int i;
 
 	joypad = devm_kmalloc(dev, 0x78, GFP_KERNEL | __GFP_ZERO);
 	if (!joypad) {
@@ -1048,6 +1047,16 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		dev_err(dev, "adc key = %d, gpio key = %d error!",
 			joypad->amux_count, joypad->gpio_key_count);
 	/* NOTE: stock continues after this dev_err (no return seen between @..708d0 and @..708d4); verify. */
+	*out = joypad;
+	return 0;
+}
+
+/* joypad_adc_setup, inlined in probe @..708d4..70b70. Both of its error exits (alloc @..70910, amux count
+ * @..70c74) branch to @..70d8c, which prints "dt parse error!(err = %d)\n" and returns; neither prints
+ * "Joypad amux setup failed". */
+static int stock_joypad_adc_setup(struct device *dev, struct stock_joypad *joypad)
+{
+	int i;
 
 	joypad->adc = devm_kmalloc(dev, (long)joypad->amux_count * 0x64, GFP_KERNEL | __GFP_ZERO);
 	if (!joypad->adc) {
@@ -1066,8 +1075,10 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		}
 		e->mux_index = i;
 		e->invert = 0;
-		if (i > 5)
-			continue;	/* default branch @..70c58: not decoded yet */
+		if (i > 5) {	/* default branch @..70c58 */
+			dev_err(dev, "%s amux count(%d) error!", "joypad_adc_setup", i);
+			return -EINVAL;
+		}
 		{
 			/* switch(i) via jump table @ffffffc0097195c0; invert set through the shared tail @..70afc -> @..70950 */
 			const char *pp, *nn;
@@ -1088,7 +1099,6 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 			e->invert = inv;
 		}
 	}
-	*out = joypad;
 	return 0;
 }
 
@@ -1189,7 +1199,7 @@ struct stock_button {
 _Static_assert(sizeof(struct stock_button) == 0x20, "button 0x20");
 _Static_assert(__builtin_offsetof(struct stock_button, not_active_low) == 0x19, "button+0x19");
 
-static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joypad, struct stock_button **out)
+static __always_inline int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joypad, struct stock_button **out)
 {
 	struct device_node *np = dev->of_node, *child = NULL;
 	struct stock_button *buttons;
@@ -1264,6 +1274,9 @@ static int joypad_probe(struct platform_device *pdev)
 	err = stock_joypad_dt_parse_head(dev, &joypad);
 	if (err)
 		return err;	/* stock: alloc failure returns -ENOMEM without "dt parse error" (@..707e0 -> @..70da0) */
+	err = stock_joypad_adc_setup(dev, joypad);
+	if (err)
+		goto dt_err;	/* @..70914 / @..70c78 -> @..70d8c */
 	err = stock_joypad_amux_setup(dev, joypad, &amux);
 	if (err) {
 		dev_err(dev, "Joypad amux setup failed: %d\n", err);
