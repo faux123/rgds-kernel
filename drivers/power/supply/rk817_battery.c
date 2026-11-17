@@ -264,6 +264,7 @@ enum rk817_battery_fields {
 	BAT_EXS, CHG_STS, BAT_OVP_STS, CHRG_IN_CLAMP,
 	CHIP_NAME_H, CHIP_NAME_L,
 	PLUG_IN_STS,
+	NTC_TEMP_CFG,	/* stock rk817_battery_reg_fields[143] = REG_FIELD(0xE9, 0, 7); name is ours */
 	F_MAX_FIELDS
 };
 
@@ -432,6 +433,7 @@ static const struct reg_field rk817_battery_reg_fields[] = {
 	[CHIP_NAME_H] = REG_FIELD(0xED, 0, 7),
 	[CHIP_NAME_L] = REG_FIELD(0xEE, 0, 7),
 	[PLUG_IN_STS] = REG_FIELD(0xF0, 6, 6),
+	[NTC_TEMP_CFG] = REG_FIELD(0xE9, 0, 7),
 };
 
 struct battery_platform_data {
@@ -2354,6 +2356,8 @@ static void rk817_bat_save_data(struct rk817_battery_device *battery)
 static void rk817_bat_lowpwr_check(struct rk817_battery_device *battery)
 {
 	static u64 time;
+	static u8 count;		/* stock rk817_bat_lowpwr_check.count @ffffffc00a4dbad0 */
+	static u8 correct_count;	/* stock ...correct_count @ffffffc00a4dbad1 */
 	int pwr_off_thresd = battery->pdata->pwroff_vol;
 
 	if (battery->current_avg < 0 && battery->voltage_avg < pwr_off_thresd) {
@@ -2371,6 +2375,33 @@ static void rk817_bat_lowpwr_check(struct rk817_battery_device *battery)
 	} else {
 		time = 0;
 		battery->fake_offline = 0;
+	}
+
+	/*
+	 * Stock (inlined in rk817_battery_work, ffffffc008eddf64..ede01c):
+	 * once, when voltage is below pwroff-50 and dsoc and rsoc differ by
+	 * >= 10 percent, snap dsoc and smooth_soc to rsoc.
+	 */
+	if (battery->voltage_avg < pwr_off_thresd - 50 && !correct_count) {
+		int diff = battery->dsoc / 1000 - battery->rsoc / 1000;
+
+		if (abs(diff) >= 10) {
+			battery->dsoc = battery->rsoc;
+			battery->smooth_soc = battery->rsoc;
+			correct_count = 1;
+		}
+	}
+
+	/*
+	 * Stock: dsoc in [-1499, 499] while discharging, counted per work run
+	 * (never reset, u8 wraps); from the 7th run on it logs and sleeps 100 ms.
+	 * String @ffffffc009c3a5e7, branch ffffffc008ede004..ede018.
+	 */
+	if (battery->dsoc + 1499 <= 1998 && battery->current_avg < 0) {
+		if (++count >= 7) {
+			DBG("lower power 0 cap and kernel power off\n");
+			msleep(100);
+		}
 	}
 
 	DBG("<%s>. t=%lu, dsoc=%d, current=%d, fake_offline=%d\n",
@@ -2896,6 +2927,29 @@ static void rk817_battery_work(struct work_struct *work)
 	rk817_bat_power_supply_changed(battery);
 	rk817_bat_save_data(battery);
 	rk817_bat_output_info(battery);
+
+	{
+		/* stock rk817_bat_update_temperature.last_temp @ffffffc00a4dbad8, store @ffffffc008edf250;
+		 * the NTC threshold-field write before it (ffffffc008edf20c..f23c) is not reconstructed. */
+		static int last_temp;
+		int t = battery->temperature;	/* tenths of a degree C in stock (raw * 10 @ffffffc008edf1e0) */
+
+		/*
+		 * Stock ffffffc008edf1ec..f23c, written via rmap_fields[143] with mask -1:
+		 *   t <= 0 or t >= 500          -> 5      (ffffffc008edf204)
+		 *   3 <= t <= 479               -> 0xfa   (ffffffc008edf220)
+		 *   t in 1..2 or 480..499       -> no write
+		 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8); our tree keeps
+		 * the virtual temperature, so this write is constant here.
+		 */
+		if (t <= 0 || t >= 500)
+			rk817_bat_field_write(battery, NTC_TEMP_CFG, 5);
+		else if (t >= 3 && t <= 479)
+			rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
+
+		DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
+		last_temp = battery->temperature;
+	}
 
 	if (rk817_bat_field_read(battery, CUR_CALIB_UPD)) {
 		rk817_bat_current_calibration(battery);
