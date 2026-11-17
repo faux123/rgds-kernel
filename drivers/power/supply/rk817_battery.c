@@ -2422,6 +2422,29 @@ static void rk817_bat_save_data(struct rk817_battery_device *battery)
 {
 	rk817_bat_save_dsoc(battery, battery->dsoc);
 	rk817_bat_save_cap(battery, battery->remain_cap / 1000);
+
+	/*
+	 * Stock-only tail (rk817_bat_save_data ffffffc008ee0a60..eb10): clamp
+	 * voltage_avg to 0..4400 mV on RK817, then keep it in the spare gauge
+	 * registers CALC_REST_REGH/L (0xA8/0xA7) while the charger is plugged
+	 * in, 0xffff otherwise.
+	 */
+	if (battery->chip_id != RK809_ID) {
+		if (battery->voltage_avg <= 0)
+			battery->voltage_avg = 0;
+		else if (battery->voltage_avg >= 4400)
+			battery->voltage_avg = 4400;
+	}
+
+	if (rk817_bat_field_read(battery, PLUG_IN_STS)) {
+		rk817_bat_field_write(battery, CALC_REST_REGH,
+				      (battery->voltage_avg >> 8) & 0xff);
+		rk817_bat_field_write(battery, CALC_REST_REGL,
+				      battery->voltage_avg & 0xff);
+	} else {
+		rk817_bat_field_write(battery, CALC_REST_REGH, 0xff);
+		rk817_bat_field_write(battery, CALC_REST_REGL, 0xff);
+	}
 }
 
 /* high load: current < 0 with charger in.
