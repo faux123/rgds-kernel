@@ -2439,13 +2439,14 @@ static int cst6xx_bootloader_enter(struct i2c_client *client)
 	if (buf[0] != 0x55)
 	{
 		HYN_ERROR("cst6xx_bootloader_enter error,please check VCC/RST/SDA/SCL and chip type.\r\n");
-		return -1;
+		ret = -1;	/* stock falls through to the Exit print (@ffffffc008cc5680 -> @..5698) */
 	}else{
-        	HYN_DEBUG("cst6xx_bootloader_enter detect success,buf[0]=0x%x.\n", buf[0]);	
+        	HYN_DEBUG("cst6xx_bootloader_enter detect success,buf[0]=0x%x.\n", buf[0]);
+		ret = 0;	
 	}
 			
 	HYN_FUNC_EXIT();
-	return 0;
+	return ret;
 }
 
 static int cst3xxse_bootloader_enter(struct i2c_client *client)
