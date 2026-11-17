@@ -66,7 +66,6 @@ static u8 gtp_change_x2y = TRUE;
 static u8 gtp_x_reverse = FALSE;
 static u8 gtp_y_reverse = TRUE;
 
-static const char *goodix_ts_name = "goodix-ts";
 
 /* Stock exports gt9xx_touch_swap (EXPORT_SYMBOL); the *_status globals are written by the joypad driver's touch_mode sysfs. */
 int gt9xx_touch_swap;
