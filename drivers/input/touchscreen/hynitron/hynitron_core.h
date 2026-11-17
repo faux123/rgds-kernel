@@ -92,7 +92,11 @@
 
 /**********************************************************/
 #define HYN_RESET_SOFTWARE				   			0
-#define HYN_UPDATE_FIRMWARE_FORCE					0
+/* Stock = 1: the image holds "update firmware online force." and none of the chip_ic_type / fw version /
+ * fw checksum judge strings (hyn_boot_update_fw, string ref @ffffffc008cc446c).
+ * FIX CANDIDATE: with 1 the judge accepts any firmware whose file checksum is valid, so the version and
+ * project-id checks never run. */
+#define HYN_UPDATE_FIRMWARE_FORCE					1
 #define HYN_IIC_TRANSFER_LIMIT						0
 
 /******************************************/
