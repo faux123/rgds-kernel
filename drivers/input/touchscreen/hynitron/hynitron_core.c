@@ -1955,7 +1955,7 @@ static int hyn_probe(struct i2c_client *client,
 	/*INIT_WORK(&ts_data->resume_work,hyn_ts_resume_work);
 	ts_data->fb_notif.notifier_call = hyn_fb_notifier_callback;
 	fb_register_client(&ts_data->fb_notif);*/
-#elif defined(CONFIG_HAS_EARLYSUSPEND)
+#elif defined(CONFIG_HAS_EARLYSUSPEND) && !defined(CONFIG_PM)
 	ts_data->early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1;
 	ts_data->early_suspend.suspend = hyn_ts_early_suspend;
 	ts_data->early_suspend.resume = hyn_ts_late_resume;
@@ -2072,7 +2072,7 @@ static struct i2c_driver hynitron_i2c_driver = {
 #endif
 		},
 
-#ifdef CONFIG_HAS_EARLYSUSPEND
+#if defined(CONFIG_HAS_EARLYSUSPEND) && !defined(CONFIG_PM)
 	.suspend = hyn_ts_early_suspend,
 	.resume = hyn_ts_late_resume,
 #endif

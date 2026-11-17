@@ -54,7 +54,7 @@
 #include <linux/of_irq.h>
 //#include <linux/wakelock.h>
 //#include <linux/init-input.h>
-#include "../../init-input.h"
+#include "hynitron_rk_glue.h"
 #include <linux/cdev.h>
 #include <linux/dcache.h>
 #include <linux/errno.h>
