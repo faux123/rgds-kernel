@@ -603,3 +603,11 @@ filesystems, device-tree hash, cmdline. Differences, all run-to-run:
   (PROBE_PREFER_ASYNCHRONOUS), all four within 0.3 ms; our own two boots disagree with each other too.
 - Mali regulator use count 1 vs 0 (GPU powered at sample time or not).
 - bdi 0:N device numbers, the ashmem node name, init pids and times in dmesg.
+
+Stock branch boot (2026-11-17 10:45): rgds-v1.21-stock cccbcebdd82d (no FIX commits), built with
+build-ack.sh, packed into the running image with only the kernel replaced (boot b5499a64, gate PASS,
+only kernel bytes and the header id changed), flashed with read-back hash. Booted, wireless adb back,
+hyn_probe @0xcc2f28 (its own build). Inventory vs the stock kernel (device/inventory-stockbranch-*.txt):
+same as the fixes-branch result, every section identical except the run-to-run items (USB bus
+numbers, Mali use count, ashmem name, init pids/times; one servicemanager keystore lazy-start
+message only in the stock capture).
