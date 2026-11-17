@@ -625,3 +625,14 @@ message only in the stock capture).
   forward"): first pushed at v1.21-recon-baseline cccbcebdd82d, then fast-forwarded to rgds-v1.21
   b325cd86e6e9 (baseline + the 3 FIX commits). GitHub default branch is now `main`. All future fixes
   and enhancements land on `main`; rgds-v1.21-stock stays the frozen stock reconstruction.
+
+## Enhancements on main (2026-11-17, Paul: "add all enhancements at once")
+
+Four GammaOS charger commits (TheGammaSqueeze/rg_ds_kernel), applied in their own order with zero fuzz,
+original authorship kept, "(cherry picked from ...)" trailer: df7c2cc2c65c (SDP 900 mA, from 1ca79c47e3),
+65bd4bacb137 (re-apply input voltage on every plug, from fe21065927), 9fe75039ca20 (HOTDIE band
+stepping, sysfs die_temp_band / thermal_chrg_current / thermal_action_band, from 21d6c77041),
+4e40869b70ed (CHRG_CT_EN on, action band 95C, from 0a9aa19be6). The DT 3000/3500 commit (424d18cc7b)
+was already on main as the 12 W FIX. Build EXIT 0; boot b61b15b9 gated, flashed, booted: thermal work
+present, die_temp_band "<85", thermal_chrg_current 3500, thermal_action_band 2, 0xE4 = 0xde (CT_EN set).
+Plug-in check (0xE5 back to 3000 mA + voltage threshold, LED yellow at 80%) pending.
