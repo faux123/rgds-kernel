@@ -646,3 +646,20 @@ except gts_dev. Boot image 312cae1b (bootlab/boot-rgds-main-8864c15dacd8-charge3
 flashed with read-back hash: boots, "sched_bore=0", 8821cs loaded, wlan0 up. Armed: hog burst_score
 12/14/16 at 2/5/10 s, 9 tasks scored; disarmed: hog 0 (sleeping tasks unwind when they next run);
 writing 2 rejected. BORE is not armed at boot yet (no userspace hook).
+
+### BORE layout fix and A/B benchmark (2026-11-17)
+
+33879857d96e moves BORE's state to task_struct->bore after `thread` (see its commit message for
+the corrected 8821cs `current` analysis). pahole: all 206 existing task_struct members at the same
+offsets, sched_entity/thread_struct identical, sizeof 3904 unchanged; 225/225 8821cs CRCs match.
+Boot image c99a7180 flashed: boots sched_bore=0, the Magisk hook (device/rgds-bore.sh, installed as
+/data/adb/service.d/rgds-bore.sh) armed it at 30 s uptime, 8821cs loaded, wlan0 up, no
+stack-protector/BUG/WARNING; switch test: hog score 12/14/16, 0 after disarm, 2 rejected.
+
+Benchmark (bench/, probe bore-bench.c, driver ab-run.sh, results ab-20261117*.txt/md): one boot,
+8 rounds interleaved (arm order flips each round), loads 0/4/16 nice-0 busy hogs on the 4 A55
+cores, governor `performance` (Anbernic cpu_mode=1). Run on the 8864c15dacd8 kernel (same scheduler
+behaviour). 16 hogs, stock CFS -> BORE, medians: 60 Hz frames missed 35.2% -> 0.0%; time to get
+6 ms CPU p50 12.1 -> 6.0 ms, p99 25.7 -> 6.1 ms; 100 fork+exec 11.09 -> 3.79 s; hog throughput
+-4.3% (frame test) and -9.2% (fork test). 4 hogs: fork+exec -4.3%, everything else within spread.
+0 hogs: no difference. Synthetic probe: shows scheduler behaviour under contention, not game FPS.
