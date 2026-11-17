@@ -377,31 +377,35 @@ static void *system_heap_do_vmap(struct system_heap_buffer *buffer)
 	return vaddr;
 }
 
-static void *system_heap_vmap(struct dma_buf *dmabuf)
+static int system_heap_vmap(struct dma_buf *dmabuf, struct iosys_map *map)
 {
 	struct system_heap_buffer *buffer = dmabuf->priv;
 	void *vaddr;
+	int ret = 0;
 
 	mutex_lock(&buffer->lock);
 	if (buffer->vmap_cnt) {
 		buffer->vmap_cnt++;
-		vaddr = buffer->vaddr;
+		iosys_map_set_vaddr(map, buffer->vaddr);
 		goto out;
 	}
 
 	vaddr = system_heap_do_vmap(buffer);
-	if (IS_ERR(vaddr))
+	if (IS_ERR(vaddr)) {
+		ret = PTR_ERR(vaddr);
 		goto out;
+	}
 
 	buffer->vaddr = vaddr;
 	buffer->vmap_cnt++;
+	iosys_map_set_vaddr(map, buffer->vaddr);
 out:
 	mutex_unlock(&buffer->lock);
 
-	return vaddr;
+	return ret;
 }
 
-static void system_heap_vunmap(struct dma_buf *dmabuf, void *vaddr)
+static void system_heap_vunmap(struct dma_buf *dmabuf, struct iosys_map *map)
 {
 	struct system_heap_buffer *buffer = dmabuf->priv;
 
@@ -411,6 +415,7 @@ static void system_heap_vunmap(struct dma_buf *dmabuf, void *vaddr)
 		buffer->vaddr = NULL;
 	}
 	mutex_unlock(&buffer->lock);
+	iosys_map_clear(map);
 }
 
 static int system_heap_zero_buffer(struct system_heap_buffer *buffer)
@@ -658,16 +663,14 @@ static struct dma_buf *system_heap_allocate(struct dma_heap *heap,
 static long system_get_pool_size(struct dma_heap *heap)
 {
 	int i;
-	long num_pages = 0;
+	unsigned long num_bytes = 0;
 	struct dmabuf_page_pool **pool;
 
 	pool = strstr(dma_heap_get_name(heap), "dma32") ? dma32_pools : pools;
-	for (i = 0; i < NUM_ORDERS; i++, pool++) {
-		num_pages += ((*pool)->count[POOL_LOWPAGE] +
-			      (*pool)->count[POOL_HIGHPAGE]) << (*pool)->order;
-	}
+	for (i = 0; i < NUM_ORDERS; i++, pool++)
+		num_bytes += dmabuf_page_pool_get_size(*pool);
 
-	return num_pages << PAGE_SHIFT;
+	return num_bytes;
 }
 
 static const struct dma_heap_ops system_heap_ops = {
