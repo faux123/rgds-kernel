@@ -2312,10 +2312,10 @@ static void rk817_bat_power_supply_changed(struct rk817_battery_device *battery)
 	else if (battery->dsoc < 0)
 		battery->dsoc = 0;
 
-	if (battery->dsoc == old_soc && !battery->change)
+	/* stock compares dsoc with old_soc only (ffffffc008edee74..ee80) */
+	if (battery->dsoc == old_soc)
 		return;
 
-	battery->change = false;
 	old_soc = battery->dsoc;
 	battery->last_dsoc = battery->dsoc;
 	power_supply_changed(battery->bat);
@@ -2366,7 +2366,6 @@ rk817_bat_update_charging_status(struct rk817_battery_device *battery)
 	if (is_charging == battery->is_charging)
 		return;
 
-	battery->change = true;
 	battery->is_charging = is_charging;
 	if (is_charging)
 		battery->charge_count++;
