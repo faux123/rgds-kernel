@@ -1356,6 +1356,12 @@ static int hyn_parse_dt(struct device *dev, struct hynitron_ts_platform_data *pd
 
 	HYN_FUNC_ENTER();
 
+	/* stock @ffffffc008cc29c8: no matching DT entry is logged and treated as "no DT data" (returns 0) */
+	if (!of_match_device(hyn_dt_match, dev)) {
+		HYN_ERROR("DTS Unable to find matchv device.");
+		return 0;
+	}
+
 	ret = hyn_get_dt_coords(dev, "hynitron,display-coords", pdata);
 	if (ret < 0){
 		HYN_ERROR("DTS Unable to get display-coords");	
