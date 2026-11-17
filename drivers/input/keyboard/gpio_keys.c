@@ -354,11 +354,35 @@ static DEVICE_ATTR(disabled_switches, S_IWUSR | S_IRUGO,
 		   gpio_keys_show_disabled_switches,
 		   gpio_keys_store_disabled_switches);
 
+/*
+ * Anbernic: hall_status_share (@ffffffc00a4d56ec, global) is read by the joypad
+ * driver. hall_status attr (dev_attr_hall_status @ffffffc00a2a3a40, mode 0644):
+ * show @ffffffc008c6bd34 prints it, store @ffffffc008c6bd68 parses and discards.
+ */
+int hall_status_share;
+
+static ssize_t joypad_show_hall_status(struct device *dev,
+				       struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", hall_status_share);
+}
+
+static ssize_t joypad_store_hall_status(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	simple_strtoul(buf, NULL, 10);
+	return count;
+}
+
+static DEVICE_ATTR(hall_status, 0644, joypad_show_hall_status, joypad_store_hall_status);
+
 static struct attribute *gpio_keys_attrs[] = {
 	&dev_attr_keys.attr,
 	&dev_attr_switches.attr,
 	&dev_attr_disabled_keys.attr,
 	&dev_attr_disabled_switches.attr,
+	&dev_attr_hall_status.attr,	/* stock gpio_keys_attrs[4] @ffffffc00a2a39b0 */
 	NULL,
 };
 ATTRIBUTE_GROUPS(gpio_keys);
@@ -376,6 +400,28 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 	if (state < 0) {
 		dev_err(input->dev.parent,
 			"failed to get gpio state: %d\n", state);
+		return;
+	}
+
+	/*
+	 * Anbernic RG DS lid hall sensor (stock gpio_keys_gpio_report_event
+	 * @ffffffc008c6b294..131c): a KEY_F12 (88) button is turned into a
+	 * KEY_CHANNELDOWN (open) / KEY_CHANNELUP (close) press+release on each
+	 * state change, and the state is shared through hall_status_share.
+	 */
+	if (button->code == KEY_F12) {
+		static int state_old_KEY_F9;	/* stock symbol name */
+		unsigned int code;
+
+		if (state == state_old_KEY_F9)
+			return;
+		state_old_KEY_F9 = state;
+		hall_status_share = state;
+		code = state ? KEY_CHANNELDOWN : KEY_CHANNELUP;
+		input_event(input, type, code, 1);
+		input_event(input, type, code, 0);
+		printk(state ? " input key OPEN  +++ @@@@@\n" : " input key CLOSE  --- $$$$$$\n");
+		input_event(input, 0, 0, 0);
 		return;
 	}
 
