@@ -26,7 +26,7 @@ Linux version 6.1.141 (builder1@dell-PowerEdge-R730XD) (Android (10087095, +pgo,
 
 - `rgds-v1.21-stock`: only what the stock kernel does, including its quirks.
   Commits titled `INTERIM (not stock)` or `TODO (stand-in, not stock)` mark
-  parts whose stock source is not reconstructed yet.
+  stand-ins that later commits on the same branch replace.
 - `rgds-v1.21`: `rgds-v1.21-stock` plus a short series of fixes, one commit
   each, so every change from stock behavior is visible on its own.
 
@@ -71,29 +71,32 @@ The vendor Wi-Fi and Bluetooth modules on the device report vermagic
 
 | Area | Files | Source |
 |---|---|---|
-| Joypad (singleadc-joypad) | `drivers/input/joystick/singleadcjoy.c` | INTERIM: TheGammaSqueeze/rg_ds_kernel `ba9053b290`. The stock driver is being reconstructed from disassembly and will replace it. |
-| Vibrator | `drivers/staging/android/timed_output.*`, `rk_timed_gpio.c` | TheGammaSqueeze/rg_ds_kernel `ba9053b290`; matches stock's initcalls (stock has no `timed_gpio`) |
-| Board device tree | `arch/arm64/boot/dts/rockchip/rk3566-anbernic-rg-ds.dts` | TheGammaSqueeze/rg_ds_kernel `ba9053b290` |
+| Joypad (singleadc-joypad) | `drivers/input/joystick/singleadcjoy.c` | Reconstructed from stock disassembly (the interim Gamma driver it replaced remains in history) |
+| Vibrator | `drivers/staging/android/timed_output.*`, `rk_timed_gpio.c` | Copied from TheGammaSqueeze/rg_ds_kernel `ba9053b290`; verified instruction-identical to the stock binary function by function, initcall lines match (stock has no `timed_gpio`) |
+| Board device tree | `arch/arm64/boot/dts/rockchip/rk3566-anbernic-rg-ds.dts` | Rebuilt from the stock DTB on the Rockchip SoC dtsi; no semantic difference from stock (tools in `scripts/rgds/dts/`) |
 | xt_quota2 | `net/netfilter/xt_quota2.c` | Android Common Kernel (part of the ACK delta) |
+| DMA heaps | `drivers/dma-buf/heaps/rk_system_heap.c`, `rk_cma_heap.c` | Rockchip heaps built as stock does, ported to 6.1 |
 | SC7U22 accelerometer and gyroscope | `drivers/input/sensors/{accel,gyro}/sc7u22_*.c` | Reconstructed from stock disassembly |
 | RK817 battery | `drivers/power/supply/rk817_battery.c` | Rockchip `develop-4.19` revision (`d1d1ad90afcc`), ported to 6.1, plus stock-only parts reconstructed from disassembly: resume handling, low-power check, field table tail, LED layer, `/sys/rk809/battery_adjust`, CW2015 SOC reporting |
 | CW2015 gauge | `drivers/power/supply/cw2015_battery.c` | Rockchip base driver plus Anbernic SOC sharing and charger state, reconstructed from disassembly |
 | Speaker amplifiers (AW87391) | `sound/soc/rockchip/aw_pa_left.c`, `aw_pa_right.c` | Reconstructed from stock disassembly |
 | RK817 codec | `sound/soc/codecs/rk817_codec.c` | Rockchip base plus the stock amplifier calls in `rk817_digital_mute`, from disassembly |
-| GT9xx touchscreen | `drivers/input/touchscreen/gt9xx/gt9xx.c` | Rockchip base plus Anbernic touch-swap globals, reconstructed from disassembly |
-| Hynitron touchscreen | `drivers/input/touchscreen/hynitron/` | TODO stand-in: radxa/allwinner-bsp V3.0 (closest public version; stock is "Rockchip Driver V2.1 20201222", source not found) plus a Rockchip device tree and IRQ glue |
+| GT9xx touchscreen | `drivers/input/touchscreen/gt9xx/` | Rockchip base built like stock, plus Anbernic touch-swap globals and the stock panel-notifier suspend/resume, reconstructed from disassembly |
+| Hynitron touchscreen | `drivers/input/touchscreen/hynitron/` | Hynitron V2.2 20210129 skeleton, trimmed and matched to the stock V2.1 binary; `tpd_up`/`tpd_down` still open |
 | Hall sensor | `drivers/input/keyboard/gpio_keys.c` | Rockchip base plus the stock hall-sensor handling and `hall_status` attribute, from disassembly |
 
 Commit messages name the stock addresses that each reconstruction is based on.
 
 ## Status
 
-- The tree builds with the stock configuration. Three stock configuration
-  symbols have no source yet: `RTL8821CS` (the Wi-Fi driver is an external
-  module), `ROCKCHIP_EBC_DEV`, and `PAHOLE_HAS_SPLIT_BTF` (host tool only).
-- Symbol comparison against the stock kernel's kallsyms: 578 stock symbols are
-  not yet in this build and 51 symbols in this build are not in stock. Most of
-  the remaining stock-only symbols belong to the joypad driver.
+- The tree builds with the stock configuration. The only stock configuration
+  symbol without a match is `PAHOLE_HAS_SPLIT_BTF`, which depends on the
+  build host's pahole.
+- The board DTB has no semantic difference from the stock DTB
+  (`scripts/rgds/dts/gate.sh`).
+- Symbol comparison against the stock kernel's kallsyms: 54 stock symbols are
+  not in this build (most are initcall names whose line numbers differ) and
+  15 symbols in this build are not in stock.
 - Nothing in this tree has been tested on hardware yet.
 
 ## Flashing warning
