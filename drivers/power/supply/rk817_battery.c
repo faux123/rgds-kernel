@@ -2800,6 +2800,41 @@ static void rk817_bat_calc_zero_algorithm(struct rk817_battery_device *battery)
 		battery->dsoc -= 1000;
 	else
 		battery->dsoc = battery->zero_dsoc;
+
+	/*
+	 * Stock-only tail, reconstructed from rk817_battery_work
+	 * (inlined, ffffffc008ede1b0..ede324).
+	 */
+	if (battery->zero_dsoc < 1000) {
+		if (battery->zero_linek < 1000 && battery->dsoc < 1000) {
+			DBG("algorithm:---------algorithm step1 -----------\n");
+			battery->zero_dsoc = 0;
+		}
+		if (battery->zero_linek > 1000) {
+			if (battery->dsoc >= 1000)
+				return;
+			if (battery->zero_dsoc < battery->dsoc)
+				battery->zero_dsoc = battery->dsoc;
+			DBG("algorithm:---------algorithm step2 -----------\n");
+		}
+	}
+
+	if (battery->dsoc > 500)
+		return;
+
+	/* low soc, small load, voltage still high: grow the gauge FCC by 10 mAh */
+	if (battery->current_avg < 100 && battery->voltage_avg > 3520 &&
+	    battery->fcc < battery->pdata->design_qmax) {
+		rk817_bat_save_fcc(battery, battery->fcc + 10);
+		DBG("algorithm:---------algorithm step3 -----------\n");
+	}
+
+	/* low soc, small load, voltage already low: shrink the gauge FCC by 10 mAh */
+	if (battery->dsoc <= 500 && battery->current_avg < 100 &&
+	    battery->voltage_avg < 3400) {
+		DBG("algorithm:---------algorithm step4-----------\n");
+		rk817_bat_save_fcc(battery, battery->fcc - 10);
+	}
 }
 
 static void rk817_bat_zero_algorithm(struct rk817_battery_device *battery)
@@ -2853,6 +2888,11 @@ static void rk817_bat_zero_algorithm(struct rk817_battery_device *battery)
 		DBG("ZERO2:---------check step1 -----------\n");
 		rk817_bat_init_coulomb_cap(battery,
 					   battery->zero_batocv_to_cap);
+		if (!rk817_bat_get_capacity_uah(battery)) {
+			rk817_bat_init_coulomb_cap(battery,
+						   battery->zero_batocv_to_cap);
+			DBG("ZERO3:---------check step2-----------\n");
+		}
 		rk817_bat_calc_zero_linek(battery);
 	}
 }
