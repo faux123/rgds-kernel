@@ -1499,7 +1499,8 @@ static int rk817_bat_get_charge_status(struct rk817_battery_device *battery)
  */
 static bool rk817_bat_fake_finish_mode(struct rk817_battery_device *battery)
 {
-	if ((battery->rsoc == 100) &&
+	/* stock: rsoc / 1000 == 100 (sub #0x18000, sub #0x4ac, cmp #0x3e7) */
+	if ((battery->rsoc / 1000 == 100) &&
 	    (rk817_bat_get_charge_status(battery) == CC_OR_CV_CHRG) &&
 	    (abs(battery->current_avg) <= 100))
 		return true;
@@ -2493,7 +2494,8 @@ static void rk817_bat_lowpwr_check(struct rk817_battery_device *battery)
 	 * (never reset, u8 wraps); from the 7th run on it logs and sleeps 100 ms.
 	 * String @ffffffc009c3a5e7, branch ffffffc008ede004..ede018.
 	 */
-	if (battery->dsoc + 1499 <= 1998 && battery->current_avg < 0) {
+	/* stock: unsigned (dsoc + 1499) <= 1998 at ffffffc008eddfe0, i.e. 0% rounded */
+	if ((battery->dsoc + 500) / 1000 == 0 && battery->current_avg < 0) {
 		if (++count >= 7) {
 			DBG("lower power 0 cap and kernel power off\n");
 			msleep(100);
