@@ -872,17 +872,17 @@ int joypad2touchpanel_abs_ext(int mask, int axis, int value)
 	if (--joypad_count_temp)			/* @..6e680 */
 		return 0;
 
-	if (gts_dev) {	/* every case re-tests gts_dev (cbz x9) before writing */
-		switch (mask) {
-		case 3:  stock_ext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
-		case 4:  stock_ext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
-		case 5:  stock_ext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
-		case 6:  stock_ext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
-		case 9:  stock_ext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
-		case 10: stock_ext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
-		case 11: stock_ext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
-		case 12: stock_ext_touch(abxy_mask_l3, remapkey_left_joy_mid_x, remapkey_left_joy_mid_y); break;
-		case 14: stock_ext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
+	{
+		switch (mask) {	/* each case re-tests gts_dev before writing, as stock (cbz x9 per case) */
+		case 3:  if (gts_dev) stock_ext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
+		case 4:  if (gts_dev) stock_ext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
+		case 5:  if (gts_dev) stock_ext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
+		case 6:  if (gts_dev) stock_ext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
+		case 9:  if (gts_dev) stock_ext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
+		case 10: if (gts_dev) stock_ext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
+		case 11: if (gts_dev) stock_ext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
+		case 12: if (gts_dev) stock_ext_touch(abxy_mask_l3, remapkey_left_joy_mid_x, remapkey_left_joy_mid_y); break;
+		case 14: if (gts_dev) stock_ext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
 		default: break;
 		}
 	}
@@ -924,17 +924,17 @@ int joypad2touchpanel_abs_z_ext(int mask, int axis, int value)
 	if (--joypadz_count_temp)			/* @..6edcc */
 		return 0;
 
-	if (gts_dev) {
-		switch (mask) {
-		case 3:  stock_zext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
-		case 4:  stock_zext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
-		case 5:  stock_zext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
-		case 6:  stock_zext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
-		case 9:  stock_zext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
-		case 10: stock_zext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
-		case 11: stock_zext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
-		case 13: stock_zext_touch(abxy_z_mask_r3, remapkey_right_joy_mid_x, remapkey_right_joy_mid_y); break;
-		case 14: stock_zext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
+	{
+		switch (mask) {	/* each case re-tests gts_dev before writing, as stock (cbz x9 per case) */
+		case 3:  if (gts_dev) stock_zext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
+		case 4:  if (gts_dev) stock_zext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
+		case 5:  if (gts_dev) stock_zext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
+		case 6:  if (gts_dev) stock_zext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
+		case 9:  if (gts_dev) stock_zext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
+		case 10: if (gts_dev) stock_zext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
+		case 11: if (gts_dev) stock_zext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
+		case 13: if (gts_dev) stock_zext_touch(abxy_z_mask_r3, remapkey_right_joy_mid_x, remapkey_right_joy_mid_y); break;
+		case 14: if (gts_dev) stock_zext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
 		default: break;
 		}
 	}
@@ -1423,29 +1423,33 @@ extern int hat_y, hat_x;			/* T @ffffffc00a4d5b8c, @ffffffc00a4d5b88 (defined be
  * pressed: slot = {1,1,y,x} (@..6f7dc); released: slot = {1,0} (@..6f7f8). Other sel/axis: nothing. */
 noinline int tenpad2touchpanel_abs(int sel, int axis, int pressed)
 {
-	int *mode, *kx, *ky;
-
-	if (axis == 0x11 && sel == 2) {
-		mode = &remapkey_up_mode; kx = &remapkey_up_x; ky = &remapkey_up_y;
-	} else if (axis == 0x11 && sel == 1) {
-		mode = &remapkey_down_mode; kx = &remapkey_down_x; ky = &remapkey_down_y;
-	} else if (axis == 0x10 && sel == 2) {
-		mode = &remapkey_left_mode; kx = &remapkey_left_x; ky = &remapkey_left_y;
-	} else if (axis == 0x10 && sel == 1) {
-		mode = &remapkey_right_mode; kx = &remapkey_right_x; ky = &remapkey_right_y;
-	} else {
-		return 0;
-	}
-	if (!(*mode == 1 && gts_dev))
-		return 0;
-	if (pressed) {
-		*(u64 *)&touch_data[8] = 0x100000001ULL;
-		touch_data[10] = *ky;
-		touch_data[11] = *kx;
-	} else {
-		*(u64 *)&touch_data[8] = 1;
+	/* written out per direction as stock (@..6f6ac UP, @..6f754 DOWN, @..6f700 LEFT, @..6f798 RIGHT) */
+#define TP_DIR(K)								\
+	do {									\
+		if (pressed) {							\
+			if (remapkey_##K##_mode == 1 && gts_dev) {		\
+				*(u64 *)&touch_data[8] = 0x100000001ULL;	\
+				touch_data[10] = remapkey_##K##_y;		\
+				touch_data[11] = remapkey_##K##_x;		\
+			}							\
+		} else if (remapkey_##K##_mode == 1 && gts_dev) {		\
+			*(u64 *)&touch_data[8] = 1;				\
+		}								\
+		return 0;							\
+	} while (0)
+	if (axis == 0x10) {
+		if (sel == 1)
+			TP_DIR(right);
+		if (sel == 2)
+			TP_DIR(left);
+	} else if (axis == 0x11) {
+		if (sel == 1)
+			TP_DIR(down);
+		if (sel == 2)
+			TP_DIR(up);
 	}
 	return 0;
+#undef TP_DIR
 }
 
 /* ---- joypad_gpio_check block 4 @..757f4..75e4c: buttons 4.. (only if gpio_key_count >= 5).
@@ -2003,17 +2007,18 @@ static ssize_t joypad_show_adc_cal(struct device *dev, struct device_attribute *
 static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct stock_joypad *joypad = dev_get_drvdata(dev);
-	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
 	int i, v;
 
 	if (!simple_strtoul(buf, NULL, 10))				/* @..71968 */
 		return count;
 	mutex_lock(&joypad->lock);
 	for (i = 0; i < joypad->amux_count; i++) {
-		v = joypad_adc_read(amux, &joypad->adc[i]);
-		joypad->adc[i].value = v;				/* @..719b0 */
+		struct stock_adc_channel *e = &joypad->adc[i];
+
+		v = joypad_adc_read(*(struct stock_amux **)((char *)joypad + 0x10), e);	/* amux re-read each pass @..719a0 */
+		e->value = v;					/* @..719b0 */
 		if (v)
-			joypad->adc[i].cal = v;			/* @..719b8 (no channel 4/5 exception, unlike probe) */
+			e->cal = v;				/* @..719b8 (no channel 4/5 exception, unlike probe) */
 		else
 			dev_err(*(struct device **)joypad, "%s : saradc channels[%d]!\n", "joypad_store_adc_cal", i);
 	}
