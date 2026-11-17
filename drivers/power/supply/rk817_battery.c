@@ -867,31 +867,48 @@ static bool is_rk817_bat_relax_mode(struct rk817_battery_device *battery)
 		return false;
 }
 
-static u16 rk817_bat_get_relax_vol1(struct rk817_battery_device *battery)
+static int rk817_bat_get_relax_vol1(struct rk817_battery_device *battery)
 {
-	u16 vol, val = 0;
+	int vol, val = 0, vol_temp;
 
 	val = rk817_bat_field_read(battery, RELAX_VOL1_H) << 8;
 	val |= rk817_bat_field_read(battery, RELAX_VOL1_L);
 	vol = battery->voltage_k * val / 1000 + battery->voltage_b;
 
+	if (battery->chip_id == RK809_ID) {
+		vol_temp = vol * battery->pdata->bat_res_up /
+			   battery->pdata->bat_res_down + vol;
+		vol = vol_temp;
+	}
+
 	return vol;
 }
 
-static u16 rk817_bat_get_relax_vol2(struct rk817_battery_device *battery)
+static int rk817_bat_get_relax_vol2(struct rk817_battery_device *battery)
 {
-	u16 vol, val = 0;
+	int vol, val = 0, vol_temp;
 
 	val = rk817_bat_field_read(battery, RELAX_VOL2_H) << 8;
 	val |= rk817_bat_field_read(battery, RELAX_VOL2_L);
 	vol = battery->voltage_k * val / 1000 + battery->voltage_b;
 
+	if (battery->chip_id == RK809_ID) {
+		vol_temp = vol * battery->pdata->bat_res_up /
+			   battery->pdata->bat_res_down + vol;
+		vol = vol_temp;
+	}
+
 	return vol;
 }
 
-static u16 rk817_bat_get_relax_voltage(struct rk817_battery_device *battery)
+/*
+ * Stock (ffffffc008edf8e0, 388 bytes): int arithmetic with the RK809
+ * divider correction in both relax readings, like the OCV/battery
+ * voltage helpers; our develop-4.19 base had u16 and no divider.
+ */
+static int rk817_bat_get_relax_voltage(struct rk817_battery_device *battery)
 {
-	u16 relax_vol1, relax_vol2;
+	int relax_vol1, relax_vol2;
 
 	if (!is_rk817_bat_relax_mode(battery))
 		return 0;
@@ -3720,7 +3737,8 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
 
 		DBG("calib1: rsoc=%d, dsoc=%d, intval=%d\n",
 		    battery->rsoc, battery->dsoc, sleep_soc);
-		if (gap_soc / 1000 > sleep_soc) {
+		/* stock compares gap_soc itself, not gap_soc / 1000 (ffffffc008ee2320) */
+		if (gap_soc > sleep_soc) {
 			if ((gap_soc - 5000) > (sleep_soc * 2 * 1000))
 				battery->dsoc -= (sleep_soc * 2 * 1000);
 			else
@@ -3781,27 +3799,25 @@ static int rk817_bat_pm_resume(struct device *dev)
 	}
 
 	DBG("resume: dl=%d rl=%d c=%d v=%d rv=%d "
-	    "cap=%d dt=%d at=%ld ch=%d, sec = %d\n",
+	    "cap=%d time_step=%d at=%ld ch=%d, sec = %d\n",
 	    battery->dsoc, battery->rsoc, battery->current_avg,
 	    battery->voltage_avg, battery->voltage_relax,
-	    rk817_bat_get_capacity_uah(battery), interval_sec,
+	    rk817_bat_get_capacity_uah(battery), time_step,
 	    battery->sleep_dischrg_sec, battery->sleep_chrg_online,
 	    interval_sec);
 
 	/* sleep: enough time and discharge */
 	if ((!battery->sleep_chrg_online) &&
 	    (battery->sleep_dischrg_sec > time_step)) {
-		if (rk817_bat_sleep_dischrg(battery))
+		if (rk817_bat_sleep_dischrg(battery)) {
 			battery->sleep_dischrg_sec = 0;
+			DBG("sleep_dischrg_sec is zero\n");
+		}
 	}
 
 	rk817_bat_save_data(battery);
 
-	/* charge/lowpower lock: for battery work to update dsoc and rsoc */
-	if ((battery->sleep_chrg_online) ||
-	    (!battery->sleep_chrg_online &&
-	    battery->voltage_avg < battery->pdata->pwroff_vol))
-		wake_lock_timeout(&battery->wake_lock, msecs_to_jiffies(2000));
+	/* stock has no wake_lock_timeout here (ffffffc008ee245c..2474) */
 
 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
 			   msecs_to_jiffies(1000));
