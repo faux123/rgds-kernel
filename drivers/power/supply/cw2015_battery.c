@@ -346,11 +346,26 @@ static int cw_get_time_to_empty(struct cw_battery *cw_bat)
 	return value16 & CW2015_MASK_SOC;
 }
 
+/* Anbernic RG DS: SOC for rk817_battery; stock get_cw2015_soc @ffffffc008ece7cc,
+ * cw2015_init_done @ffffffc00a4dba64, cw2015_update_soc @ffffffc00a4dba68;
+ * module_i2c_driver kept at line 795 like stock (initcall cw2015_battery__459_795). */
+int cw2015_init_done;
+int cw2015_update_soc;
+
+int get_cw2015_soc(void)
+{
+	return cw2015_init_done ? cw2015_update_soc : 50;
+}
+EXPORT_SYMBOL(get_cw2015_soc);
+
+int get_led_chargr_status(void);
+
 static void cw_update_charge_status(struct cw_battery *cw_bat)
 {
 	int ret;
 
-	ret = power_supply_am_i_supplied(cw_bat->rk_bat);
+	/* Anbernic (stock cw_bat_work @ffffffc008ecf000): charger state from the rk817 LED layer */
+	ret = get_led_chargr_status();
 	if (ret < 0) {
 		dev_warn(cw_bat->dev, "Failed to get supply state: %d\n", ret);
 	} else {
@@ -375,6 +390,7 @@ static void cw_update_soc(struct cw_battery *cw_bat)
 		dev_err(cw_bat->dev, "Failed to get SoC from gauge: %d\n", soc);
 	else if (cw_bat->soc != soc) {
 		cw_bat->soc = soc;
+		cw2015_update_soc = soc;	/* stock @ffffffc008ecef88 */
 		cw_bat->battery_changed = true;
 	}
 }
@@ -730,6 +746,7 @@ static int cw_bat_probe(struct i2c_client *client)
 							  &cw_bat->battery_delay_work, cw_bat_work);
 	queue_delayed_work(cw_bat->battery_workqueue,
 			   &cw_bat->battery_delay_work, msecs_to_jiffies(10));
+	cw2015_init_done = 1;	/* stock cw_bat_probe @ffffffc008ecea38 */
 	return 0;
 }
 
