@@ -410,11 +410,12 @@ static struct attribute *joypad_attrs[] = {
 	&dev_attr_factory_led.attr,
 	NULL,
 };
-static const struct attribute_group joypad_attr_group = { .attrs = joypad_attrs };
+static struct attribute_group joypad_attr_group = { .attrs = joypad_attrs };	/* not const in stock: .data @ffffffc00a2a3c88 */
 
 /* ---- State variables (global, nm type T). Initialized ones live in .data @ffffffc00a2a3b8c.. (values read from ELF);
  * the rest are .bss @ffffffc00a4d5aa4... 4-byte spacing between neighbors => int. Width of each still to be confirmed
  * against its ldr/str when the users are rebuilt. ---- */
+int BTN_S = 1;				/* T .data @ffffffc00a2a3b88, initial value 1 read from the ELF; ldr/str w */
 int joypad_init_temp = 1;      /* @ffffffc00a2a3b8c */
 int joypad_count_temp = 10;    /* @..3b90 */
 int joypadxy_init = 1;         /* @..3b94 */
@@ -798,7 +799,7 @@ int joypad2touchpanel_abs_z(int axis, int value)
  * So g_touch_down(id, x, y). Event codes are literal immediates: EV_KEY=1/BTN_TOUCH=0x14a, EV_ABS=3,
  * 0x35/0x36/0x30/0x32/0x39 = MT X/Y/TOUCH_MAJOR/WIDTH_MAJOR/TRACKING_ID, EV_SYN=0 code 2 = SYN_MT_REPORT, 0/0/0 = sync. */
 struct stock_touch_slot { int active; int down; int y; int x; };
-int BTN_S = 1;				/* T .data @ffffffc00a2a3b88, initial value 1 read from the ELF; ldr/str w */
+/* BTN_S: defined above, before joypad_init_temp, as in stock .data (@ffffffc00a2a3b88) */
 void g_touch_sync(void)
 {
 	struct input_dev *in = gts_dev;
