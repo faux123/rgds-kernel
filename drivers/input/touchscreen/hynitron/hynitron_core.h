@@ -268,8 +268,8 @@ struct hynitron_ts_data{
     struct early_suspend early_suspend;
 #endif
 	struct pinctrl *ts_pinctrl;
-	struct pinctrl_state *gpio_state_active;
-	struct pinctrl_state *gpio_state_suspend;
+	/* stock kzalloc(0x1d0) in hyn_probe leaves room for one pointer after resume_work, */
+	/* so the two unused pinctrl_state pointers are not in stock's struct */
 
 };
 extern struct hynitron_ts_data *hyn_ts_data ;
