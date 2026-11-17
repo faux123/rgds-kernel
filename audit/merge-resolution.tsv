@@ -1,0 +1,207 @@
+path	conflict	side	reason
+Documentation/userspace-api/media/v4l/pixfmt-yuv-planar.rst	content	ROCKCHIP	REVIEW build/version/doc file; Rockchip side kept
+Makefile	content	ROCKCHIP	REVIEW build/version/doc file; Rockchip side kept
+README.md	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+arch/arm64/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+arch/arm64/configs/db845c_gki.fragment	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+arch/arm64/configs/gki_defconfig	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+arch/arm64/include/asm/processor.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+arch/arm64/kernel/process.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+arch/arm64/kernel/smp.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+arch/arm64/kernel/traps.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+arch/x86/configs/gki_defconfig	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+block/blk-crypto-fallback.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+block/blk-crypto.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+build.config.aarch64	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.allmodconfig	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.arm	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.common	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.db845c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.gki	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.gki.aarch64	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.gki.x86_64	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.gki_kasan	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+build.config.x86_64	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+certs/extract-cert.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/android/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/android/Makefile	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/android/binder.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/android/vendor_hooks.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/base/power/main.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/base/power/wakeup.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/cpufreq/Makefile	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/cpufreq/cpufreq.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/cpufreq/cpufreq_times.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/cpuidle/cpuidle-psci.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/cpuidle/cpuidle.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/dma-buf/dma-buf.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/dma-buf/dma-heap.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/dma-buf/heaps/cma_heap.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/dma-buf/heaps/system_heap.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/iommu/iova.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/irqchip/irq-gic-v3.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/md/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/md/Makefile	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/md/dm-bow.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/md/dm-default-key.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/md/dm-user.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/misc/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/misc/Makefile	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/misc/uid_sys_stats.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/mmc/core/mmc.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/of/fdt.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/power/supply/power_supply_sysfs.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/staging/android/Kconfig	add/add	BOTH	hand merge: ACK ashmem + Anbernic timed_output/timed_gpio
+drivers/staging/android/Makefile	add/add	BOTH	hand merge: ACK ashmem + Anbernic timed_output/timed_gpio
+drivers/tty/hvc/hvc_dcc.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/tty/serial/8250/8250_port.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/tty/serial/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/ufs/core/ufs-sysfs.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/ufs/core/ufshcd-crypto.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/ufs/core/ufshcd-crypto.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/ufs/core/ufshcd.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/ufs/host/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/dwc2/params.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/dwc3/core.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/gadget/function/f_accessory.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+drivers/usb/gadget/function/f_uvc.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/gadget/function/uvc_configfs.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/gadget/function/uvc_v4l2.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/gadget/function/uvc_video.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/host/xhci.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/host/xhci.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/typec/tcpm/tcpci.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+drivers/usb/typec/tcpm/tcpm.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/crypto/fscrypt_private.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/crypto/inline_crypt.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/crypto/keyring.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/crypto/keysetup.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/erofs/data.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/f2fs/data.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/Makefile	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/dev.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/dir.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/file.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/fuse_i.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/inode.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/fuse/passthrough.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/Makefile	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/data_mgmt.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/data_mgmt.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/format.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/format.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/integrity.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/internal.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/main.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/pseudo_files.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/pseudo_files.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/incfs/vfs.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+fs/iomap/direct-io.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/notify/inotify/inotify_user.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/overlayfs/file.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/overlayfs/inode.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/overlayfs/super.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/overlayfs/util.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+fs/proc/base.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/android_vendor.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/linux/arch_topology.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/blk-crypto.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/clk-provider.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/cpufreq.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/dcache.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/device-mapper.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/dma-buf.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/dma-heap.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/gfp.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/interrupt.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/iova.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/module.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/of_fdt.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/pagemap.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/pci.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/power_supply.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/pwm.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/rwsem.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/sched.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/sched/topology.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/usb/tcpci.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/linux/usb/tcpm.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/trace/events/irq.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/trace/events/sched.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/trace/events/ufs.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/trace/hooks/binder.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/cpufreq.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/cpuidle.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/debug.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/dtask.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/epoch.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/fpsimd.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/futex.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/gic.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/gic_v3.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/mm.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/mpam.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/preemptirq.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/printk.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/rwsem.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/sched.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/sysrqcrash.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/topology.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/vendor_hooks.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/trace/hooks/wqlockup.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/uapi/linux/fuse.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/uapi/linux/incrementalfs.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+include/uapi/linux/usb/video.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/ufs/ufshcd.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+include/ufs/ufshci.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+init/Kconfig	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+init/Kconfig.gki	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+kernel/cgroup/cpuset.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/fork.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/irq_work.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/locking/mutex.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/locking/rwsem.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/power/process.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/power/suspend.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/printk/printk.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/core.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/cpufreq_schedutil.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/cputime.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/fair.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/rt.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/sched.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/sched/topology.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/softirq.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/stop_machine.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/watchdog.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+kernel/workqueue.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/cma.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/filemap.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/memory.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/mmap.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/mmzone.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/page_alloc.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/readahead.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+mm/slub.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+net/ipv6/route.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+net/netfilter/xt_IDLETIMER.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+net/xfrm/xfrm_algo.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+net/xfrm/xfrm_state.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+net/xfrm/xfrm_user.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+scripts/Makefile.lib	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+scripts/setlocalversion	content	ROCKCHIP	REVIEW build/version/doc file; Rockchip side kept
+security/selinux/include/classmap.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+security/selinux/include/security.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+security/selinux/nlmsgtab.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+security/selinux/ss/policydb.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+security/selinux/ss/policydb.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+security/selinux/ss/services.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+sound/soc/soc-core.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+sound/usb/card.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+sound/usb/card.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+sound/usb/pcm.c	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+sound/usb/usbaudio.h	content	ACK	REVIEW core content conflict, ACK side taken (no hand merge yet)
+tools/testing/selftests/filesystems/incfs/Makefile	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+tools/testing/selftests/filesystems/incfs/incfs_test.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+tools/testing/selftests/filesystems/incfs/utils.c	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side
+tools/testing/selftests/filesystems/incfs/utils.h	modify/delete	ACK	Android-only file deleted on Rockchip GitHub side

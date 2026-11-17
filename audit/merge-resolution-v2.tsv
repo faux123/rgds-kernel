@@ -1,0 +1,34 @@
+drivers/usb/dwc2/params.c	content	ROCKCHIP: ACK side empty, keep g_dma_desc=false
+drivers/usb/host/xhci.c	content	BOTH: combined conditions
+drivers/usb/host/xhci.h	content	ROCKCHIP: keep quirk bits (check dup)
+arch/arm64/kernel/smp.c	content	BOTH: rk minidump + android_vh_ipi_stop
+arch/arm64/kernel/traps.c	content	BOTH: includes
+kernel/watchdog.c	content	BOTH: includes
+include/linux/pci.h	content	ROCKCHIP: keep fields (check dup)
+fs/erofs/data.c	content	BOTH: ACK vm_flags_set API + Rockchip ARM ramdisk
+drivers/usb/gadget/configfs.c	content	ACK: locking fix
+drivers/staging/android/Makefile	content	BOTH
+kernel/sched/cpufreq_schedutil.c	content	BOTH: Rockchip #endif + ACK vendor hook
+drivers/tty/serial/8250/8250_port.c	content	BOTH: Rockchip #endif + BCM7271 entry
+net/netfilter/Kconfig	content	ACK: QUOTA2_LOG; stock config has NETFILTER_XT_MATCH_QUOTA2_LOG=y
+drivers/usb/gadget/function/uvc_v4l2.c	content	ROCKCHIP REVIEW: Rockchip UVC bulk-mode handling kept
+drivers/usb/gadget/function/uvc_configfs.c	content	ROCKCHIP REVIEW: uvcg_frame_type2 + bBitsPerPixel 16 kept
+drivers/dma-buf/heaps/system_heap.c	content	BOTH: ACK system_get_pool_size added
+Documentation/userspace-api/media/v4l/pixfmt-yuv-planar.rst	content	BOTH: NV15 + P012/P012M rows
+mm/slub.c	content	ROCKCHIP REVIEW: Rockchip SLUB_SYSFS split kept
+drivers/ufs/host/Kconfig	content	BOTH: SCSI_UFS_ROCKCHIP (stock =y) + ACK SPRD/VARIABLE_SG
+drivers/irqchip/irq-gic-v3.c	content	BOTH: Rockchip AMP + ACK affinity hook and renamed init fns
+drivers/mmc/core/mmc.c	content	BOTH includes/decls; ROCKCHIP REVIEW resume f_init fallback loop kept, ACK rvh_mmc_resume dropped
+drivers/staging/android/Kconfig	content	BOTH: ACK ashmem + Anbernic timed_output
+mm/slub.c	content	follow-up: struct track/enum track_item removed, ACK moved them to mm/slab.h
+include/uapi/linux/usb/video.h	content	ROCKCHIP: whitespace-only difference
+mm/cma.c	content	BOTH: ACK __cma_alloc/cma_alloc + Rockchip cma_used_pages
+include/linux/dma-heap.h	content	BOTH: Rockchip get_phys + ACK get_pool_size/dma_heap_put/bufferfd_alloc
+include/linux/dma-buf.h	content	BOTH: Rockchip DMABUF_CACHE/RK_DMABUF_DEBUG + ACK KABI/is_dma_buf_file/get_flags
+drivers/dma-buf/dma-buf.c	content	BOTH: includes, Rockchip RK_DMABUF_DEBUG accounting + ACK dma_buf_stats_setup
+drivers/dma-buf/dma-heap.c	content	REVIEW: ACK refcounted dma_heap_find/buffer_alloc/bufferfd_alloc taken; Rockchip heap_dev kept
+drivers/usb/typec/tcpm/tcpm.c	content	ROCKCHIP REVIEW: Rockchip NO_GKI pd lock/debounce/pd-revision kept; decls merged
+drivers/usb/dwc3/core.c	content	BOTH: Rockchip dwc3_get_clocks + ACK dwc3_get_num_ports (REVIEW function boundary)
+drivers/usb/gadget/function/uvc_video.c	content	ROCKCHIP REVIEW: UVC gadget conflicts, Rockchip side (consistent with uvc_v4l2/uvc_configfs)
+drivers/usb/gadget/function/f_uvc.c	content	ROCKCHIP REVIEW: UVC gadget conflicts, Rockchip side (consistent with uvc_v4l2/uvc_configfs)
+Documentation/userspace-api/media/v4l/pixfmt-yuv-planar.rst	content	v3 rebase: took ACK-commit side (doc only, no build effect)
