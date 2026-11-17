@@ -34,6 +34,7 @@
 #include <linux/of_gpio.h>
 #include <linux/gpio.h>
 #include <linux/slab.h>
+#include "../tp_suspend.h"
 #include <linux/rockchip-panel-notifier.h>
 
 //#include <mach/gpio.h>
@@ -100,6 +101,8 @@ typedef enum
 
 struct goodix_ts_data {
     spinlock_t irq_lock;
+    /* stock: &client->dev stored at offset 0x8 in probe (stp x21, x22, [x19, #0x8] @ffffffc008cc0430); field name not recoverable */
+    struct device *dev;
     struct i2c_client *client;
     struct input_dev  *input_dev;
     struct hrtimer timer;
@@ -110,9 +113,6 @@ struct goodix_ts_data {
     u16 abs_x_max;
     u16 abs_y_max;
     u8  max_touch_num;
-    u8  ext_lcd_tp;
-    u8  flip_report_tp;
-    u8  com_lcd_tp;
     u8  int_trigger_type;
     u8  green_wake_mode;
     u8  enter_update;
@@ -124,7 +124,7 @@ struct goodix_ts_data {
     u8  pnl_init_error;
 	u8 cfg_file_num;
 //add struct tp_device by Sam
-    struct  notifier_block  panel_nb;
+    struct  tp_device  tp;
 
     //add by Daniel(yc)
     int irq;
@@ -154,6 +154,16 @@ struct goodix_ts_data {
     u8 rqst_processing;
     u8 is_950;
 #endif
+    /*
+     * Stock layout (offsets from stock disassembly): tp_regulator kept but
+     * unused @0x128, ext_lcd_tp/flip_report_tp/com_lcd_tp @0x130..0x132,
+     * panel_nb @0x138 (rockchip_panel_notifier_call: sub x20, x0, #0x138).
+     */
+    struct regulator *tp_regulator;
+    u8  ext_lcd_tp;
+    u8  flip_report_tp;
+    u8  com_lcd_tp;
+    struct notifier_block panel_nb;
 };
 
 //extern u16 show_len;

@@ -2763,6 +2763,7 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
     
     
     INIT_WORK(&ts->work, goodix_ts_work_func);
+    ts->dev = &client->dev;
     ts->client = client;
     spin_lock_init(&ts->irq_lock);          // 2.6.39 later
     // ts->irq_lock = SPIN_LOCK_UNLOCKED;   // 2.6.39 & before
