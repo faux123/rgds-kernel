@@ -22,6 +22,7 @@
 #include <linux/fb.h>
 #include <linux/gpio.h>
 #include <linux/gpio/consumer.h>
+#include <linux/regulator/consumer.h>
 #include <linux/iio/consumer.h>
 #include <linux/iio/iio.h>
 #include <linux/irq.h>
@@ -41,6 +42,13 @@
 #include <linux/workqueue.h>
 
 static int dbg_enable;
+
+/* Anbernic LED/SOC layer, defined before rk817_battery_probe */
+extern int fg_init_done;
+extern int led_bat_soc;
+extern int rk817_soc;
+void led_update_charger_soc_status(void);
+int get_cw2015_soc(void);
 
 module_param_named(dbg_level, dbg_enable, int, 0644);
 
@@ -265,7 +273,12 @@ enum rk817_battery_fields {
 	BAT_EXS, CHG_STS, BAT_OVP_STS, CHRG_IN_CLAMP,
 	CHIP_NAME_H, CHIP_NAME_L,
 	PLUG_IN_STS,
-	NTC_TEMP_CFG,	/* stock rk817_battery_reg_fields[143] = REG_FIELD(0xE9, 0, 7); name is ours */
+	/* stock rk817_battery_reg_fields[140..144] @ffffffc00977c268; names are ours (register/bits) */
+	F_E6_6,		/* 140 */
+	F_E4_0_2,	/* 141 */
+	F_E4_4_6,	/* 142 */
+	NTC_TEMP_CFG,	/* 143 = REG_FIELD(0xE9, 0, 7) */
+	F_F4_2,		/* 144 */
 	F_MAX_FIELDS
 };
 
@@ -434,7 +447,11 @@ static const struct reg_field rk817_battery_reg_fields[] = {
 	[CHIP_NAME_H] = REG_FIELD(0xED, 0, 7),
 	[CHIP_NAME_L] = REG_FIELD(0xEE, 0, 7),
 	[PLUG_IN_STS] = REG_FIELD(0xF0, 6, 6),
+	[F_E6_6] = REG_FIELD(0xE6, 6, 6),
+	[F_E4_0_2] = REG_FIELD(0xE4, 0, 2),
+	[F_E4_4_6] = REG_FIELD(0xE4, 4, 6),
 	[NTC_TEMP_CFG] = REG_FIELD(0xE9, 0, 7),
+	[F_F4_2] = REG_FIELD(0xF4, 2, 2),
 };
 
 struct battery_platform_data {
@@ -2101,6 +2118,15 @@ static int rk817_battery_get_property(struct power_supply *psy,
 		val->intval = (battery->dsoc  + 500) / 1000;
 		if (battery->pdata->bat_mode == MODE_VIRTUAL)
 			val->intval = VIRTUAL_SOC;
+		/* stock @ffffffc008ee16d4..1724: Anbernic reports the CW2015 gauge SOC */
+		rk817_soc = val->intval;
+		val->intval = get_cw2015_soc();
+		printk("Sys soc=%d   rk817 soc=%d    cw2015 soc=%d   voltage=%d  current=%d  \n",
+		       val->intval, rk817_soc, get_cw2015_soc(),
+		       battery->voltage_avg, battery->current_avg);
+		led_bat_soc = val->intval;
+		if (fg_init_done)
+			led_update_charger_soc_status();
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
 		val->intval = rk817_get_capacity_leve(battery);
@@ -3144,11 +3170,67 @@ void led_chargr_status(int status)
 	led_charger_status = status != 0;
 	led_update_charger_soc_status();
 }
+EXPORT_SYMBOL(led_chargr_status);
 
 int get_led_chargr_status(void)
 {
 	return led_charger_status;
 }
+EXPORT_SYMBOL(get_led_chargr_status);
+
+
+static struct kobject *rk817_kobj;
+
+/* stock battery_adjust_show @ffffffc008ee17d0: rmap_fields[140] (stock reg_fields[140] = 0xE6 bit 6) */
+static ssize_t battery_adjust_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	int val = 0, ret;
+
+	ret = regmap_field_read(g_battery->rmap_fields[F_E6_6], &val);
+	return sprintf(buf, "%d\n", ret < 0 ? ret : val);
+}
+
+/* stock battery_adjust_store @ffffffc008ee1858 */
+static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute *attr,
+				    const char *buf, size_t count)
+{
+	struct regulator *otg;
+	char c = 0;
+	int ret, i;
+
+	otg = regulator_get(NULL, "otg_switch");
+	if (IS_ERR(otg))	/* STOCK QUIRK: stock passes the kobject as the device and carries on */
+		dev_warn((struct device *)kobj, "failed to get sw1 regulator: %d\n", (int)PTR_ERR(otg));
+
+	sscanf(buf, "%c ", &c);
+	switch (c) {
+	case '0':
+		regmap_field_write(g_battery->rmap_fields[RESET_MODE], 0);
+		break;
+	case '1':
+		regmap_field_write(g_battery->rmap_fields[RESET_MODE], 1);
+		regmap_field_write(g_battery->rmap_fields[F_F4_2], 1);
+		DBG("%s-----%d: rsoc = %d, dsoc = %d, smooth_soc = %d\n", __func__, __LINE__,
+		    g_battery->rsoc, g_battery->dsoc, g_battery->smooth_soc);
+		for (i = 0; i < 100; i++)
+			udelay(1000);
+		regmap_field_write(g_battery->rmap_fields[F_F4_2], 1);
+		break;
+	case '2':
+		DBG("rk817-bat: enable charging\n");
+		regmap_field_write(g_battery->rmap_fields[NTC_TEMP_CFG], 0xfa);
+		if (regulator_is_enabled(otg)) {	/* STOCK QUIRK: no IS_ERR check */
+			ret = regulator_disable(otg);
+			if (ret)
+				DBG("rk817-bat: disable sw1 failed:%d\n", ret);
+		}
+		break;
+	}
+	return count;
+}
+
+static struct kobj_attribute rk817_attrs = __ATTR(battery_adjust, 0664,
+						  battery_adjust_show, battery_adjust_store);
 
 static int rk817_battery_probe(struct platform_device *pdev)
 {
@@ -3228,6 +3310,13 @@ static int rk817_battery_probe(struct platform_device *pdev)
 	if (battery->chip_id == RK809_ID)
 		rk809_charge_init_irqs(battery);
 
+	/* stock rk817_battery_probe @ffffffc008edd1a8: /sys/rk809/battery_adjust */
+	g_battery = battery;
+	rk817_kobj = kobject_create_and_add("rk809", NULL);
+	if (rk817_kobj && sysfs_create_file(rk817_kobj, &rk817_attrs.attr))
+		DBG("rk817-bat: create rk817 sysfs error\n");
+	fg_init_done = 1;
+
 	wake_lock_init(&battery->wake_lock, WAKE_LOCK_SUSPEND,
 		       "rk817_bat_lock");
 
@@ -3240,6 +3329,8 @@ static int rk817_battery_probe(struct platform_device *pdev)
 
 static void rk817_battery_shutdown(struct platform_device *dev)
 {
+	/* stock @ffffffc008edd8a0 */
+	kobject_put(rk817_kobj);
 }
 
 static time64_t rk817_get_rtc_sec(void)
