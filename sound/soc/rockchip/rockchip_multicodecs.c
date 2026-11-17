@@ -269,7 +269,7 @@ static irqreturn_t headset_det_irq_thread(int irq, void *data)
 {
 	struct multicodecs_data *mc_data = (struct multicodecs_data *)data;
 
-	queue_delayed_work(system_power_efficient_wq, &mc_data->handler, msecs_to_jiffies(200));
+	queue_delayed_work(system_power_efficient_wq, &mc_data->handler, msecs_to_jiffies(800)); /* stock: 200 jiffies */
 
 	return IRQ_HANDLED;
 };
