@@ -1760,7 +1760,7 @@ static int hyn_pm_resume(struct device *dev)
 
 /* bus control the suspend/resume procedure */
 static const struct dev_pm_ops hyn_ts_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(hyn_pm_suspend,hyn_pm_resume)
+	.suspend = hyn_pm_suspend, .resume = hyn_pm_resume,	/* stock: suspend/resume only, no freeze/thaw/poweroff/restore */
 };
 
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
@@ -1953,7 +1953,7 @@ err_end:
 *  Output:
 *  Return:
 *****************************************************************************/
-static void __exit hyn_remove(struct i2c_client *client)	/* stock returns nothing (no mov w0 before ret @hyn_remove) */
+static void hyn_remove(struct i2c_client *client)	/* stock returns nothing (no mov w0 before ret @hyn_remove) */ /* not __exit: stock keeps it in .text, referenced by the driver */
 {
     HYN_FUNC_ENTER();
 	
@@ -1997,7 +1997,7 @@ static struct i2c_driver hynitron_i2c_driver =
 	.resume     = hyn_ts_late_resume,
 #endif
     .probe = hyn_probe,
-    .remove = __exit_p(hyn_remove),
+    .remove = hyn_remove,	/* stock hynitron_i2c_driver+0x10 = hyn_remove (no __exit_p) */
     .id_table = hyn_tpd_id,
     .detect = hyn_detect,
 
