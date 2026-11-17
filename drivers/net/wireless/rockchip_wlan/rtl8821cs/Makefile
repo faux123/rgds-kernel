@@ -20,6 +20,10 @@ EXTRA_CFLAGS += -Wno-unused-variable
 ifeq ($(CC), clang)
 EXTRA_CFLAGS += -Wno-uninitialized
 EXTRA_CFLAGS += -Wno-enum-conversion
+# In-tree kbuild adds -Werror=date-time and clang -Werror for unknown directives;
+# stock was built out of tree (its dump_drv_version carries "Sep 29 2026") and
+# rtw_mlme_ext.h:274 has a "#elseif". Keep the vendor sources unchanged.
+EXTRA_CFLAGS += -Wno-date-time -Wno-unknown-directives
 EXTRA_CFLAGS += -Wno-fortify-source
 EXTRA_CFLAGS += -Wno-invalid-source-encoding
 EXTRA_CFLAGS += -Wno-tautological-pointer-compare
@@ -135,7 +139,7 @@ CONFIG_HIGH_PRIORITY_CMD_THREAD = n
 CONFIG_RTW_DISABLE_HW_PDN = n
 ########################## Android ###########################
 # CONFIG_RTW_ANDROID - 0: no Android, 4/5/6/7/8/9/10/11 : Android version
-CONFIG_RTW_ANDROID = 0
+CONFIG_RTW_ANDROID = 11
 
 ifeq ($(shell test $(CONFIG_RTW_ANDROID) -gt 0; echo $$?), 0)
 EXTRA_CFLAGS += -DCONFIG_RTW_ANDROID=$(CONFIG_RTW_ANDROID)
@@ -1842,7 +1846,7 @@ EXTRA_CFLAGS += -DRTW_SUPPORT_PLATFORM_SHUTDOWN
 endif
 # default setting for Special function
 ARCH := arm
-MODULE_NAME := RTL8821CS
+MODULE_NAME := 8821cs
 endif
 
 ifeq ($(CONFIG_PLATFORM_ARM_RK3066), y)
