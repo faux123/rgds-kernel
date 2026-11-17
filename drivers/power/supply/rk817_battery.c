@@ -284,7 +284,7 @@ enum rk817_battery_fields {
 	F_E6_6,		/* 140 */
 	F_E4_0_2,	/* 141 */
 	F_E4_4_6,	/* 142 */
-	NTC_TEMP_CFG,	/* 143 = REG_FIELD(0xE9, 0, 7) */
+	BAT_LTS_TS,	/* 143 = REG_FIELD(0xE9, 0, 7); name from Rockchip rk817_charger.c */
 	F_F4_2,		/* 144 */
 	F_MAX_FIELDS
 };
@@ -457,7 +457,7 @@ static const struct reg_field rk817_battery_reg_fields[] = {
 	[F_E6_6] = REG_FIELD(0xE6, 6, 6),
 	[F_E4_0_2] = REG_FIELD(0xE4, 0, 2),
 	[F_E4_4_6] = REG_FIELD(0xE4, 4, 6),
-	[NTC_TEMP_CFG] = REG_FIELD(0xE9, 0, 7),
+	[BAT_LTS_TS] = REG_FIELD(0xE9, 0, 7),
 	[F_F4_2] = REG_FIELD(0xF4, 2, 2),
 };
 
@@ -1790,7 +1790,7 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
 	battery->dbg_pwr_vol = battery->voltage_avg;
 	battery->temperature = VIRTUAL_TEMPERATURE;
 	/* stock rk817_battery_probe @ffffffc008edb9e4: rmap_fields[143] (reg 0xE9) = 0xfa at init */
-	rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
+	rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 
 	DBG("probe init: battery->dsoc = %d, rsoc = %d\n"
 	    "remain_cap = %d\n, battery_vol = %d\n, system_vol = %d, qmax = %d\n",
@@ -2964,13 +2964,16 @@ static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
 	 *   t <= 0 or t >= 500          -> 5      (ffffffc008edf204)
 	 *   3 <= t <= 479               -> 0xfa   (ffffffc008edf220)
 	 *   t in 1..2 or 480..499       -> no write
-	 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8); our tree keeps
-	 * the virtual temperature, so this write is constant here.
+	 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8) only when
+	 * pdata->ntc_size != 0. Its probe sets ntc_size = 0 when the DT has no
+	 * "ntc_table" (ffffffc008edb990) and temperature = 188 (ffffffc008edca24).
+	 * The RG DS DT has no ntc_table, so t stays 188 and 0xE9 is rewritten
+	 * to 0xfa each cycle; the 5 branch is unreachable on this device.
 	 */
 	if (t <= 0 || t >= 500)
-		rk817_bat_field_write(battery, NTC_TEMP_CFG, 5);
+		rk817_bat_field_write(battery, BAT_LTS_TS, 5);
 	else if (t >= 3 && t <= 479)
-		rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
+		rk817_bat_field_write(battery, BAT_LTS_TS, 0xfa);
 
 	DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
 	last_temp = battery->temperature;
@@ -3230,7 +3233,7 @@ static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute 
 		break;
 	case '2':
 		DBG("rk817-bat: enable charging\n");
-		regmap_field_write(g_battery->rmap_fields[NTC_TEMP_CFG], 0xfa);
+		regmap_field_write(g_battery->rmap_fields[BAT_LTS_TS], 0xfa);
 		if (regulator_is_enabled(otg)) {	/* STOCK QUIRK: no IS_ERR check */
 			ret = regulator_disable(otg);
 			if (ret)
