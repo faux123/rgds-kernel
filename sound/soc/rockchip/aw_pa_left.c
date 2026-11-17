@@ -73,7 +73,7 @@ static int gtp_i2c_write(struct i2c_client *client, u8 *buf)
 	return ret;
 }
 
-int disable_pa_spk_left(void)
+s32 disable_pa_spk_left(void)	/* s32 as stock */
 {
 	u8 buf[2];
 
@@ -87,7 +87,7 @@ int disable_pa_spk_left(void)
 }
 EXPORT_SYMBOL(disable_pa_spk_left);
 
-int enable_pa_spk_left(void)
+s32 enable_pa_spk_left(void)	/* s32 as stock: symbol version matches only with s32 */
 {
 	u8 buf[2];
 	int i;

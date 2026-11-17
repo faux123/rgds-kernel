@@ -352,7 +352,7 @@ static int cw_get_time_to_empty(struct cw_battery *cw_bat)
 int cw2015_init_done;
 int cw2015_update_soc;
 
-int get_cw2015_soc(void)
+int get_cw2015_soc(struct cw_battery *cw_bat)	/* stock symbol version 0x780f757b = this prototype; the body ignores it */
 {
 	return cw2015_init_done ? cw2015_update_soc : 50;
 }
