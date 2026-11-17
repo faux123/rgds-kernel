@@ -590,3 +590,16 @@ Paul: too harsh. Observed: Anbernic system_server (WindowManager, settings syste
 sets schedutil / dmc_ondemand at boot_completed; kernel default schedutil (running config = stock
 except 3 pahole lines). No stock drain measured under the same conditions yet, so a kernel cause is
 not ruled out. Next: 10-minute discharge-current log on stock and ours, same screens, app, cpu_mode.
+
+## Round 7 (2026-11-17): runtime inventory, stock kernel vs ours on the same device
+
+Stock image b07cfac1 (stock kernel; hyn_probe @0xcc2f50) and ours a3242b17 (rgds-v1.21 d1cfee9e280a;
+hyn_probe @0xcc2f30), each gated, flashed with read-back hash, inventory taken at ~110 s uptime with
+/data/local/tmp/inventory.sh (device/inventory-*.txt). Same on both: bound drivers (137), input (12,
+same caps), power_supply, clocks (737 lines, rates and enables), GPIO (50), pinmux (45), cpufreq and
+devfreq tables, thermal trips, ALSA mixer controls, Mali, modules, /proc, /proc/sys/kernel,
+filesystems, device-tree hash, cmdline. Differences, all run-to-run:
+- USB host bus numbers (usb1..4 on IRQ 40..43): ehci/ohci-platform probe asynchronously
+  (PROBE_PREFER_ASYNCHRONOUS), all four within 0.3 ms; our own two boots disagree with each other too.
+- Mali regulator use count 1 vs 0 (GPU powered at sample time or not).
+- bdi 0:N device numbers, the ashmem node name, init pids and times in dmesg.

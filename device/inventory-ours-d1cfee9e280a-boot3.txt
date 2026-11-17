@@ -1,0 +1,1454 @@
+=== bound-drivers
+amba/drivers/dma-pl330/fe530000.dma-controller
+amba/drivers/dma-pl330/fe550000.dma-controller
+gadget/drivers/configfs-gadget.g1/gadget.0
+i2c/drivers/Goodix-TS/3-0014
+i2c/drivers/Goodix-TS/5-0014
+i2c/drivers/aw87391-left/2-0058
+i2c/drivers/aw87391-right/2-005b
+i2c/drivers/cw2015/0-0062
+i2c/drivers/fan53555-regulator/0-0040
+i2c/drivers/gsensor_icm4260x/2-0068
+i2c/drivers/gsensor_sc7u22/2-0018
+i2c/drivers/gyro_icm4260x/2-0068-1
+i2c/drivers/gyro_sc7u22/2-0018-1
+i2c/drivers/rk808/0-0020
+mipi-dsi/drivers/panel-simple-dsi/fe060000.dsi.0
+mipi-dsi/drivers/panel-simple-dsi/fe070000.dsi.0
+mmc/drivers/mmcblk/mmc0:aaaa
+mmc/drivers/mmcblk/mmc2:0001
+platform/drivers/adc_keys/adc-keys
+platform/drivers/alarmtimer/alarmtimer.0.auto
+platform/drivers/arm-scmi/firmware:scmi
+platform/drivers/armv8-pmu/pmu
+platform/drivers/cpufreq-dt/cpufreq-dt
+platform/drivers/dw-apb-uart/fe650000.serial
+platform/drivers/dw-mipi-dsi-rockchip/fe060000.dsi
+platform/drivers/dw-mipi-dsi-rockchip/fe070000.dsi
+platform/drivers/dw_wdt/fe600000.watchdog
+platform/drivers/dwc3-of-simple/usbdrd
+platform/drivers/dwc3-of-simple/usbhost
+platform/drivers/dwc3/fcc00000.usb
+platform/drivers/dwmmc_rockchip/fe000000.dwmmc
+platform/drivers/dwmmc_rockchip/fe2b0000.dwmmc
+platform/drivers/ehci-platform/fd800000.usb
+platform/drivers/ehci-platform/fd880000.usb
+platform/drivers/fiq_debugger/fiq_debugger.0
+platform/drivers/gpio-keys/gpio-keys
+platform/drivers/gpio-regulator/vcc-sd
+platform/drivers/inno-dsidphy/fe850000.phy
+platform/drivers/inno-dsidphy/fe860000.phy
+platform/drivers/leds-gpio/gpio-backlight
+platform/drivers/leds-gpio/gpio-leds
+platform/drivers/mali/fde60000.gpu
+platform/drivers/mpp-iep2/fdef0000.iep
+platform/drivers/mpp_jpgdec/fded0000.jpegd
+platform/drivers/mpp_rkvdec2/fdf80200.rkvdec
+platform/drivers/mpp_rkvenc/fdf40000.rkvenc
+platform/drivers/mpp_service/mpp-srv
+platform/drivers/mpp_vdpu2/fdea0400.vdpu
+platform/drivers/mpp_vepu2/fdee0000.vepu
+platform/drivers/ohci-platform/fd840000.usb
+platform/drivers/ohci-platform/fd8c0000.usb
+platform/drivers/optee/firmware:optee
+platform/drivers/psci-cpuidle-domain/psci
+platform/drivers/psci-cpuidle/psci-cpuidle
+platform/drivers/pwm-backlight/backlight
+platform/drivers/pwm-backlight/backlight1
+platform/drivers/pwrseq_simple/sdio-pwrseq
+platform/drivers/ramoops/110000.ramoops
+platform/drivers/reg-dummy/reg-dummy
+platform/drivers/reg-fixed-voltage/vcc5v0-otg-regulator
+platform/drivers/reg-fixed-voltage/vcc5v0-usb
+platform/drivers/reg-fixed-voltage/vccsys
+platform/drivers/rfkill_bt/wireless-bluetooth
+platform/drivers/rga2/fdeb0000.rk_rga
+platform/drivers/rk-fiq-debugger/fiq-debugger
+platform/drivers/rk-multicodecs/rk817-sound
+platform/drivers/rk-vibrator/vibrator
+platform/drivers/rk3x-i2c/fdd40000.i2c
+platform/drivers/rk3x-i2c/fe5b0000.i2c
+platform/drivers/rk3x-i2c/fe5c0000.i2c
+platform/drivers/rk3x-i2c/fe5e0000.i2c
+platform/drivers/rk805-pwrkey/rk805-pwrkey
+platform/drivers/rk808-clkout/rk808-clkout
+platform/drivers/rk808-regulator/rk808-regulator
+platform/drivers/rk808-rtc/rk808-rtc
+platform/drivers/rk817-battery/rk817-battery
+platform/drivers/rk817-charger/rk817-charger
+platform/drivers/rk817-codec/rk817-codec
+platform/drivers/rk_iommu/fdea0800.iommu
+platform/drivers/rk_iommu/fded0480.iommu
+platform/drivers/rk_iommu/fdee0800.iommu
+platform/drivers/rk_iommu/fdef0800.iommu
+platform/drivers/rk_iommu/fdf40f00.iommu
+platform/drivers/rk_iommu/fdf80800.iommu
+platform/drivers/rk_iommu/fe043e00.iommu
+platform/drivers/rockchip,bus/bus-npu
+platform/drivers/rockchip-cpuinfo/cpuinfo
+platform/drivers/rockchip-dfi/fe230000.dfi
+platform/drivers/rockchip-drm/display-subsystem
+platform/drivers/rockchip-edp-phy-grf/fdcb0000.syscon
+platform/drivers/rockchip-gpio/fdd60000.gpio
+platform/drivers/rockchip-gpio/fe740000.gpio
+platform/drivers/rockchip-gpio/fe750000.gpio
+platform/drivers/rockchip-gpio/fe760000.gpio
+platform/drivers/rockchip-gpio/fe770000.gpio
+platform/drivers/rockchip-i2s-tdm/fe400000.i2s
+platform/drivers/rockchip-i2s-tdm/fe410000.i2s
+platform/drivers/rockchip-iodomain/fdc20000.syscon:io-domains
+platform/drivers/rockchip-mipi-csi2-hw/fdfb0000.mipi-csi2-hw
+platform/drivers/rockchip-nocp/fe102000.nocp-cpu
+platform/drivers/rockchip-nocp/fe102400.nocp-gpu-vpu-rga-venc
+platform/drivers/rockchip-nocp/fe102800.nocp-vdec
+platform/drivers/rockchip-nocp/fe102c00.nocp-vi-usb-peri-pipe
+platform/drivers/rockchip-nocp/fe103000.nocp-vo
+platform/drivers/rockchip-otp/fe38c000.otp
+platform/drivers/rockchip-pinctrl/pinctrl
+platform/drivers/rockchip-pm-domain/fdd90000.power-management:power-controller
+platform/drivers/rockchip-pm/rockchip-suspend
+platform/drivers/rockchip-pvtm/fde00000.pvtm
+platform/drivers/rockchip-pvtm/fde80000.pvtm
+platform/drivers/rockchip-pvtm/fde90000.pvtm
+platform/drivers/rockchip-pwm/fe700000.pwm
+platform/drivers/rockchip-pwm/fe700010.pwm
+platform/drivers/rockchip-rng/fe388000.rng
+platform/drivers/rockchip-saradc/fe720000.saradc
+platform/drivers/rockchip-system-monitor/rockchip-system-monitor
+platform/drivers/rockchip-thermal/fe710000.tsadc
+platform/drivers/rockchip-usb2phy/fe8a0000.usb2-phy
+platform/drivers/rockchip-usb2phy/fe8b0000.usb2-phy
+platform/drivers/rockchip-vop2/fe040000.vop
+platform/drivers/sdhci-dwcmshc/fe310000.sdhci
+platform/drivers/serial8250/serial8250
+platform/drivers/singleadc-joypad/singleadc-joypad
+platform/drivers/snd-soc-dummy/snd-soc-dummy
+platform/drivers/sram/fdcc0000.sram
+platform/drivers/syscon-reboot-mode/fdc20000.syscon:reboot-mode
+platform/drivers/wlan-platdata/wireless-wlan
+scmi_protocol/drivers/scmi-clocks/scmi_dev.1
+sdio/drivers/rtl8821cs/mmc3:0001:1
+usb/drivers/hub/1-0:1.0
+usb/drivers/hub/2-0:1.0
+usb/drivers/hub/3-0:1.0
+usb/drivers/hub/4-0:1.0
+usb/drivers/usb/usb1
+usb/drivers/usb/usb2
+usb/drivers/usb/usb3
+usb/drivers/usb/usb4
+=== input
+adc-keys | 40000000 0 0 | abs=0 | sw=0
+bt-powerkey | 10000000000000 0 | abs=0 | sw=0
+gpio-keys | c0000 0 0 0 0 c000001000000 0 | abs=0 | sw=0
+gsensor | 0 | abs=7 | sw=0
+gt9xx-0 | 400 0 0 0 0 0 | abs=265000000000000 | sw=0
+gt9xx-1 | 400 0 0 0 0 0 | abs=265000000000000 | sw=0
+gyro | 0 | abs=38 | sw=0
+headset-keys | 1000000000 0 0 | abs=0 | sw=0
+retrogame_joypad | f00000000 0 0 0 7fff000000000000 0 0 18 0 | abs=3003f | sw=0
+rk805 pwrkey | 10000000000000 0 | abs=0 | sw=0
+rockchip-rk817 Headset | 0 | abs=0 | sw=14
+virtual_gamepad | 0 | abs=265000000000000 | sw=0
+=== class-nodes
+android_usb: android0 f_audio_source f_midi 
+arvo: 
+ata_device: 
+ata_link: 
+ata_port: 
+backlight: backlight backlight1 
+bdi: 0:122 0:76 179:0 179:32 179:64 179:96 1:0 1:1 1:10 1:11 1:12 1:13 1:14 1:15 1:2 1:3 1:4 1:5 1:6 1:7 1:8 1:9 253:0 253:1 253:11 253:14 253:15 253:18 253:19 253:2 253:21 253:23 253:25 253:26 253:29 253:3 253:30 253:32 253:34 253:35 253:36 253:37 253:39 253:4 253:40 253:5 253:6 253:7 253:8 253:9 254:0 7:0 7:104 7:112 7:120 7:128 7:136 7:144 7:152 7:16 7:160 7:168 7:176 7:184 7:192 7:200 7:208 7:216 7:224 7:232 7:24 7:240 7:248 7:256 7:264 7:272 7:280 7:32 7:40 7:48 7:56 7:64 7:72 7:8 7:80 7:88 7:96 
+block: dm-0 dm-1 dm-11 dm-14 dm-15 dm-18 dm-19 dm-2 dm-21 dm-23 dm-25 dm-26 dm-29 dm-3 dm-30 dm-32 dm-34 dm-35 dm-36 dm-37 dm-39 dm-4 dm-40 dm-5 dm-6 dm-7 dm-8 dm-9 loop0 loop1 loop10 loop11 loop12 loop13 loop14 loop15 loop16 loop17 loop18 loop19 loop2 loop20 loop21 loop22 loop23 loop24 loop25 loop26 loop27 loop28 loop29 loop3 loop30 loop31 loop32 loop33 loop34 loop35 loop4 loop5 loop6 loop7 loop8 loop9 mmcblk0 mmcblk0p1 mmcblk2 mmcblk2boot0 mmcblk2boot1 mmcblk2p1 mmcblk2p10 mmcblk2p11 mmcblk2p12 mmcblk2p13 mmcblk2p14 mmcblk2p15 mmcblk2p2 mmcblk2p3 mmcblk2p4 mmcblk2p5 mmcblk2p6 mmcblk2p7 mmcblk2p8 mmcblk2p9 ram0 ram1 ram10 ram11 ram12 ram13 ram14 ram15 ram2 ram3 ram4 ram5 ram6 ram7 ram8 ram9 zram0 
+bluetooth: 
+bsg: 
+devfreq: fde60000.gpu fdf80200.rkvdec fe040000.vop 
+devfreq-event: event0 event1 event2 event3 event4 event5 
+devlink: i2c:0-0020--platform:bus-npu i2c:0-0020--platform:dmc i2c:0-0020--platform:fdc20000.syscon:io-domains i2c:0-0020--platform:fde60000.gpu i2c:0-0020--platform:fdf80200.rkvdec i2c:0-0020--platform:fe040000.vop i2c:0-0020--platform:fe2b0000.dwmmc i2c:0-0020--platform:fe720000.saradc i2c:0-0020--platform:wireless-bluetooth i2c:0-0040--platform:bus-npu phy:phy-fe850000.phy.0--platform:fe060000.dsi phy:phy-fe860000.phy.1--platform:fe070000.dsi phy:phy-fe8a0000.usb2-phy.3--platform:fcc00000.usb phy:phy-fe8b0000.usb2-phy.4--platform:fd880000.usb phy:phy-fe8b0000.usb2-phy.4--platform:fd8c0000.usb phy:phy-fe8b0000.usb2-phy.5--platform:fd800000.usb phy:phy-fe8b0000.usb2-phy.5--platform:fd840000.usb platform:backlight--mipi-dsi:fe060000.dsi.0 platform:backlight1--mipi-dsi:fe070000.dsi.0 platform:fdd60000.gpio--i2c:0-0020 platform:fdd60000.gpio--i2c:2-0068 platform:fdd60000.gpio--i2c:3-0014 platform:fdd60000.gpio--i2c:5-0014 platform:fdd60000.gpio--mipi-dsi:fe060000.dsi.0 platform:fdd60000.gpio--mipi-dsi:fe070000.dsi.0 platform:fdd60000.gpio--platform:vcc-sd platform:fdd90000.power-management:power-controller--platform:fcc00000.usb platform:fdd90000.power-management:power-controller--platform:fde60000.gpu platform:fdd90000.power-management:power-controller--platform:fdea0000.video-codec platform:fdd90000.power-management:power-controller--platform:fdea0400.vdpu platform:fdd90000.power-management:power-controller--platform:fdea0800.iommu platform:fdd90000.power-management:power-controller--platform:fdeb0000.rk_rga platform:fdd90000.power-management:power-controller--platform:fded0000.jpegd platform:fdd90000.power-management:power-controller--platform:fded0480.iommu platform:fdd90000.power-management:power-controller--platform:fdee0000.vepu platform:fdd90000.power-management:power-controller--platform:fdee0800.iommu platform:fdd90000.power-management:power-controller--platform:fdef0000.iep platform:fdd90000.power-management:power-controller--platform:fdef0800.iommu platform:fdd90000.power-management:power-controller--platform:fdf40000.rkvenc platform:fdd90000.power-management:power-controller--platform:fdf40f00.iommu platform:fdd90000.power-management:power-controller--platform:fdf80200.rkvdec platform:fdd90000.power-management:power-controller--platform:fdf80800.iommu platform:fdd90000.power-management:power-controller--platform:fe040000.vop platform:fdd90000.power-management:power-controller--platform:fe060000.dsi platform:fdd90000.power-management:power-controller--platform:fe070000.dsi platform:fdd90000.power-management:power-controller--platform:fe850000.phy platform:fdd90000.power-management:power-controller--platform:fe860000.phy platform:fdea0800.iommu--platform:fdea0400.vdpu platform:fded0480.iommu--platform:fded0000.jpegd platform:fdee0800.iommu--platform:fdee0000.vepu platform:fdef0800.iommu--platform:fdef0000.iep platform:fdf40f00.iommu--platform:fdf40000.rkvenc platform:fdf80800.iommu--platform:fdf80200.rkvdec platform:fe040000.vop--platform:display-subsystem platform:fe043e00.iommu--platform:fe040000.vop platform:fe060000.dsi--platform:display-subsystem platform:fe070000.dsi--platform:display-subsystem platform:fe38c000.otp--platform:cpuinfo platform:fe38c000.otp--platform:fe710000.tsadc platform:fe700000.pwm--platform:backlight platform:fe700010.pwm--platform:backlight1 platform:fe720000.saradc--platform:adc-keys platform:fe720000.saradc--platform:rk817-sound platform:fe720000.saradc--platform:singleadc-joypad platform:fe740000.gpio--platform:fe410000.i2s platform:fe760000.gpio--platform:singleadc-joypad platform:fe760000.gpio--platform:vibrator platform:fe770000.gpio--platform:rk817-codec platform:fe770000.gpio--platform:rk817-sound platform:fe770000.gpio--platform:sdio-pwrseq platform:fe850000.phy--platform:fe060000.dsi platform:fe860000.phy--platform:fe070000.dsi platform:fe8a0000.usb2-phy--platform:fcc00000.usb platform:fe8a0000.usb2-phy--platform:rk817-charger platform:fe8b0000.usb2-phy--platform:fd800000.usb platform:fe8b0000.usb2-phy--platform:fd840000.usb platform:fe8b0000.usb2-phy--platform:fd880000.usb platform:fe8b0000.usb2-phy--platform:fd8c0000.usb platform:firmware:scmi--platform:bus-npu platform:firmware:scmi--platform:dmc platform:firmware:scmi--platform:fde60000.gpu platform:firmware:scmi--scmi_protocol:scmi_dev.1 platform:pinctrl--i2c:0-0020 platform:pinctrl--i2c:3-0014 platform:pinctrl--i2c:5-0014 platform:pinctrl--mipi-dsi:fe060000.dsi.0 platform:pinctrl--mipi-dsi:fe070000.dsi.0 platform:pinctrl--platform:fdd40000.i2c platform:pinctrl--platform:fe000000.dwmmc platform:pinctrl--platform:fe2b0000.dwmmc platform:pinctrl--platform:fe410000.i2s platform:pinctrl--platform:fe5b0000.i2c platform:pinctrl--platform:fe5c0000.i2c platform:pinctrl--platform:fe5e0000.i2c platform:pinctrl--platform:fe650000.serial platform:pinctrl--platform:fe700000.pwm platform:pinctrl--platform:fe700010.pwm platform:pinctrl--platform:fe710000.tsadc platform:pinctrl--platform:fiq-debugger platform:pinctrl--platform:gpio-backlight platform:pinctrl--platform:gpio-keys platform:pinctrl--platform:gpio-leds platform:pinctrl--platform:rk817-codec platform:pinctrl--platform:rk817-sound platform:pinctrl--platform:sdio-pwrseq platform:pinctrl--platform:singleadc-joypad platform:pinctrl--platform:vcc-sd platform:pinctrl--platform:wireless-bluetooth platform:pinctrl--platform:wireless-wlan platform:vcc-sd--platform:fe2b0000.dwmmc platform:vcc5v0-usb--platform:vcc5v0-otg-regulator platform:vccsys--i2c:0-0020 platform:vccsys--i2c:0-0040 regulator:regulator.0--mipi-dsi:fe060000.dsi.0 regulator:regulator.0--mipi-dsi:fe070000.dsi.0 regulator:regulator.0--platform:backlight regulator:regulator.0--platform:backlight1 regulator:regulator.13--platform:fdc20000.syscon:io-domains regulator:regulator.14--platform:fdc20000.syscon:io-domains regulator:regulator.14--platform:fe2b0000.dwmmc regulator:regulator.15--platform:fdc20000.syscon:io-domains regulator:regulator.16--platform:fdc20000.syscon:io-domains regulator:regulator.16--platform:fe720000.saradc regulator:regulator.20--platform:rk817-charger regulator:regulator.3--phy:phy-fe8a0000.usb2-phy.3 regulator:regulator.4--platform:fe2b0000.dwmmc regulator:regulator.5--cpu:cpu0 regulator:regulator.5--platform:bus-npu regulator:regulator.6--platform:bus-npu regulator:regulator.6--platform:dmc regulator:regulator.6--platform:fdf80200.rkvdec regulator:regulator.6--platform:fe040000.vop regulator:regulator.7--platform:fde60000.gpu regulator:regulator.9--platform:fdc20000.syscon:io-domains 
+dma: dma0chan0 dma0chan1 dma0chan10 dma0chan11 dma0chan12 dma0chan13 dma0chan14 dma0chan15 dma0chan16 dma0chan17 dma0chan18 dma0chan19 dma0chan2 dma0chan20 dma0chan21 dma0chan22 dma0chan23 dma0chan24 dma0chan25 dma0chan26 dma0chan27 dma0chan28 dma0chan29 dma0chan3 dma0chan30 dma0chan31 dma0chan4 dma0chan5 dma0chan6 dma0chan7 dma0chan8 dma0chan9 dma1chan0 dma1chan1 dma1chan10 dma1chan11 dma1chan12 dma1chan13 dma1chan14 dma1chan15 dma1chan16 dma1chan17 dma1chan18 dma1chan19 dma1chan2 dma1chan20 dma1chan21 dma1chan22 dma1chan23 dma1chan24 dma1chan25 dma1chan26 dma1chan27 dma1chan28 dma1chan29 dma1chan3 dma1chan30 dma1chan31 dma1chan4 dma1chan5 dma1chan6 dma1chan7 dma1chan8 dma1chan9 
+dma_heap: cma cma-uncached system system-dma32 system-uncached system-uncached-dma32 
+drm: card0 card0-DSI-1 card0-DSI-2 card0-Writeback-1 renderD128 version 
+drm_dp_aux_dev: 
+extcon: extcon0 extcon1 extcon2 
+firmware: timeout 
+gpio: export gpiochip0 gpiochip128 gpiochip32 gpiochip64 gpiochip96 unexport 
+hdmirx: 
+hidraw: 
+hwmon: hwmon0 hwmon1 hwmon2 hwmon3 hwmon4 hwmon5 hwmon6 
+i2c-adapter: i2c-0 i2c-2 i2c-3 i2c-5 
+i2c-dev: i2c-0 i2c-2 i2c-3 i2c-5 
+ieee80211: phy0 
+input: event0 event1 event10 event11 event2 event3 event4 event5 event6 event7 event8 event9 input0 input1 input10 input11 input2 input3 input4 input5 input6 input7 input8 input9 
+iommu: fdea0800.iommu fded0480.iommu fdee0800.iommu fdef0800.iommu fdf40f00.iommu fdf80800.iommu fe043e00.iommu 
+isku: 
+kone: 
+koneplus: 
+konepure: 
+kovaplus: 
+leds: backlight_0_power backlight_1_power battery_charging battery_full low_power mmc2:: wifi_reg 
+mdio_bus: fixed-0 
+mem: full kmsg null random urandom zero 
+misc: ashmem ashmem_ignore_unset_prot_exec ashmem_ignore_unset_prot_read ashmem_unpinning_enable cpu_dma_latency crypto device-mapper fuse gyrosensor hw_random loop-control mali0 mma8452_daemon rfkill rga sw_sync tun uhid uinput usb_accessory userfaultfd vendor_storage watchdog 
+mmc_host: mmc0 mmc2 mmc3 
+mpp_class: mpp_service 
+net: dummy0 ifb0 ifb1 ip6_vti0 ip6tnl0 ip_vti0 lo p2p0 sit0 wlan0 
+nvme: 
+nvme-generic: 
+nvme-subsystem: 
+pci_bus: 
+phy: phy-fe060000.dsi.6 phy-fe070000.dsi.7 phy-fe850000.phy.0 phy-fe860000.phy.1 phy-fe8a0000.usb2-phy.2 phy-fe8a0000.usb2-phy.3 phy-fe8b0000.usb2-phy.4 phy-fe8b0000.usb2-phy.5 
+pmsg: pmsg0 
+power_supply: ac battery cw2015-battery usb 
+ppp: ppp 
+pps: 
+ptp: 
+pwm: pwmchip0 pwmchip1 
+pyra: 
+regulator: regulator.0 regulator.1 regulator.10 regulator.11 regulator.12 regulator.13 regulator.14 regulator.15 regulator.16 regulator.17 regulator.18 regulator.19 regulator.2 regulator.20 regulator.3 regulator.4 regulator.5 regulator.6 regulator.7 regulator.8 regulator.9 
+retimer: 
+rfkill: rfkill0 rfkill1 
+rkwifi: wifi_bt_vbat wifi_power wifi_set_carddetect 
+rtc: rtc0 
+ryos: 
+savu: 
+scsi_changer: 
+scsi_device: 
+scsi_disk: 
+scsi_generic: 
+scsi_host: 
+sensor_class: accel_calibration gyro_calibration 
+sound: card0 controlC0 pcmC0D0c pcmC0D0p timer 
+spi_master: 
+spidev: 
+tee: tee0 teepriv0 
+thermal: cooling_device0 cooling_device1 cooling_device2 thermal_zone0 thermal_zone1 thermal_zone2 
+timed_output: vibrator 
+tty: console ptmx tty ttyFIQ0 ttyS1 
+typec: 
+typec_mux: 
+udc: fcc00000.usb 
+usb_power_delivery: 
+usb_role: 
+usbmon: usbmon0 usbmon1 usbmon2 usbmon3 usbmon4 
+video4linux: 
+wakeup: wakeup0 wakeup1 wakeup10 wakeup11 wakeup12 wakeup13 wakeup14 wakeup15 wakeup16 wakeup17 wakeup18 wakeup19 wakeup2 wakeup20 wakeup21 wakeup22 wakeup23 wakeup24 wakeup25 wakeup26 wakeup27 wakeup28 wakeup29 wakeup3 wakeup30 wakeup31 wakeup32 wakeup33 wakeup34 wakeup35 wakeup36 wakeup37 wakeup38 wakeup39 wakeup4 wakeup40 wakeup41 wakeup5 wakeup6 wakeup7 wakeup8 wakeup9 
+watchdog: watchdog0 
+xt_idletimer: timers 
+zram-control: hot_add hot_remove 
+=== power_supply
+ac: current_max device hwmon5 online power status subsystem type uevent voltage_max wakeup3 
+battery: capacity charge_counter charge_full current_now device health hwmon3 power status subsystem temp type uevent voltage_now wakeup1 
+cw2015-battery: capacity capacity_level charge_counter charge_full charge_full_design charge_now current_now device hwmon6 power present status subsystem technology time_to_empty_now type uevent voltage_now wakeup7 
+usb: current_max device hwmon4 online power status subsystem type uevent voltage_max wakeup2 
+=== irqs
+100: rockchip_gpio_irq 2 Edge volume up
+101: rockchip_gpio_irq 1 Edge volume down
+102: rockchip_gpio_irq 19 Edge HALL status
+13: GICv3 26 Level arch_timer
+14: GICv3 141 Level rk_timer
+20: GICv3 284 Edge debug-signal
+21: GICv3 150 Level debug
+22: GICv3 147 Level rockchip_thermal
+23: GICv3 167 Level rockchip_usb2phy
+24: GICv3 168 Level rockchip_usb2phy
+25: GICv3 117 Level rk_pwm_irq, rk_pwm_irq
+26: GICv3 46 Level fe530000.dma-controller
+27: GICv3 45 Level fe530000.dma-controller
+28: GICv3 48 Level fe550000.dma-controller
+29: GICv3 47 Level fe550000.dma-controller
+30: GICv3 149 Level
+31: GICv3 170 Level fdea0800.iommu
+32: GICv3 93 Level fded0480.iommu
+33: GICv3 95 Level fdee0800.iommu
+34: GICv3 88 Level fdef0800.iommu, fdef0000.iep
+35: GICv3 173 Level fdf40f00.iommu
+36: GICv3 174 Level fdf40f00.iommu
+37: GICv3 124 Level fdf80800.iommu
+38: GICv3 180 Level fe043e00.iommu, fe040000.vop
+39: GICv3 201 Level dwc3
+40: GICv3 165 Level ehci_hcd:usb1
+41: GICv3 162 Level ehci_hcd:usb2
+42: GICv3 163 Level ohci_hcd:usb3
+43: GICv3 166 Level ohci_hcd:usb4
+44: GICv3 78 Level fdd40000.i2c
+45: rockchip_gpio_irq 3 Level rk817
+46: rk817 0 Edge rk805_pwrkey_fall
+47: rk817 1 Edge rk805_pwrkey_rise
+51: rk817 5 Edge RTC alarm
+54: rk817 8 Edge rk817_plug_in
+55: rk817 9 Edge rk817_plug_out
+70: GICv3 80 Level fe5b0000.i2c
+71: GICv3 81 Level fe5c0000.i2c
+72: rockchip_gpio_irq 16 Edge gt9xx
+73: GICv3 83 Level fe5e0000.i2c
+74: rockchip_gpio_irq 14 Edge gt9xx
+75: GICv3 40 Level rockchip-mipi-csi2-hw
+76: GICv3 41 Level rockchip-mipi-csi2-hw
+77: GICv3 181 Edge fe600000.watchdog
+78: GICv3 132 Level dw-mci
+79: GICv3 130 Level dw-mci
+80: GICv3 51 Level mmc2
+81: GICv3 125 Level fe720000.saradc
+82: GICv3 260 Level arm-pmu
+83: GICv3 261 Level arm-pmu
+84: GICv3 262 Level arm-pmu
+85: GICv3 263 Level arm-pmu
+86: GICv3 84 Level i2s
+87: GICv3 85 Level i2s
+88: rockchip_gpio_irq 18 Edge headset_detect
+89: rockchip_gpio_irq 28 Edge bt_default_wake_host_irq
+90: GICv3 122 Level rga2
+91: GICv3 172 Level fdf40000.rkvenc
+92: GICv3 171 Level fdea0400.vdpu
+93: GICv3 96 Level fdee0000.vepu
+94: GICv3 94 Level fded0000.jpegd
+95: GICv3 123 Level fdf80200.rkvdec
+96: GICv3 72 Level fde60000.gpu
+97: GICv3 73 Level fde60000.gpu
+98: GICv3 71 Level fde60000.gpu
+Err: 
+IPI0: Rescheduling interrupts
+IPI1: Function call interrupts
+IPI2: CPU stop interrupts
+IPI3: CPU stop (for crash dump) interrupts
+IPI4: Timer broadcast interrupts
+IPI5: IRQ work interrupts
+IPI6: CPU wake-up interrupts
+=== regulators
+regulator use open bypass
+---------------------------------------------------------------------------------------   
+regulator-dummy 5 5 0
+fe070000.dsi.0-power 1 0mA 0mV
+fe060000.dsi.0-power 1 0mA 0mV
+backlight1-power 1 0mA 0mV
+backlight-power 1 0mA 0mV
+regulator-dummy 0 0mA 0mV
+vcc3v8_sys 16 16 0
+vcc3v8_sys 0 0mA 0mV
+vdd_cpu 2 3 0
+bus-npu-pvtm 0 0mA 0mV
+cpu0-cpu 1 0mA 1100mV
+vdd_cpu 0 0mA 0mV
+vdd_logic 1 6 0
+dmc-center 0 0mA 0mV
+fe040000.vop-vop 0 0mA 900mV
+fdf80200.rkvdec-vdec 0 0mA 900mV
+fdf80200.rkvdec-vdec 0 0mA 900mV
+bus-npu-bus 0 0mA 900mV
+vdd_logic 0 0mA 0mV
+vdd_gpu 2 3 0
+fde60000.gpu-mali 1 0mA 925mV
+fde60000.gpu-mali 0 0mA 0mV
+vdd_gpu 0 0mA 0mV
+vcc_ddr 1 1 0
+vcc_ddr 0 0mA 0mV
+vcc_3v3 1 4 0
+fdc20000.syscon:io-domains-vccio7 0 0mA 0mV
+fdc20000.syscon:io-domains-vccio5 0 0mA 0mV
+fdc20000.syscon:io-domains-vccio4 0 0mA 0mV
+vcc_3v3 0 0mA 0mV
+vcca1v8_pmu 1 1 0
+vcca1v8_pmu 0 0mA 0mV
+vdda_0v9 1 1 0
+vdda_0v9 0 0mA 0mV
+vdda0v9_pmu 1 1 0
+vdda0v9_pmu 0 0mA 0mV
+vccio_acodec 1 2 0
+fdc20000.syscon:io-domains-vccio1 0 0mA 0mV
+vccio_acodec 0 0mA 0mV
+vccio_sd 2 3 0
+fdc20000.syscon:io-domains-vccio3 0 0mA 0mV
+fe2b0000.dwmmc-vqmmc 1 0mA 1800mV
+vccio_sd 0 0mA 0mV
+vcc3v3_pmu 1 3 0
+fdc20000.syscon:io-domains-pmuio2 0 0mA 0mV
+fdc20000.syscon:io-domains-pmuio1 0 0mA 0mV
+vcc3v3_pmu 0 0mA 0mV
+vcc_1v8 2 3 0
+fdc20000.syscon:io-domains-vccio6 0 0mA 0mV
+fe720000.saradc-vref 1 0mA 0mV
+vcc_1v8 0 0mA 0mV
+vcc1v8_dvp 1 1 0
+vcc1v8_dvp 0 0mA 0mV
+vcc2v8_dvp 1 1 0
+vcc2v8_dvp 0 0mA 0mV
+boost 1 2 0
+boost 0 0mA 0mV
+otg_switch 0 2 0
+rk817-charger-otg_switch 0 0mA 0mV
+otg_switch 0 0mA 0mV
+vcc5v0_usb 2 2 0
+vcc5v0_usb 0 0mA 0mV
+vcc5v0_otg 1 2 0
+phy-fe8a0000.usb2-phy.3-vbus 0 0mA 0mV
+vcc5v0_otg 0 0mA 0mV
+vcc_sd 1 2 0
+fe2b0000.dwmmc-vmmc 1 0mA 3300mV
+vcc_sd 0 0mA 0mV
+=== clk
+---------------------------------------------------------------------------------------------------------------------------------------------    
+aclk_bus 1 3 0 148500000
+aclk_core 1 1 0 996000000
+aclk_core_niu2bus 1 1 0 148500000
+aclk_crypto_ns 0 0 0 198000000
+aclk_emmc 1 1 0 198000000
+aclk_gic600 0 0 0 198000000
+aclk_gic_audio 0 0 0 198000000
+aclk_gmac0 0 0 0 297000000
+aclk_gmac1 0 0 0 297000000
+aclk_gpu_pre 0 1 0 83333334
+aclk_hdcp 0 0 0 297000000
+aclk_iep 0 3 0 297000000
+aclk_isp 0 0 0 396000000
+aclk_jdec 0 3 0 297000000
+aclk_jenc 0 3 0 297000000
+aclk_mcu 0 0 0 148500000
+aclk_npu 0 0 0 600000000
+aclk_npu_pre 0 1 0 600000000
+aclk_pcie20_dbi 0 0 0 396000000
+aclk_pcie20_mst 0 0 0 396000000
+aclk_pcie20_slv 0 0 0 396000000
+aclk_pcie30x1_dbi 0 0 0 396000000
+aclk_pcie30x1_mst 0 0 0 396000000
+aclk_pcie30x1_slv 0 0 0 396000000
+aclk_pcie30x2_dbi 0 0 0 396000000
+aclk_pcie30x2_mst 0 0 0 396000000
+aclk_pcie30x2_slv 0 0 0 396000000
+aclk_perimid 1 1 0 297000000
+aclk_php 1 1 0 297000000
+aclk_pipe 3 3 0 396000000
+aclk_rga 0 1 0 297000000
+aclk_rga_pre 0 6 0 297000000
+aclk_rkvdec 0 3 0 396000000
+aclk_rkvdec_pre 0 2 0 396000000
+aclk_rkvenc 0 3 0 297000000
+aclk_rkvenc_pre 0 2 0 297000000
+aclk_sata0 0 0 0 396000000
+aclk_sata1 0 0 0 396000000
+aclk_sata2 0 0 0 396000000
+aclk_secure_flash 2 2 0 198000000
+aclk_spinlock 0 0 0 198000000
+aclk_top_high 1 1 0 500000000
+aclk_top_low 1 1 0 396000000
+aclk_usb 1 1 0 297000000
+aclk_usb3otg0 1 1 0 396000000
+aclk_usb3otg1 1 1 0 396000000
+aclk_vi 0 2 0 396000000
+aclk_vicap 0 0 0 396000000
+aclk_vo 2 2 0 297000000
+aclk_vop 1 3 0 500000000
+aclk_vop_pre 1 2 0 500000000
+aclk_vpu 0 3 0 297000000
+aclk_vpu_pre 0 2 0 297000000
+apll 2 2 0 1992000000
+armclk 4 4 0 1992000000
+atclk_core 1 1 0 284571429
+bclk_emmc 1 1 0 198000000
+bus-npu bus   
+cclk_emmc 1 1 0 198000000
+clk24_ddrmon 0 0 0 24000000
+clk_32k_ioe 0 0 0 32768
+clk_acdcdig_adc 0 0 0 1188000000
+clk_acdcdig_dac 0 0 0 1188000000
+clk_acdcdig_i2c 0 0 0 198000000
+clk_cam0_out 0 0 0 24000000
+clk_cam1_out 0 0 0 24000000
+clk_can0 0 0 0 297000000
+clk_can1 0 0 0 297000000
+clk_can2 0 0 0 297000000
+clk_capture_pwm0_ndft 0 0 0 24000000
+clk_cif_out 0 0 0 24000000
+clk_core_pmupvtm 0 0 0 24000000
+clk_core_pvtm 0 0 0 24000000
+clk_core_pvtm_core 0 0 0 1992000000
+clk_core_pvtpll 0 0 0 1992000000
+clk_cpu_boost 0 0 0 24000000
+clk_crypto_ns_core 0 0 0 148500000
+clk_crypto_ns_pka 0 0 0 297000000
+clk_crypto_ns_rng 0 0 0 148500000
+clk_ddr1x 1 1 0 460000000
+clk_ddrphy1x_src 1 1 0 460000000
+clk_edp_200m 0 0 0 198000000
+clk_gmac0 0 0 0 125000000
+clk_gmac0_ptp_ref 0 0 0 62500000
+clk_gmac0_rgmii_speed 0 0 0 125000000
+clk_gmac0_rmii_speed 0 0 0 6250000
+clk_gmac0_rx_div2 0 0 0 62500000
+clk_gmac0_rx_div20 0 0 0 6250000
+clk_gmac0_rx_tx 0 0 0 125000000
+clk_gmac0_tx_div5 0 0 0 25000000
+clk_gmac0_tx_div50 0 0 0 2500000
+clk_gmac0_xpcs_mii 0 0 0 125000000
+clk_gmac1 0 0 0 125000000
+clk_gmac1_ptp_ref 0 0 0 62500000
+clk_gmac1_rgmii_speed 0 0 0 125000000
+clk_gmac1_rmii_speed 0 0 0 6250000
+clk_gmac1_rx_div2 0 0 0 62500000
+clk_gmac1_rx_div20 0 0 0 6250000
+clk_gmac1_rx_tx 0 0 0 125000000
+clk_gmac1_tx_div5 0 0 0 25000000
+clk_gmac1_tx_div50 0 0 0 2500000
+clk_gmac1_xpcs_mii 0 0 0 125000000
+clk_gpu 0 2 0 166666667
+clk_gpu_pre_mux 0 3 0 166666667
+clk_gpu_pvtm 0 0 0 24000000
+clk_gpu_pvtm_core 0 0 0 166666667
+clk_gpu_pvtpll 0 0 0 166666667
+clk_gpu_src 0 1 0 166666667
+clk_hdmi_cec 0 0 0 32768
+clk_hdmi_ref 0 0 0 42099999
+clk_hdmi_sfr 0 0 0 24000000
+clk_i2c 0 3 0 24000000
+clk_i2c0 0 1 0 100000000
+clk_i2c1 0 0 0 24000000
+clk_i2c2 0 1 0 24000000
+clk_i2c3 0 1 0 24000000
+clk_i2c4 0 0 0 24000000
+clk_i2c5 0 1 0 24000000
+clk_i2s0_8ch_rx 0 0 0 1188000000
+clk_i2s0_8ch_rx_frac 0 0 0 1188000000
+clk_i2s0_8ch_rx_src 0 0 0 1188000000
+clk_i2s0_8ch_tx 0 0 0 1188000000
+clk_i2s0_8ch_tx_frac 0 0 0 1188000000
+clk_i2s0_8ch_tx_src 0 0 0 1188000000
+clk_i2s1_8ch_rx 0 0 0 12288000
+clk_i2s1_8ch_rx_frac 0 0 0 12288000
+clk_i2s1_8ch_rx_src 0 0 0 1188000000
+clk_i2s1_8ch_tx 1 1 0 12288000
+clk_i2s1_8ch_tx_frac 1 1 0 12288000
+clk_i2s1_8ch_tx_src 1 1 0 1188000000
+clk_i2s2_2ch 0 0 0 1188000000
+clk_i2s2_2ch_frac 0 0 0 1188000000
+clk_i2s2_2ch_src 0 0 0 1188000000
+clk_i2s3_2ch_rx 0 0 0 1188000000
+clk_i2s3_2ch_rx_frac 0 0 0 1188000000
+clk_i2s3_2ch_rx_src 0 0 0 1188000000
+clk_i2s3_2ch_tx 0 0 0 1188000000
+clk_i2s3_2ch_tx_frac 0 0 0 1188000000
+clk_i2s3_2ch_tx_src 0 0 0 1188000000
+clk_iep_core 0 1 0 297000000
+clk_isp 0 0 0 500000000
+clk_mac0_2top 0 0 0 125000000
+clk_mac0_out 0 0 0 125000000
+clk_mac0_refout 0 0 0 125000000
+clk_mac1_2top 0 0 0 125000000
+clk_mac1_out 0 0 0 125000000
+clk_mac1_refout 0 0 0 125000000
+clk_mipidsiphy0_ref 1 1 0 24000000
+clk_mipidsiphy1_ref 1 1 0 24000000
+clk_msch 1 1 0 460000000
+clk_npu 0 3 0 600000000
+clk_npu_np5 0 0 0 480000000
+clk_npu_pre_ndft 0 1 0 600000000
+clk_npu_pvtm 0 0 0 24000000
+clk_npu_pvtm_core 0 0 0 600000000
+clk_npu_pvtpll 0 0 0 600000000
+clk_npu_src 0 1 0 600000000
+clk_optc_arb 1 1 0 24000000
+clk_osc0_div_375k 0 0 0 375000
+clk_osc0_div_750k 0 0 0 750000
+clk_otpc_ns_sbpi 0 0 0 24000000
+clk_otpc_ns_usr 0 0 0 12000000
+clk_pcie20_aux_ndft 0 0 0 24000000
+clk_pcie30phy_ref_m 0 0 0 100000000
+clk_pcie30phy_ref_n 0 0 0 100000000
+clk_pcie30x1_aux_ndft 0 0 0 24000000
+clk_pcie30x2_aux_ndft 0 0 0 24000000
+clk_pciephy0_div 0 0 0 25000000
+clk_pciephy0_osc0 0 0 0 24000000
+clk_pciephy0_ref 0 0 0 25000000
+clk_pciephy1_div 0 0 0 25000000
+clk_pciephy1_osc0 0 0 0 24000000
+clk_pciephy1_ref 0 0 0 25000000
+clk_pciephy2_div 0 0 0 25000000
+clk_pciephy2_osc0 0 0 0 24000000
+clk_pciephy2_ref 0 0 0 25000000
+clk_pdpmu 1 2 0 200000000
+clk_pmu 1 1 0 24000000
+clk_pmupvtm 0 0 0 24000000
+clk_pwm0 0 0 0 12000000
+clk_pwm1 0 0 0 24000000
+clk_pwm1_capture 0 0 0 24000000
+clk_pwm2 0 0 0 24000000
+clk_pwm2_capture 0 0 0 24000000
+clk_pwm3 2 2 0 24000000
+clk_pwm3_capture 0 0 0 24000000
+clk_ref24m 0 0 0 20000000
+clk_rga_core 0 1 0 297000000
+clk_rkvdec_ca 0 1 0 297000000
+clk_rkvdec_core 0 1 0 396000000
+clk_rkvdec_hevc_ca 0 1 0 297000000
+clk_rkvenc_core 0 1 0 297000000
+clk_rtc32k_frac 0 0 0 32768
+clk_rtc_32k 0 0 0 32768
+clk_saradc 1 1 0 24000000
+clk_sata0_pmalive 0 0 0 19800000
+clk_sata0_rxoob 0 0 0 50000000
+clk_sata1_pmalive 0 0 0 19800000
+clk_sata1_rxoob 0 0 0 50000000
+clk_sata2_pmalive 0 0 0 19800000
+clk_sata2_rxoob 0 0 0 50000000
+clk_scmi_cpu 0 0 0 1992000000
+clk_scmi_ddr 0 0 0 920000000
+clk_scmi_gpu 0 1 0 198000000
+clk_scmi_npu 0 0 0 594000000
+clk_sdmmc0 1 1 0 297000000
+clk_sdmmc1 0 0 0 24000000
+clk_sdmmc2 1 1 0 100000000
+clk_spi0 0 0 0 198000000
+clk_spi1 0 0 0 198000000
+clk_spi2 0 0 0 198000000
+clk_spi3 0 0 0 198000000
+clk_timer0 1 1 0 24000000
+clk_timer1 0 0 0 24000000
+clk_timer2 0 0 0 24000000
+clk_timer3 0 0 0 24000000
+clk_timer4 0 0 0 24000000
+clk_timer5 0 0 0 24000000
+clk_trng_ns 0 0 0 148500000
+clk_tsadc 1 1 0 694445
+clk_tsadc_tsen 1 1 0 16666667
+clk_uart1_frac 0 0 0 99000000
+clk_uart1_src 0 0 0 99000000
+clk_uart2_frac 0 0 0 99000000
+clk_uart2_src 0 0 0 99000000
+clk_uart3_frac 0 0 0 99000000
+clk_uart3_src 0 0 0 99000000
+clk_uart4_frac 0 0 0 99000000
+clk_uart4_src 0 0 0 99000000
+clk_uart5_frac 0 0 0 99000000
+clk_uart5_src 0 0 0 99000000
+clk_uart6_frac 0 0 0 99000000
+clk_uart6_src 0 0 0 99000000
+clk_uart7_frac 0 0 0 99000000
+clk_uart7_src 0 0 0 99000000
+clk_uart8_frac 0 0 0 99000000
+clk_uart8_src 0 0 0 99000000
+clk_uart9_frac 0 0 0 99000000
+clk_uart9_src 0 0 0 99000000
+clk_usb3otg0_ref 1 1 0 24000000
+clk_usb3otg0_suspend 1 1 0 24000000
+clk_usb3otg1_ref 1 1 0 24000000
+clk_usb3otg1_suspend 1 1 0 24000000
+clk_usbphy0_ref 2 2 0 24000000
+clk_usbphy1_ref 2 2 0 24000000
+clk_usbphy_480m 5 5 0 480000000
+clk_vop_pwm 0 0 0 24000000
+clk_wifi 0 0 0 24000000
+clk_wifi_div 0 0 0 33333334
+clk_wifi_osc0 0 0 0 24000000
+clk_xpcs_eee 0 0 0 198000000
+cntclk_core 1 1 0 142285715
+cpll 3 4 0 1000000000
+cpll_100m 2 2 0 100000000
+cpll_125m 0 0 0 125000000
+cpll_250m 0 0 0 250000000
+cpll_25m 0 0 0 25000000
+cpll_333m 0 0 0 250000000
+cpll_500m 1 1 0 500000000
+cpll_50m 0 0 0 50000000
+cpll_62p5 0 0 0 62500000
+cpu0 no_connection_id   
+dbclk_gpio 0 4 0 24000000
+dbclk_gpio0 0 1 0 24000000
+dbclk_gpio1 0 1 0 24000000
+dbclk_gpio2 0 1 0 24000000
+dbclk_gpio3 0 1 0 24000000
+dbclk_gpio4 0 1 0 24000000
+dclk_ebc 0 0 0 396000000
+dclk_sdmmc_buffer 0 0 0 99000000
+dclk_vicap 0 0 0 250000000
+dclk_vop0 1 2 0 42099999
+dclk_vop1 1 2 0 42093750
+dclk_vop2 0 1 0 10525000
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+deviceless no_connection_id   
+dpll 1 1 0 460000000
+dsi@fe060000 no_connection_id   
+dsi@fe060000 no_connection_id   
+dsi@fe070000 no_connection_id   
+dsi@fe070000 no_connection_id   
+emmc_drv 0 0 0 99000000
+emmc_sample 0 0 0 99000000
+fdf80200.rkvdec aclk_vcodec   
+fe040000.vop aclk_vop   
+fe060000.dsi hclk   
+fe530000.dma-controller apb_pclk   
+fe700000.pwm pclk   
+fe700000.pwm pwm   
+fe850000.phy pclk_host   
+fe860000.phy pclk_host   
+gicclk_core 1 1 0 284571429
+gmac0_clkin 0 0 0 125000000
+gmac1_clkin 0 0 0 125000000
+gpll 7 14 0 1188000000
+gpll_100m 2 2 0 99000000
+gpll_150m 8 8 0 148500000
+gpll_200m 3 3 0 198000000
+gpll_20m 0 0 0 19800000
+gpll_300m 5 8 0 297000000
+gpll_400m 2 3 0 396000000
+gpll_75m 0 0 0 74250000
+gpu@fde60000 no_connection_id   
+gpu@fde60000 no_connection_id   
+gpu@fde60000 no_connection_id   
+hclk_acdcdig 0 0 0 148500000
+hclk_audpwm 0 0 0 148500000
+hclk_crypto_ns 0 0 0 148500000
+hclk_ebc 0 0 0 148500000
+hclk_eink 0 0 0 148500000
+hclk_emmc 1 1 0 148500000
+hclk_gic_audio 2 2 0 148500000
+hclk_hdcp 0 0 0 148500000
+hclk_i2s0_8ch 1 1 0 148500000
+hclk_i2s1_8ch 1 1 0 148500000
+hclk_i2s2_2ch 0 0 0 148500000
+hclk_i2s3_2ch 0 0 0 148500000
+hclk_iep 0 3 0 148500000
+hclk_isp 0 0 0 198000000
+hclk_jdec 0 3 0 148500000
+hclk_jenc 0 3 0 148500000
+hclk_nandc 0 0 0 148500000
+hclk_npu 0 0 0 150000000
+hclk_npu_pre 0 1 0 150000000
+hclk_pdm 0 0 0 148500000
+hclk_perimid 1 1 0 148500000
+hclk_php 2 2 0 148500000
+hclk_rga 0 1 0 148500000
+hclk_rga_pre 0 5 0 148500000
+hclk_rkvdec 0 3 0 198000000
+hclk_rkvdec_pre 0 2 0 198000000
+hclk_rkvenc 0 3 0 99000000
+hclk_rkvenc_pre 0 2 0 99000000
+hclk_sdmmc0 1 1 0 148500000
+hclk_sdmmc1 0 0 0 148500000
+hclk_sdmmc2 1 1 0 148500000
+hclk_sdmmc_buffer 0 0 0 148500000
+hclk_secure_flash 2 2 0 148500000
+hclk_sfc 0 0 0 148500000
+hclk_sfc_xip 0 0 0 148500000
+hclk_spdif_8ch 0 0 0 148500000
+hclk_top 1 1 0 148500000
+hclk_trng_ns 0 0 0 148500000
+hclk_usb 6 6 0 148500000
+hclk_usb2host0 2 2 0 148500000
+hclk_usb2host0_arb 2 2 0 148500000
+hclk_usb2host1 2 2 0 148500000
+hclk_usb2host1_arb 2 2 0 148500000
+hclk_vad 0 0 0 148500000
+hclk_vi 0 1 0 198000000
+hclk_vicap 0 0 0 198000000
+hclk_vo 3 6 0 148500000
+hclk_vop 1 3 0 148500000
+hclk_vpu 0 3 0 148500000
+hclk_vpu_pre 0 2 0 148500000
+hpll 1 2 0 42099999
+hpll_ph0 0 0 0 21049999
+i2s0_mclkout_rx 0 0 0 12000000
+i2s0_mclkout_tx 0 0 0 12000000
+i2s1_mclk_rx_ioe 0 0 0 12288000
+i2s1_mclk_tx_ioe 0 0 0 12288000
+i2s1_mclkin_rx 0 0 0 12288000
+i2s1_mclkin_tx 0 0 0 12288000
+i2s1_mclkout 1 1 0 12288000
+i2s1_mclkout_rx 0 0 0 12000000
+i2s1_mclkout_tx 1 1 0 12288000
+i2s2_mclk_ioe 0 0 0 12288000
+i2s2_mclkin 0 0 0 12288000
+i2s2_mclkout 0 0 0 12000000
+i2s3_mclk_ioe 0 0 0 12288000
+i2s3_mclkin 0 0 0 12288000
+i2s3_mclkout 0 0 0 12000000
+i2s3_mclkout_rx 0 0 0 12000000
+i2s3_mclkout_tx 0 0 0 12000000
+iclk_vicap_g 0 0 0 0
+iep@fdef0000 no_connection_id   
+iep@fdef0000 no_connection_id   
+iep@fdef0000 no_connection_id   
+iommu@fdea0800 no_connection_id   
+iommu@fdea0800 no_connection_id   
+iommu@fdea0800 no_connection_id   
+iommu@fdea0800 no_connection_id   
+iommu@fded0480 no_connection_id   
+iommu@fded0480 no_connection_id   
+iommu@fded0480 no_connection_id   
+iommu@fded0480 no_connection_id   
+iommu@fdee0800 no_connection_id   
+iommu@fdee0800 no_connection_id   
+iommu@fdee0800 no_connection_id   
+iommu@fdee0800 no_connection_id   
+iommu@fdef0800 no_connection_id   
+iommu@fdef0800 no_connection_id   
+iommu@fdef0800 no_connection_id   
+iommu@fdef0800 no_connection_id   
+iommu@fdf40f00 no_connection_id   
+iommu@fdf40f00 no_connection_id   
+iommu@fdf40f00 no_connection_id   
+iommu@fdf40f00 no_connection_id   
+iommu@fdf80800 no_connection_id   
+iommu@fdf80800 no_connection_id   
+iommu@fdf80800 no_connection_id   
+iommu@fdf80800 no_connection_id   
+iommu@fe043e00 no_connection_id   
+iommu@fe043e00 no_connection_id   
+jpegd@fded0000 no_connection_id   
+jpegd@fded0000 no_connection_id   
+mclk_i2s0_8ch_rx 0 0 0 1188000000
+mclk_i2s0_8ch_tx 0 0 0 1188000000
+mclk_i2s1_8ch_rx 0 0 0 12288000
+mclk_i2s1_8ch_tx 1 1 0 12288000
+mclk_i2s2_2ch 0 0 0 1188000000
+mclk_i2s3_2ch_rx 0 0 0 1188000000
+mclk_i2s3_2ch_tx 0 0 0 1188000000
+mclk_pdm 0 0 0 297000000
+mclk_spdif_8ch 0 0 0 1188000000
+mclk_spdif_8ch_frac 0 0 0 1188000000
+mclk_spdif_8ch_src 0 0 0 1188000000
+mpll 0 0 0 800000000
+nclk_nandc 0 0 0 148500000
+npll 0 1 0 1200000000
+pclk_bus 10 14 0 99000000
+pclk_can0 0 0 0 99000000
+pclk_can1 0 0 0 99000000
+pclk_can2 0 0 0 99000000
+pclk_core_pre 1 1 0 284571429
+pclk_core_pvtm 0 0 0 284571429
+pclk_cpu_boost 0 0 0 99000000
+pclk_csi2host1 0 0 0 99000000
+pclk_dsitx_0 1 3 0 74250000
+pclk_dsitx_1 1 3 0 74250000
+pclk_edp_ctrl 0 0 0 74250000
+pclk_edpphy_grf 0 1 0 99000000
+pclk_eink 0 0 0 99000000
+pclk_gmac0 0 0 0 99000000
+pclk_gmac1 0 0 0 99000000
+pclk_gpio0 1 1 0 100000000
+pclk_gpio1 1 1 0 99000000
+pclk_gpio2 1 1 0 99000000
+pclk_gpio3 1 1 0 99000000
+pclk_gpio4 1 1 0 99000000
+pclk_gpu_pre 0 1 0 33333334
+pclk_gpu_pvtm 0 0 0 33333334
+pclk_hdcp 0 0 0 74250000
+pclk_hdmi_host 0 0 0 74250000
+pclk_i2c0 0 1 0 100000000
+pclk_i2c1 0 0 0 99000000
+pclk_i2c2 0 1 0 99000000
+pclk_i2c3 0 1 0 99000000
+pclk_i2c4 0 0 0 99000000
+pclk_i2c5 0 1 0 99000000
+pclk_intmux 0 0 0 99000000
+pclk_mailbox 0 0 0 99000000
+pclk_mipicsiphy 0 0 0 99000000
+pclk_mipidsiphy0 1 2 0 99000000
+pclk_mipidsiphy1 1 2 0 99000000
+pclk_npu_pre 0 1 0 100000000
+pclk_npu_pvtm 0 0 0 100000000
+pclk_otpc_ns 0 0 0 148500000
+pclk_otpphy 0 0 0 99000000
+pclk_pcie20 0 0 0 99000000
+pclk_pcie30phy 0 0 0 99000000
+pclk_pcie30x1 0 0 0 99000000
+pclk_pcie30x2 0 0 0 99000000
+pclk_pdpmu 3 4 0 100000000
+pclk_php 1 1 0 99000000
+pclk_pipe 2 3 0 99000000
+pclk_pipephy0 0 0 0 99000000
+pclk_pipephy1 0 0 0 99000000
+pclk_pipephy2 0 0 0 99000000
+pclk_pmu 1 1 0 100000000
+pclk_pmupvtm 0 0 0 100000000
+pclk_pwm0 0 0 0 100000000
+pclk_pwm1 0 0 0 99000000
+pclk_pwm2 0 0 0 99000000
+pclk_pwm3 0 2 0 99000000
+pclk_rga_pre 0 1 0 99000000
+pclk_saradc 1 1 0 99000000
+pclk_scr 0 0 0 99000000
+pclk_spi0 0 0 0 99000000
+pclk_spi1 0 0 0 99000000
+pclk_spi2 0 0 0 99000000
+pclk_spi3 0 0 0 99000000
+pclk_timer 1 1 0 99000000
+pclk_top 3 4 0 99000000
+pclk_tsadc 1 1 0 99000000
+pclk_uart0 0 0 0 100000000
+pclk_uart1 0 0 0 99000000
+pclk_uart2 1 1 0 99000000
+pclk_uart3 0 0 0 99000000
+pclk_uart4 0 0 0 99000000
+pclk_uart5 0 0 0 99000000
+pclk_uart6 0 0 0 99000000
+pclk_uart7 0 0 0 99000000
+pclk_uart8 0 0 0 99000000
+pclk_uart9 0 0 0 99000000
+pclk_usb 5 5 0 99000000
+pclk_vi 0 1 0 99000000
+pclk_vo 2 3 0 74250000
+pclk_wdt_ns 1 1 0 99000000
+pclk_xpcs 0 0 0 99000000
+periphclk_core_pre 3 3 0 284571429
+phy@fe850000 no_connection_id   
+phy@fe850000 no_connection_id   
+phy@fe850000 no_connection_id   
+phy@fe860000 no_connection_id   
+phy@fe860000 no_connection_id   
+phy@fe860000 no_connection_id   
+pll_apll 1 1 0 1992000000
+pll_cpll 1 1 0 1000000000
+pll_dpll 1 1 0 460000000
+pll_gpll 1 1 0 1188000000
+pll_hpll 1 1 0 42099999
+pll_npll 1 2 0 1200000000
+pll_ppll 1 1 0 200000000
+pll_vpll 1 1 0 673500000
+power-domain@15 no_connection_id   
+power-domain@6 no_connection_id   
+power-domain@9 no_connection_id   
+ppll 1 1 0 200000000
+ppll_ph0 0 0 0 100000000
+ppll_ph180 0 0 0 100000000
+rk808-clkout1 0 0 0 32768
+rk808-clkout2 1 1 0 32768
+rk_rga@fdeb0000 no_connection_id   
+rk_rga@fdeb0000 no_connection_id   
+rk_rga@fdeb0000 no_connection_id   
+rkvdec@fdf80200 no_connection_id   
+rkvdec@fdf80200 no_connection_id   
+rkvdec@fdf80200 no_connection_id   
+rkvdec@fdf80200 no_connection_id   
+rkvdec@fdf80200 no_connection_id   
+rkvenc@fdf40000 no_connection_id   
+rkvenc@fdf40000 no_connection_id   
+rkvenc@fdf40000 no_connection_id   
+sclk_audpwm 0 0 0 99000000
+sclk_audpwm_frac 0 0 0 99000000
+sclk_audpwm_src 0 0 0 99000000
+sclk_core 2 2 0 1992000000
+sclk_core_src 2 2 0 1992000000
+sclk_sfc 0 0 0 99000000
+sclk_uart0 0 0 0 24000000
+sclk_uart0_div 0 0 0 200000000
+sclk_uart0_frac 0 0 0 200000000
+sclk_uart0_mux 0 0 0 24000000
+sclk_uart1 0 0 0 24000000
+sclk_uart1_mux 0 0 0 24000000
+sclk_uart2 1 1 0 24000000
+sclk_uart2_mux 1 1 0 24000000
+sclk_uart3 0 0 0 24000000
+sclk_uart3_mux 0 0 0 24000000
+sclk_uart4 0 0 0 24000000
+sclk_uart4_mux 0 0 0 24000000
+sclk_uart5 0 0 0 24000000
+sclk_uart5_mux 0 0 0 24000000
+sclk_uart6 0 0 0 24000000
+sclk_uart6_mux 0 0 0 24000000
+sclk_uart7 0 0 0 24000000
+sclk_uart7_mux 0 0 0 24000000
+sclk_uart8 0 0 0 24000000
+sclk_uart8_mux 0 0 0 24000000
+sclk_uart9 0 0 0 24000000
+sclk_uart9_mux 0 0 0 24000000
+sdmmc0_drv 0 0 0 148500000
+sdmmc0_sample 0 0 0 148500000
+sdmmc1_drv 0 0 0 12000000
+sdmmc1_sample 0 0 0 12000000
+sdmmc2_drv 0 0 0 50000000
+sdmmc2_sample 0 0 0 50000000
+tclk_emmc 1 1 0 24000000
+tclk_wdt_ns 1 1 0 24000000
+tsclk_core 1 1 0 142285715
+usb2-phy@fe8a0000 no_connection_id   
+usb2-phy@fe8b0000 no_connection_id   
+usb480m 0 0 0 480000000
+usb480m_phy 1 1 0 480000000
+usb@fd800000 no_connection_id   
+usb@fd800000 no_connection_id   
+usb@fd800000 no_connection_id   
+usb@fd800000 no_connection_id   
+usb@fd840000 no_connection_id   
+usb@fd840000 no_connection_id   
+usb@fd880000 no_connection_id   
+usb@fd880000 no_connection_id   
+usb@fd880000 no_connection_id   
+usb@fd880000 no_connection_id   
+usbdrd no_connection_id   
+vdpu@fdea0400 no_connection_id   
+vdpu@fdea0400 no_connection_id   
+vepu@fdee0000 no_connection_id   
+vepu@fdee0000 no_connection_id   
+vop@fe040000 no_connection_id   
+vop@fe040000 no_connection_id   
+vop@fe040000 no_connection_id   
+vop@fe040000 no_connection_id   
+vpll 1 1 0 673500000
+xin24m 24 27 0 24000000
+xin32k 0 0 0 32768
+xin_osc0_div 0 0 0 24000000
+xin_osc0_edpphy_g 0 0 0 24000000
+xin_osc0_half 0 0 0 12000000
+xin_osc0_mipidsiphy0_g 1 1 0 24000000
+xin_osc0_mipidsiphy1_g 1 1 0 24000000
+xin_osc0_usbphy0_g 1 1 0 24000000
+xin_osc0_usbphy1_g 1 1 0 24000000
+=== gpio
+ gpio-0 ( |wifi_reg ) out hi 
+ gpio-5 ( |enable ) out lo ACTIVE LOW
+ gpio-8 ( |enable1 ) out hi 
+ gpio-11 ( |reset ) out hi ACTIVE LOW
+ gpio-12 ( |reset ) out hi ACTIVE LOW
+ gpio-13 ( |GTP_RST_PORT ) in hi 
+ gpio-14 ( |GTP_INT_IRQ ) in hi IRQ 
+ gpio-15 ( |GTP_RST_PORT ) in hi 
+ gpio-16 ( |GTP_INT_IRQ ) in hi IRQ 
+ gpio-17 ( |enable ) out hi 
+ gpio-18 ( |enable1 ) out hi 
+ gpio-19 ( |HALL status ) in hi IRQ ACTIVE LOW
+ gpio-20 ( |battery_full ) out hi 
+ gpio-21 ( |battery_charging ) out lo 
+ gpio-22 ( |low_power ) out lo 
+ gpio-23 ( |enable ) out hi 
+ gpio-27 ( |bt_default_wake ) out hi 
+ gpio-28 ( |bt_default_wake_host) in hi IRQ 
+ gpio-29 ( |bt_default_reset ) out lo 
+ gpio-37 ( |i2s-lrck ) in lo 
+ gpio-77 ( |bt_default_rts ) out hi 
+ gpio-89 ( |GPIO RG_KEY ) in hi 
+ gpio-90 ( |GPIO BTN_THUMBL ) in hi 
+ gpio-91 ( |GPIO BTN_THUMBR ) in hi 
+ gpio-92 ( |GPIO DPAD-UP ) in hi 
+ gpio-93 ( |GPIO DPAD-DOWN ) in hi 
+ gpio-94 ( |GPIO DPAD-RIGHT ) in hi 
+ gpio-95 ( |GPIO DPAD-LEFT ) in hi 
+ gpio-96 ( |GPIO HALL ) in hi 
+ gpio-97 ( |volume down ) in hi IRQ ACTIVE LOW
+ gpio-98 ( |volume up ) in hi IRQ ACTIVE LOW
+ gpio-99 ( |GPIO BTN_TL ) in hi 
+ gpio-100 ( |GPIO BTN_TL2 ) in hi 
+ gpio-101 ( |GPIO BTN_TR ) in hi 
+ gpio-102 ( |GPIO BTN_TR2 ) in hi 
+ gpio-103 ( |GPIO BTN-X ) in hi 
+ gpio-104 ( |GPIO KEY BTN-A ) in hi 
+ gpio-105 ( |GPIO BTN_START ) in hi 
+ gpio-106 ( |GPIO BTN_SELECT ) in hi 
+ gpio-111 ( |GPIO BTN-Y ) in hi 
+ gpio-112 ( |GPIO BTN-B ) in hi 
+ gpio-113 ( |amux-en ) out hi 
+ gpio-114 ( |amux-sel-a ) out lo 
+ gpio-115 ( |amux-sel-b ) out hi 
+ gpio-116 ( |vibrator ) out lo 
+ gpio-130 ( |reset ) out hi ACTIVE LOW
+ gpio-131 ( |backlight_1_power ) out hi 
+ gpio-132 ( |backlight_0_power ) out hi 
+ gpio-146 ( |hp-det ) in lo IRQ 
+ gpio-147 ( |spk-ctl ) out lo 
+=== pinctrl
+Format: pin (name): mux_owner gpio_owner hog?
+Pinmux settings per pin
+pin 100 (gpio3-4): singleadc-joypad gpio3:100 function btns group btn-pins
+pin 101 (gpio3-5): singleadc-joypad gpio3:101 function btns group btn-pins
+pin 102 (gpio3-6): singleadc-joypad gpio3:102 function btns group btn-pins
+pin 103 (gpio3-7): singleadc-joypad gpio3:103 function btns group btn-pins
+pin 104 (gpio3-8): singleadc-joypad gpio3:104 function btns group btn-pins
+pin 105 (gpio3-9): singleadc-joypad gpio3:105 function btns group btn-pins
+pin 106 (gpio3-10): singleadc-joypad gpio3:106 function btns group btn-pins
+pin 11 (gpio0-11): fe060000.dsi.0 gpio0:11 function lcd group lcd-rst-gpio
+pin 111 (gpio3-15): singleadc-joypad gpio3:111 function btns group btn-pins
+pin 112 (gpio3-16): singleadc-joypad gpio3:112 function btns group btn-pins
+pin 113 (gpio3-17): singleadc-joypad gpio3:113 function btns group btn-pins
+pin 114 (gpio3-18): singleadc-joypad gpio3:114 function btns group btn-pins
+pin 115 (gpio3-19): singleadc-joypad gpio3:115 function btns group btn-pins
+pin 12 (gpio0-12): fe070000.dsi.0 gpio0:12 function lcd group lcd1-rst-gpio
+pin 13 (gpio0-13): 5-0014 gpio0:13 function tp group touch0-gt-gpio
+pin 130 (gpio4-2): sdio-pwrseq gpio4:130 function sdio-pwrseq group wifi-enable-h
+pin 131 (gpio4-3): gpio-backlight gpio4:131 function lcd group mipi-dsi1-pwr-en
+pin 132 (gpio4-4): gpio-backlight gpio4:132 function lcd group mipi-dsi0-pwr-en
+pin 14 (gpio0-14): 5-0014 gpio0:14 function tp group touch0-gt-gpio
+pin 146 (gpio4-18): rk817-sound gpio4:146 function headphone group hp-det
+pin 15 (gpio0-15): 3-0014 gpio0:15 function tp group touch1-gt-gpio
+pin 16 (gpio0-16): 3-0014 gpio0:16 function tp group touch1-gt-gpio
+pin 17 (gpio0-17): fe070000.dsi.0 gpio0:17 function lcd group lcd1-enable-gpio
+pin 18 (gpio0-18): fe070000.dsi.0 gpio0:18 function lcd group lcd1-enable-gpio
+pin 19 (gpio0-19): gpio-keys gpio0:19 function halls group gpio-hall
+pin 20 (gpio0-20): gpio-leds gpio0:20 function gpio-leds group leds-gpio
+pin 21 (gpio0-21): gpio-leds gpio0:21 function gpio-leds group leds-gpio
+pin 22 (gpio0-22): gpio-leds gpio0:22 function gpio-leds group leds-gpio
+pin 23 (gpio0-23): fe060000.dsi.0 gpio0:23 function lcd group lcd-enable-gpio
+pin 37 (gpio1-5): fe410000.i2s gpio1:37 function i2s1 group i2s1m0-lrcktx
+pin 5 (gpio0-5): vcc-sd gpio0:5 function vcc_sd group vcc-sd-h
+pin 8 (gpio0-8): fe060000.dsi.0 gpio0:8 function lcd group lcd-enable-gpio
+pin 89 (gpio2-25): singleadc-joypad gpio2:89 function btns group btn-pins
+pin 90 (gpio2-26): singleadc-joypad gpio2:90 function btns group btn-pins
+pin 91 (gpio2-27): singleadc-joypad gpio2:91 function btns group btn-pins
+pin 92 (gpio2-28): singleadc-joypad gpio2:92 function btns group btn-pins
+pin 93 (gpio2-29): singleadc-joypad gpio2:93 function btns group btn-pins
+pin 94 (gpio2-30): singleadc-joypad gpio2:94 function btns group btn-pins
+pin 95 (gpio2-31): singleadc-joypad gpio2:95 function btns group btn-pins
+pin 96 (gpio3-0): singleadc-joypad gpio3:96 function btns group btn-pins
+pin 97 (gpio3-1): gpio-keys gpio3:97 function keys group pwr-key
+pin 98 (gpio3-2): gpio-keys gpio3:98 function keys group pwr-key
+pin 99 (gpio3-3): singleadc-joypad gpio3:99 function btns group btn-pins
+=== cpufreq
+policy0 408000 600000 816000 1104000 1416000 1608000 1800000 1992000  gov=performance max=1992000
+=== devfreq
+fde60000.gpu 800000000 700000000 600000000 400000000 300000000 200000000 gov=performance
+fdf80200.rkvdec 400000000 gov=performance
+fe040000.vop 396000000 500000000 gov=performance
+=== thermal
+soc-thermal trips=75000,85000,115000,
+gpu-thermal trips=115000,
+battery trips=
+=== alsa
+ 0 [rockchiprk817  ]: rockchip-rk817 - rockchip-rk817
+                      rockchip-rk817
+
+
+
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+2
+2
+2
+2
+num
+=== mali
+Mali-G52 1 cores r1p0 0x07040002
+core_mask debug_command devfreq driver driver_override dvfs_period gpuinfo js_ctx_scheduling_mode js_scheduling_period js_softstop_always js_timeouts kprcs lp_mem_pool_max_size lp_mem_pool_size mem_pool_max_size mem_pool_size mempool misc modalias of_node pm_poweroff power power_policy private_gpu_mem reset_timeout scheduling soft_job_timeout subsystem supplier:i2c:0-0020 supplier:platform:fdd90000.power-management:power-controller supplier:platform:firmware:scmi supplier:regulator:regulator.7 total_gpu_mem uevent utilisation utilisation_period 
+=== modules
+8821cs
+=== misc
+__properties__ ashmem ashmem03799feb-4296-455a-a04d-18cc62d3ca5a ashmem_ignore_unset_prot_exec ashmem_ignore_unset_prot_read ashmem_unpinning_enable binder binderfs blkio block boringssl bus cgroup_info console cpu_dma_latency cpu_variant:arm64 cpuctl cpuset crypto device-mapper dm-user dma_heap dri event-log-tags fd fscklogs full fuse gpiochip0 gpiochip1 gpiochip2 gpiochip3 gpiochip4 gyrosensor hw_random hwbinder i2c-0 i2c-2 i2c-3 i2c-5 iio:device0 input kmsg kmsg_debug loop-control mali0 memcg mma8452_daemon mmcblk2rpmb mpp_service net null pmsg0 ppp ptmx pts random rfkill rga rtc0 snd socket stderr stdin stdout stune sw_sync sys tee0 teepriv0 tty ttyFIQ0 ttyS1 tun uhid uinput urandom usb-ffs usb_accessory userfaultfd vendor_storage vndbinder watchdog watchdog0 zero 
+=== procfs
+asound bluetooth bootconfig buddyinfo bus cgroups cmdline config.gz consoles cpuinfo crypto device-tree devices diskstats driver execdomains filesystems fs iep interrupts iomem ioports irq kallsyms key-users keys kmsg kpagecgroup kpagecount kpageflags loadavg locks meminfo misc modules mounts mpp_service net pagetypeinfo partitions pressure rk_dmabuf schedstat scsi self softirqs stat swaps sys sysrq-trigger thread-self timer_list tty uid_cputime uid_io uid_procstat uptime version vmallocinfo vmstat zoneinfo 
+=== sysctl-kernel
+arch bpf_stats_enabled cad_pid cap_last_cap core_pattern core_pipe_limit core_uses_pid ctrl-alt-del dmesg_restrict domainname firmware_config ftrace_dump_on_oops hardlockup_all_cpu_backtrace hardlockup_panic hostname hung_task_all_cpu_backtrace hung_task_check_count hung_task_check_interval_secs hung_task_panic hung_task_timeout_secs hung_task_warnings keys kptr_restrict max_lock_depth max_rcu_stall_to_panic modprobe modules_disabled ngroups_max nmi_watchdog oops_all_cpu_backtrace oops_limit osrelease ostype overflowgid overflowuid panic panic_on_oops panic_on_rcu_stall panic_on_warn panic_print perf_cpu_time_max_percent perf_event_max_contexts_per_stack perf_event_max_sample_rate perf_event_max_stack perf_event_mlock_kb perf_event_paranoid perf_user_access pid_max poweroff_cmd print-fatal-signals printk printk_delay printk_devkmsg printk_ratelimit printk_ratelimit_burst pty random randomize_va_space real-root-dev sched_child_runs_first sched_deadline_period_max_us sched_deadline_period_min_us sched_energy_aware sched_pelt_multiplier sched_rr_timeslice_ms sched_rt_period_us sched_rt_runtime_us sched_schedstats sched_util_clamp_max sched_util_clamp_min sched_util_clamp_min_rt_default seccomp soft_watchdog softlockup_all_cpu_backtrace softlockup_panic sysctl_writes_strict sysrq tainted task_delayacct threads-max timer_migration traceoff_on_warning tracepoint_printk unprivileged_bpf_disabled usermodehelper version warn_limit watchdog watchdog_cpumask watchdog_thresh 
+=== filesystems
+nodev	sysfs nodev	tmpfs nodev	bdev nodev	proc nodev	cgroup nodev	cgroup2 nodev	cpuset nodev	devtmpfs nodev	configfs nodev	debugfs nodev	tracefs nodev	sockfs nodev	bpf nodev	pipefs nodev	ramfs nodev	devpts 	ext3 	ext2 	ext4 	vfat 	msdos 	exfat 	iso9660 nodev	cifs nodev	smb3 	ntfs 	fuseblk nodev	fuse nodev	fusectl nodev	overlay nodev	incremental-fs 	udf 	f2fs 	erofs nodev	selinuxfs nodev	binder nodev	pstore nodev	functionfs 
+=== dt-hash
+d41d8cd98f00b204e9800998ecf8427e  -
+=== cmdline
+storagemedia=emmc androidboot.storagemedia=emmc androidboot.mode=normal  androidboot.dtb_idx=0 androidboot.dtbo_idx=0  androidboot.verifiedbootstate=orange androidboot.serialno=1dd419fe02b893c5 console=ttyFIQ0 firmware_class.path=/vendor/etc/firmware init=/init rootwait ro loop.max_part=7 printk.devkmsg=on kvm-arm.mode=none androidboot.console=ttyFIQ0 androidboot.wificountrycode=CN androidboot.hardware=rk30board androidboot.boot_devices=fe310000.sdhci,fe330000.nandc earlycon=uart8250,mmio32,0xfe660000 androidboot.fwver=ddr-v1.23-03ea844c5d,spl-v1.14,bl31-v1.45,bl32-v2.16,uboot-09/29/2026
+=== dmesg-warn
+(NULL device *): Direct firmware load for PHY_REG_PG.txt failed with error -2
+LibBpfLoader: New bpf prog load reusing prog /sys/fs/bpf/netd_shared/prog_netd_cgroupskb_egress_stats, ret: 22 (no error)
+LibBpfLoader: New bpf prog load reusing prog /sys/fs/bpf/netd_shared/prog_netd_cgroupskb_ingress_stats, ret: 20 (no error)
+LibBpfLoader: bpf_create_map name tether_error_map, ret: 6
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/block.o (bind4_block_port) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/block.o (bind6_block_port) returned fd: 8 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/clatd.o (schedcls_egress4_clat_rawip) returned fd: 10 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/clatd.o (schedcls_ingress6_clat_ether$4_14) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/clatd.o (schedcls_ingress6_clat_rawip$4_14) returned fd: 9 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/net_shared/dscpPolicy.o (schedcls_set_dscp_ether) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (cgroupskb_egress_stats$trace) returned fd: 21 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (cgroupskb_ingress_stats$trace) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (cgroupsock_inet_create) returned fd: 28 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (schedact_ingress_account) returned fd: 25 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (skfilter_allowlist_xtbpf) returned fd: 26 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (skfilter_denylist_xtbpf) returned fd: 27 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (skfilter_egress_xtbpf) returned fd: 23 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/netd_shared/netd.o (skfilter_ingress_xtbpf) returned fd: 24 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_downstream4_ether$5_8) returned fd: 21 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_downstream4_rawip$5_8) returned fd: 19 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_downstream6_ether) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_downstream6_rawip$4_14) returned fd: 17 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_upstream4_ether$5_8) returned fd: 22 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_upstream4_rawip$5_8) returned fd: 20 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_upstream6_ether) returned fd: 16 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (schedcls_tether_upstream6_rawip$4_14) returned fd: 18 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (xdp_tether_downstream_ether) returned fd: 23 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (xdp_tether_downstream_rawip) returned fd: 24 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (xdp_tether_upstream_ether) returned fd: 25 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/offload@btf.o (xdp_tether_upstream_rawip) returned fd: 26 (no error)
+LibBpfLoader: bpf_prog_load lib call for /apex/com.android.tethering/etc/bpf/test@btf.o (xdp_drop_ipv4_udp_ether) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/bpfRingbufProg.o (skfilter_ringbuf_test) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/fuseMedia.o (fuse_media) returned fd: 6 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/gpuMem.o (tracepoint_gpu_mem_gpu_mem_total) returned fd: 7 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/gpuWork.o (tracepoint_power_gpu_work_period) returned fd: 8 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/timeInState.o (tracepoint_power_cpu_frequency) returned fd: 22 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/timeInState.o (tracepoint_sched_sched_process_free) returned fd: 23 (no error)
+LibBpfLoader: bpf_prog_load lib call for /system/etc/bpf/timeInState.o (tracepoint_sched_sched_switch) returned fd: 7 (no error)
+LibBpfLoader: map /sys/fs/bpf/tethering/map_offload_tether_error_map id 3
+[WLAN_RFKILL]: wlan_platdata_parse_dt: The ref_wifi_clk not found !
+apexd: Failed to delete dm-device com.android.apex.cts.shim
+apexd: Failed to delete dm-device com.android.btservices
+apexd: Failed to delete dm-device com.android.devicelock
+apexd: Failed to delete dm-device com.android.healthfitness
+apexd: Failed to delete dm-device com.android.i18n
+apexd: Failed to delete dm-device com.android.os.statsd
+apexd: Failed to delete dm-device com.android.rkpd
+apexd: Failed to delete dm-device com.android.runtime
+apexd: Failed to delete dm-device com.android.sdkext
+apexd: Failed to delete dm-device com.android.tzdata
+apexd: Failed to delete dm-device com.android.virt
+apexd: Failed to delete dm-device com.android.vndk.v34
+apexd: Failed to delete dm-device com.rockchip.hardware.sensors
+arm-scmi firmware:scmi: Failed. SCMI protocol 17 not active.
+arm-scmi firmware:scmi: Failed. SCMI protocol 22 not active.
+binder: 1252:641 reply target not found
+binder: 641:1252 transaction reply to 0:0 failed 88466/29189/0, code 0 size 4-0 line 3288
+binder: send failed reply for transaction 88465, target dead
+cacheinfo: Unable to detect cache hierarchy for CPU 0
+cacheinfo: Unable to detect cache hierarchy for CPU 1
+cacheinfo: Unable to detect cache hierarchy for CPU 2
+cacheinfo: Unable to detect cache hierarchy for CPU 3
+capability: warning: `wpa_supplicant' uses 32-bit capabilities (legacy support in use)
+cfg80211: failed to load regulatory.db
+cutils-trace: Error opening trace file: No such file or directory (2)
+dw-apb-uart X.serial: failed to request DMA, use interrupt mode
+fiq_debugger fiq_debugger.0: error -ENXIO: IRQ fiq not found
+fiq_debugger fiq_debugger.0: error -ENXIO: IRQ wakeup not found
+fsck.f2fs: Info: No error was reported
+gsensor_icm4260x 2-0068: failed to read accel offset data from storage
+gsensor_sc7u22 2-0018: sensor_chip_init:fail to read sc7u22_acc devid:0x1
+gyro_icm4260x 2-0068-1: failed to read gyro offset data from storage
+gyro_sc7u22 2-0018-1: sensor_chip_init:fail to read sc7u22_gyro devid:0x1
+healthd: BatteryCycleCountPath not found
+healthd: batteryChargeTimeToFullNowPath. not found
+healthd: batteryFirstUsageDatePath not found
+healthd: batteryHealthStatusPath not found
+healthd: batteryManufacturingDatePath not found
+healthd: batteryStateOfHealthPath not found
+healthd: chargingPolicyPath not found
+healthd: chargingStatePath not found
+i2c i2c-2: sensor_probe failed -2
+init: ... started service 'exec 16 (/system/bin/flags_health_check BOOT_FAILURE)' has pid 587
+init: /system/bin/secilc: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+init: /system/bin/secilc: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+init: Command 'chmod 0444 /dev/cpu_variant:${ro.bionic.2nd_arch}' action=init (/system/etc/init/hw/init.rc:456) took 0ms and failed: property 'ro.bionic.2nd_arch' doesn't exist while expanding '/dev/cpu_variant:${ro.bionic.2nd_arch}'
+init: Command 'copy /system/etc/ftrace_synthetic_events.conf /sys/kernel/debug/tracing/synthetic_events' action=late-init (/system/etc/init/atrace.rc:295) took 0ms and failed: Could not write to output file '/sys/kernel/debug/tracing/synthetic_events': open() failed: Permission denied
+init: Command 'copy /system/etc/ftrace_synthetic_events.conf /sys/kernel/tracing/synthetic_events' action=late-init (/system/etc/init/atrace.rc:294) took 1ms and failed: Could not write to output file '/sys/kernel/tracing/synthetic_events': open() failed: Permission denied
+init: Command 'copy /system/etc/prop.default /dev/urandom' action=init (/system/etc/init/hw/init.rc:102) took 0ms and failed: Could not read input file '/system/etc/prop.default': open() failed: No such file or directory
+init: Command 'exec_start update_verifier_nonencrypted' action=ro.crypto.state=encrypted && ro.crypto.type=file && zygote-start (/system/etc/init/hw/init.rc:1093) took 0ms and failed: Service not found
+init: Command 'mkdir /acct/uid' action=early-init (/system/etc/init/hw/init.rc:30) took 0ms and failed: mkdir() failed on /acct/uid: Read-only file system
+init: Command 'mount debugfs debugfs /sys/kernel/debug' action=ro.product.debugfs_restrictions.enabled=true && early-init (/system/etc/init/init-debug.rc:11) took 0ms and failed: mount() failed: Device or resource busy
+init: Command 'rm /data/misc/perfetto-traces/.guardraildata' action=post-fs-data (/system/etc/init/perfetto.rc:74) took 0ms and failed: unlink() failed: No such file or directory
+init: Command 'start audio_proxy_service' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:40) took 0ms and failed: service audio_proxy_service not found
+init: Command 'start vendor.audio-effect-hal-aidl' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:38) took 0ms and failed: service vendor.audio-effect-hal-aidl not found
+init: Command 'start vendor.audio-hal-4-0-msd' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:39) took 0ms and failed: service vendor.audio-hal-4-0-msd not found
+init: Command 'start vendor.audio-hal-aidl' action=init.svc.audioserver=running (/system/etc/init/audioserver.rc:37) took 0ms and failed: service vendor.audio-hal-aidl not found
+init: Command 'start vendor.keymaster-4-0' action=init (/vendor/etc/init/hw/init.mount_all.rc:6) took 0ms and failed: service vendor.keymaster-4-0 not found
+init: Command 'start vendor.rockchip_hwcproxy_aidl' action=late-fs (/vendor/etc/init/hw/init.mount_all.rc:18) took 0ms and failed: service vendor.rockchip_hwcproxy_aidl not found
+init: Command 'start zygote_secondary' action=ro.crypto.state=encrypted && ro.crypto.type=file && zygote-start (/system/etc/init/hw/init.rc:1097) took 0ms and failed: service zygote_secondary not found
+init: Command 'stop ril-daemon' action=ro.boot.noril=true (/vendor/etc/init/hw/init.rk30board.rc:270) took 0ms and failed: service ril-daemon not found
+init: Command 'verity_update_state' action=post-fs-data (/system/etc/init/hw/init.rc:1068) took 0ms and failed: fs_mgr_load_verity_state() failed
+init: Command 'write /dev/blkio/background/blkio.group_idle 0' action=init (/system/etc/init/hw/init.rc:242) took 0ms and failed: Unable to write to file '/dev/blkio/background/blkio.group_idle': open() failed: Permission denied
+init: Command 'write /dev/blkio/background/blkio.weight 200' action=init (/system/etc/init/hw/init.rc:239) took 0ms and failed: Unable to write to file '/dev/blkio/background/blkio.weight': open() failed: Permission denied
+init: Command 'write /dev/blkio/blkio.group_idle 0' action=init (/system/etc/init/hw/init.rc:241) took 0ms and failed: Unable to write to file '/dev/blkio/blkio.group_idle': open() failed: Permission denied
+init: Command 'write /dev/blkio/blkio.weight 1000' action=init (/system/etc/init/hw/init.rc:238) took 0ms and failed: Unable to write to file '/dev/blkio/blkio.weight': open() failed: Permission denied
+init: Command 'write /dev/cpu_variant:${ro.bionic.2nd_arch} ${ro.bionic.2nd_cpu_variant}' action=init (/system/etc/init/hw/init.rc:455) took 0ms and failed: property 'ro.bionic.2nd_arch' doesn't exist while expanding '/dev/cpu_variant:${ro.bionic.2nd_arch}'
+init: Command 'write /sys/kernel/debug/sched_features NO_ENERGY_AWARE' action=boot (/vendor/etc/init/hw/init.rk356x.rc:39) took 0ms and failed: Unable to write to file '/sys/kernel/debug/sched_features': open() failed: Permission denied
+init: Command 'write /sys/module/pm_domains/parameters/keepon_startup 0' action=boot (/vendor/etc/init/hw/init.rk30board.rc:238) took 1ms and failed: Unable to write to file '/sys/module/pm_domains/parameters/keepon_startup': open() failed: Permission denied
+init: Could not create socket 'pdx/system/vr/display/client': Failed to bind socket 'pdx/system/vr/display/client': No such file or directory
+init: Could not create socket 'pdx/system/vr/display/manager': Failed to bind socket 'pdx/system/vr/display/manager': No such file or directory
+init: Could not create socket 'pdx/system/vr/display/vsync': Failed to bind socket 'pdx/system/vr/display/vsync': No such file or directory
+init: Could not open file '/d/mmc0/mmc0:0001/ext_csd': Failed to open file '/d/mmc0/mmc0:0001/ext_csd': No such file or directory
+init: Could not start service 'up_eth0' as part of class 'main': File /system/bin/busybox(labeled "u:object_r:system_file:s0") has incorrect label or no domain transition from u:r:init:s0 to another SELinux domain defined. Have you configured your service correctly? https://source.android.com/security/selinux/device-policy#label_new_services_and_address_denials. Note: this error shows up even in permissive mode in order to make auditing denials possible.
+init: Do not have permissions to set 'persist.bluetooth.btsnooplogmode' to 'disable' in property file '/vendor/build.prop': Property type check failed, value doesn't match expected type 'enum empty disabled filtered full'
+init: Error: Apex SEPolicy failed signature check
+init: Failed to copy /avb into /metadata/gsi/dsu/avb/: No such file or directory
+init: Failed to open package /system/etc/selinux/apex/SEPolicy.zip: No such file or directory
+init: Failed to read vbmeta partitions.
+init: SVC_EXEC service 'exec 16 (/system/bin/flags_health_check BOOT_FAILURE)' pid 587 (uid 1000 gid 1000+0 context default) started; waiting...
+init: Sending signal 9 to service 'exec 16 (/system/bin/flags_health_check BOOT_FAILURE)' (pid 587) process group...
+init: Service 'exec 16 (/system/bin/flags_health_check BOOT_FAILURE)' (pid 587) exited with status 0 waiting took 0.144000 seconds
+init: Unable to open /lib/modules, skipping module loading.
+init: Unable to read config file '/init.rk30board.rc': open() failed: No such file or directory
+init: Unable to read config file '/odm/etc/init': open() failed: No such file or directory
+init: Unable to read config file '/product/etc/init': open() failed: No such file or directory
+init: Unable to read config file '/system_ext/etc/init': open() failed: No such file or directory
+init: Unable to read config file '/vendor/etc/init/hw/init.box.samba.rc': open() failed: No such file or directory
+init: Unable to read config file '/vendor/etc/init/hw/init.car.rc': open() failed: No such file or directory
+init: Unable to read config file '/vendor/etc/init/hw/init.debug.rc': open() failed: No such file or directory
+init: Unable to read config file '/vendor/etc/init/hw/init.optee.rc': open() failed: No such file or directory
+init: Unable to read config file '/vendor/etc/init/hw/init.rvcam.rc': open() failed: No such file or directory
+init: Unable to set property 'dev.mnt.blk.debug_ramdisk..magisk.modules' from uid:0 gid:0 pid:1: Illegal property name
+init: Unable to set property 'dev.mnt.dev.debug_ramdisk..magisk.modules' from uid:0 gid:0 pid:1: Illegal property name
+init: Unable to set property 'dev.mnt.rootdisk.debug_ramdisk..magisk.modules' from uid:0 gid:0 pid:1: Illegal property name
+init: Unable to set property 'ro.logd.kernel' from uid:1036 gid:1036 pid:217: Read-only property was already set
+init: [libfs_mgr] ReadFstabFromDt(): failed to read fstab from dt
+init: failed to set task profiles
+init: starting service 'exec 16 (/system/bin/flags_health_check BOOT_FAILURE)'...
+libprocessgroup: Failed to apply CameraServicePerformance process profile
+libprocessgroup: Failed to apply HighPerformance process profile
+libprocessgroup: Failed to apply MaxPerformance process profile
+libprocessgroup: Failed to mount optional controller schedtune: Invalid argument
+libprocessgroup: SetCgroup::ExecuteForProcess: failed to open /dev/stune/camera-daemon/cgroup.procs: No such file or directory
+libprocessgroup: SetCgroup::ExecuteForProcess: failed to open /dev/stune/foreground/cgroup.procs: No such file or directory
+libprocessgroup: SetCgroup::ExecuteForProcess: failed to open /dev/stune/top-app/cgroup.procs: No such file or directory
+logd: FrameworkListener: read() failed (Connection reset by peer)
+mali X.gpu: Error -22, no DT entry: mali-simple-power-model.dynamic-coefficient = 1*[0]
+mali X.gpu: Error -22, no DT entry: mali-simple-power-model.static-coefficient = 1*[0]
+mali X.gpu: Error -22, no DT entry: mali-simple-power-model.thermal-zone = ''
+mali X.gpu: Error -22, no DT entry: mali-simple-power-model.ts = 4*[0]
+mpp_rkvdec2 X.rkvdec: shared_niu_a is not found!
+mpp_rkvdec2 X.rkvdec: shared_niu_h is not found!
+panel-simple-dsi X.dsi.0: supply power not found, using dummy regulator
+platform regulatory.0: Direct firmware load for regulatory.db failed with error -2
+pwm-backlight backlight1: supply power not found, using dummy regulator
+pwm-backlight backlight: supply power not found, using dummy regulator
+rockchip,bus bus-npu: Failed to get leakage
+rockchip-dmc dmc: Failed to find opp for X Hz
+rockchip-dmc dmc: failed to get vop pn to msch rl
+rockchip-dmc: probe of dmc failed with error -34
+rockchip-drm display-subsystem: [drm] run display error_event monitor
+sensor_calibration_data_read failed
+servicemanager: Tried to start aidl service SurfaceFlingerAIDL as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+servicemanager: Tried to start aidl service android.hardware.power.IPower/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+servicemanager: Tried to start aidl service android.system.keystore2.IKeystoreService/default as a lazy service, but was unable to. Usually this happens when a service is not installed, but if the service is intended to be used as a lazy service, then it may be configured incorrectly.
+ueventd: Unable to read config file '/odm/etc/ueventd.rc': open() failed: No such file or directory
+ueventd: Unable to read config file '/vendor/etc/ueventd.car.rc': open() failed: No such file or directory
+vold: Error getting bootctrl v1.0 module.
+vold: keystore2 Keystore earlyBootEnded returned service specific error: -68
