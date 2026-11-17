@@ -26,6 +26,14 @@
 #define DBG(args...)
 #endif
 
+/*
+ * Headphone-insert state shared with the singleadc-joypad driver, which reads
+ * it to gate the external speaker PA gpio (Anbernic cross-driver global). Set
+ * by the codec's headphone-detect path; 0 = no headphone (speaker enabled).
+ */
+int rk817_hp_inserted;
+EXPORT_SYMBOL(rk817_hp_inserted);
+
 /* For route */
 #define RK817_CODEC_PLAYBACK	1
 #define RK817_CODEC_CAPTURE	2
