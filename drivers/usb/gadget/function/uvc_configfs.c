@@ -1396,12 +1396,6 @@ static const struct config_item_type uvcg_frame_type2 = {
 	.ct_owner	= THIS_MODULE,
 };
 
-static const struct config_item_type uvcg_frame_type2 = {
-	.ct_item_ops    = &uvcg_config_item_ops,
-	.ct_attrs       = uvcg_frame_attrs2,
-	.ct_owner       = THIS_MODULE,
-};
-
 static struct config_item *uvcg_frame_make(struct config_group *group,
 					   const char *name)
 {
