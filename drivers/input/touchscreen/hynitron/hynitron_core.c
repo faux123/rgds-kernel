@@ -1,4 +1,4 @@
-/* noinline on tpd_down/tpd_up/cst3xx_touch_down/cst3xx_touch_up/hyn_find_fw_idx: stock keeps them out of line (t symbols @ffffffc008cc2e2c, 2dcc, 2d84, hyn_find_fw_idx @ffffffc008cc4ca0). */
+/* noinline on tpd_down/tpd_up/cst3xx_touch_up/hyn_find_fw_idx (cst3xx_touch_down is left to the compiler: stock inlines one of its two call sites): stock keeps them out of line (t symbols @ffffffc008cc2e2c, 2dcc, 2d84, hyn_find_fw_idx @ffffffc008cc4ca0). */
 
 /*****************************************************************************
 *
@@ -609,7 +609,7 @@ static int hyn_irq_registration(struct i2c_client *client)
     return 0;
 }
 
-static noinline void cst3xx_touch_down(struct input_dev *input_dev,s32 id,s32 x,s32 y,s32 w)
+static void cst3xx_touch_down(struct input_dev *input_dev,s32 id,s32 x,s32 y,s32 w)
 {
     s32 temp_w = (w>>3);
 	
@@ -708,7 +708,6 @@ static void cst3xx_touch_report(struct work_struct *work)
 	buf[0] = 0xD0;
 	buf[1] = 0x00;
 	ret = cst3xx_i2c_read_register(hyn_ts_data->client, buf, 7);
-	printk("cst3xx_i2c_read_register: %d, %d, %d, %d, %d, %d, %d\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
 	if(ret < 0) {
 		HYN_ERROR("  iic read touch point data failed.\n");
 		goto OUT_PROCESS;
