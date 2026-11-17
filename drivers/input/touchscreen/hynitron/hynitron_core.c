@@ -237,7 +237,7 @@ static void hyn_show_touch_buffer(u8 *buf, int point_num)
 
 
 
-#if (!HYN_MT_PROTOCOL_B_EN)
+#if (!HYN_MT_PROTOCOL_B_EN) || HYN_CST8XX_PROTOCOL_A
 static noinline void tpd_down(int x, int y, int p, int id)
 {
     if ((id < 0) || (id > 9))
@@ -973,7 +973,7 @@ static void cst8xx_touch_report(struct work_struct *work)
     int i = 0;
     int ret;
 
-#if HYN_MT_PROTOCOL_B_EN
+#if HYN_MT_PROTOCOL_B_EN && !HYN_CST8XX_PROTOCOL_A
     struct ts_event pevent;
 #else
     struct touch_info  cinfo, pinfo;
@@ -987,7 +987,7 @@ static void cst8xx_touch_report(struct work_struct *work)
         for (i = 0; i < HYN_MAX_POINTS; i++)
             finfo.p[i] = 1;
     }
-#if !HYN_MT_PROTOCOL_B_EN
+#if !HYN_MT_PROTOCOL_B_EN || HYN_CST8XX_PROTOCOL_A
     memset(&cinfo, 0, sizeof(struct touch_info));
     memset(&pinfo, 0, sizeof(struct touch_info));
 #endif
@@ -1006,7 +1006,7 @@ static void cst8xx_touch_report(struct work_struct *work)
 #endif
 
 		
-#if HYN_MT_PROTOCOL_B_EN
+#if HYN_MT_PROTOCOL_B_EN && !HYN_CST8XX_PROTOCOL_A
         {
             ret = hyn_read_touchdata(&pevent);
             if (ret == 0)
