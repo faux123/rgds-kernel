@@ -605,6 +605,16 @@ config SND_SOC_ALC5632
 	tristate
 	depends on I2C
 
+config SND_SOC_AW87391
+	tristate "SoC Audio for Awinic AW87391 speaker PA"
+	depends on I2C
+	select REGMAP_I2C
+	default SND_SOC_RK817
+	help
+	  Awinic AW87391 speaker PAs (left/right) on the Anbernic RG DS.
+	  Stock builds them in with the RK817 codec; stock config has no
+	  symbol for them, hence the default.
+
 config SND_SOC_AW8738
 	tristate "Awinic AW8738 Audio Amplifier"
 	select GPIOLIB
