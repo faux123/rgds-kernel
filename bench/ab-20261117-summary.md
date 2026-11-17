@@ -1,45 +1,45 @@
 
 ### 0 background hogs (n = 8 stock CFS arms, 8 BORE arms)
-| Metric | Stock CFS median [IQR] | BORE median [IQR] | Change | IQRs overlap |
+| Metric | Stock CFS median [IQR] (min..max) | BORE median [IQR] (min..max) | Change | IQRs overlap |
 |---|---|---|---|---|
-| wakeup latency p50 (us) | 61.7 [61.7..61.8] | 61.8 [61.7..61.8] | +0.1% | yes |
-| wakeup latency p99 (us) | 83.0 [76.0..104.4] | 79.1 [76.2..86.8] | -4.8% | yes |
-| wakeup latency p99.9 (us) | 173.2 [148.3..237.0] | 168.0 [128.8..267.8] | -3.0% | yes |
-| wakeup latency max (us) | 517.9 [277.1..3529.1] | 564.7 [381.0..1428.7] | +9.0% | yes |
-| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 6000.2 [6000.2..6000.2] | 6000.2 [6000.2..6000.2] | +0.0% | yes |
-| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 6004.4 [6000.5..6126.5] | 6000.5 [6000.5..6002.2] | -0.1% | yes |
-| 60 Hz frames missed (%) | 0.0 [0.0..0.0] | 0.0 [0.0..0.0] |  | yes |
-| 100 fork+exec (ms) | 2513.2 [2502.6..2880.3] | 2508.2 [2498.8..2530.3] | -0.2% | yes |
-| SoC temperature at arm start (C) | 55.2 [53.8..59.4] | 55.6 [52.5..58.3] | +0.6% | yes |
+| wakeup latency p50 (us) | 61.7 [61.7..61.8] (61.6..75.2) | 61.8 [61.7..61.8] (61.6..61.9) | +0.1% | yes |
+| wakeup latency p99 (us) | 83.0 [75.5..96.0] (73.4..1401.3) | 79.1 [75.8..83.8] (74.5..106.1) | -4.8% | yes |
+| wakeup latency p99.9 (us) | 173.2 [146.0..214.9] (121.2..6841.9) | 168.0 [128.5..255.9] (109.3..502.2) | -3.0% | yes |
+| wakeup latency max (us) | 517.9 [275.3..1426.2] (187.5..8751.8) | 564.7 [368.0..852.0] (135.0..2131.2) | +9.0% | yes |
+| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 6000.2 [6000.2..6000.2] (6000.2..6000.2) | 6000.2 [6000.2..6000.2] (6000.2..6000.2) | +0.0% | yes |
+| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 6004.4 [6000.5..6038.1] (6000.5..9482.4) | 6000.5 [6000.5..6000.9] (6000.5..6040.7) | -0.1% | yes |
+| 60 Hz frames missed (%) | 0.0 [0.0..0.0] (0.0..0.0) | 0.0 [0.0..0.0] (0.0..0.0) | n/a (base 0) | yes |
+| 100 fork+exec (ms) | 2513.2 [2501.4..2623.3] (2474.9..5007.9) | 2508.2 [2496.3..2520.5] (2487.4..2563.0) | -0.2% | yes |
+| SoC temperature at arm start (C) | 55.2 [53.1..57.8] (46.7..60.0) | 55.6 [50.6..57.5] (40.6..60.0) | +0.6% | yes |
 
 ### 4 background hogs (n = 8 stock CFS arms, 8 BORE arms)
-| Metric | Stock CFS median [IQR] | BORE median [IQR] | Change | IQRs overlap |
+| Metric | Stock CFS median [IQR] (min..max) | BORE median [IQR] (min..max) | Change | IQRs overlap |
 |---|---|---|---|---|
-| wakeup latency p50 (us) | 61.0 [60.2..64.2] | 60.5 [60.3..61.9] | -0.7% | yes |
-| wakeup latency p99 (us) | 232.4 [69.7..4535.2] | 98.3 [89.9..327.9] | -57.7% | yes |
-| wakeup latency p99.9 (us) | 1510.0 [564.5..7919.3] | 1025.4 [652.5..3501.3] | -32.1% | yes |
-| wakeup latency max (us) | 2418.1 [1502.5..8847.7] | 2775.2 [1951.1..5276.7] | +14.8% | yes |
-| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 6000.2 [6000.2..6000.2] | 6000.2 [6000.2..6000.2] | +0.0% | yes |
-| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 6000.8 [6000.5..6003.4] | 6000.5 [6000.5..6022.9] | -0.0% | yes |
-| 60 Hz frames missed (%) | 0.0 [0.0..0.0] | 0.0 [0.0..0.0] |  | yes |
-| 100 fork+exec (ms) | 2882.1 [2834.3..3777.8] | 2758.4 [2684.3..2819.3] | -4.3% | no |
-| background throughput during latency test (kiter/s) | 1083.5 [1039.0..1098.3] | 1088.8 [1083.8..1096.4] | +0.5% | yes |
-| background throughput during frame test (kiter/s) | 972.9 [946.1..994.0] | 999.0 [997.7..1001.7] | +2.7% | no |
-| background throughput during fork test (kiter/s) | 869.0 [820.2..897.6] | 868.4 [865.0..876.9] | -0.1% | yes |
-| SoC temperature at arm start (C) | 53.1 [51.2..57.2] | 52.5 [50.0..56.1] | -1.2% | yes |
+| wakeup latency p50 (us) | 61.0 [60.2..62.5] (60.0..73.8) | 60.5 [60.3..61.8] (60.2..65.1) | -0.7% | yes |
+| wakeup latency p99 (us) | 232.4 [69.7..1496.7] (67.0..11374.1) | 98.3 [89.9..272.6] (68.3..5600.0) | -57.7% | yes |
+| wakeup latency p99.9 (us) | 1510.0 [446.6..3654.2] (83.4..15599.8) | 1025.4 [570.6..2005.7] (213.2..14029.0) | -32.1% | yes |
+| wakeup latency max (us) | 2418.1 [1177.8..5078.1] (114.0..16397.6) | 2775.2 [1901.2..3902.3] (1008.5..17541.7) | +14.8% | yes |
+| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 6000.2 [6000.2..6000.2] (6000.2..6000.2) | 6000.2 [6000.2..6000.2] (6000.2..6000.2) | +0.0% | yes |
+| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 6000.8 [6000.5..6001.6] (6000.5..17414.2) | 6000.5 [6000.5..6006.1] (6000.5..31247.4) | -0.0% | yes |
+| 60 Hz frames missed (%) | 0.0 [0.0..0.0] (0.0..1.4) | 0.0 [0.0..0.0] (0.0..3.1) | n/a (base 0) | yes |
+| 100 fork+exec (ms) | 2882.1 [2832.3..3399.8] (2734.4..5752.0) | 2758.4 [2677.3..2811.8] (2586.8..5690.3) | -4.3% | no |
+| background throughput during latency test (kiter/s) | 1083.5 [982.2..1093.4] (737.8..1098.3) | 1088.8 [1081.9..1094.8] (800.7..1098.9) | +0.5% | yes |
+| background throughput during frame test (kiter/s) | 972.9 [944.1..993.3] (746.3..1000.9) | 999.0 [996.1..1001.0] (642.7..1011.7) | +2.7% | no |
+| background throughput during fork test (kiter/s) | 869.0 [817.7..884.2] (642.0..902.1) | 868.4 [864.6..872.0] (530.5..877.6) | -0.1% | yes |
+| SoC temperature at arm start (C) | 53.1 [49.7..56.0] (42.5..60.0) | 52.5 [49.9..55.3] (48.9..56.7) | -1.2% | yes |
 
 ### 16 background hogs (n = 8 stock CFS arms, 8 BORE arms)
-| Metric | Stock CFS median [IQR] | BORE median [IQR] | Change | IQRs overlap |
+| Metric | Stock CFS median [IQR] (min..max) | BORE median [IQR] (min..max) | Change | IQRs overlap |
 |---|---|---|---|---|
-| wakeup latency p50 (us) | 60.7 [60.5..62.1] | 60.8 [60.8..62.2] | +0.2% | yes |
-| wakeup latency p99 (us) | 113.3 [85.0..492.8] | 96.0 [89.7..225.2] | -15.3% | yes |
-| wakeup latency p99.9 (us) | 1836.1 [423.6..3529.4] | 1128.0 [856.5..3275.0] | -38.6% | yes |
-| wakeup latency max (us) | 3258.8 [1004.5..5543.5] | 2451.5 [1637.3..7181.3] | -24.8% | yes |
-| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 12129.7 [11997.7..12342.8] | 6000.2 [6000.2..6000.2] | -50.5% | no |
-| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 25650.7 [24894.6..29754.1] | 6073.4 [6000.5..6433.3] | -76.3% | no |
-| 60 Hz frames missed (%) | 35.2 [33.5..38.8] | 0.0 [0.0..0.0] | -100.0% | no |
-| 100 fork+exec (ms) | 11086.2 [10885.0..11634.1] | 3789.9 [3756.5..4348.5] | -65.8% | no |
-| background throughput during latency test (kiter/s) | 1088.5 [1084.6..1093.0] | 1088.2 [1083.8..1092.0] | -0.0% | yes |
-| background throughput during frame test (kiter/s) | 1037.2 [1017.8..1042.6] | 992.8 [952.0..1001.7] | -4.3% | no |
-| background throughput during fork test (kiter/s) | 996.2 [980.7..997.9] | 904.6 [899.1..911.2] | -9.2% | no |
-| SoC temperature at arm start (C) | 56.9 [56.1..59.4] | 57.8 [56.7..59.4] | +1.5% | yes |
+| wakeup latency p50 (us) | 60.7 [60.5..62.1] (60.4..62.3) | 60.8 [60.8..61.3] (60.6..69.2) | +0.2% | yes |
+| wakeup latency p99 (us) | 113.3 [84.1..405.7] (72.5..4341.2) | 96.0 [85.4..180.7] (70.4..11774.0) | -15.3% | yes |
+| wakeup latency p99.9 (us) | 1836.1 [394.7..3016.8] (269.0..10029.3) | 1128.0 [720.8..2148.9] (87.7..24549.5) | -38.6% | yes |
+| wakeup latency max (us) | 3258.8 [1001.5..5360.4] (437.3..12944.0) | 2451.5 [1415.6..4513.8] (271.9..27415.0) | -24.8% | yes |
+| 60 Hz frame: time to get 6 ms CPU, p50 (us) | 12129.7 [11938.1..12239.1] (8264.7..12405.8) | 6000.2 [6000.2..6000.2] (6000.2..6000.5) | -50.5% | no |
+| 60 Hz frame: time to get 6 ms CPU, p99 (us) | 25650.7 [24674.5..29178.1] (23997.8..37098.0) | 6073.4 [6000.5..6301.2] (6000.5..49159.2) | -76.3% | no |
+| 60 Hz frames missed (%) | 35.2 [33.1..37.6] (22.6..39.0) | 0.0 [0.0..0.0] (0.0..16.5) | -100.0% | no |
+| 100 fork+exec (ms) | 11086.2 [10851.1..11361.9] (10622.9..17609.6) | 3789.9 [3749.1..3963.8] (3724.4..6191.1) | -65.8% | no |
+| background throughput during latency test (kiter/s) | 1088.5 [1084.6..1090.4] (858.0..1095.0) | 1088.2 [1080.6..1090.6] (799.6..1094.9) | -0.0% | yes |
+| background throughput during frame test (kiter/s) | 1037.2 [1016.4..1041.1] (794.3..1046.2) | 992.8 [945.3..1000.6] (529.3..1009.3) | -4.3% | no |
+| background throughput during fork test (kiter/s) | 996.2 [977.5..997.5] (562.6..1001.5) | 904.6 [887.7..910.4] (614.7..918.4) | -9.2% | no |
+| SoC temperature at arm start (C) | 56.9 [55.4..58.2] (51.9..63.9) | 57.8 [56.2..59.0] (54.4..60.6) | +1.5% | yes |
