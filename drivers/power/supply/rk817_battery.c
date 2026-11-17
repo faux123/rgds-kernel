@@ -1854,6 +1854,7 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
 	battery->voltage_ocv = rk817_bat_get_ocv_voltage(battery);
 	battery->voltage_relax = rk817_bat_get_relax_voltage(battery);
 	battery->current_avg = rk817_bat_get_avg_current(battery);
+	battery->sm_linek_fast = 0; battery->sm_linek_normal = 0;	/* stock: str xzr, [x19, #0x6e0] @ffffffc008edc9d8 (rk817_battery_probe+0x1590) */
 	battery->dbg_pwr_dsoc = battery->dsoc;
 	battery->dbg_pwr_rsoc = battery->rsoc;
 	battery->dbg_pwr_vol = battery->voltage_avg;
@@ -2034,7 +2035,7 @@ static int rk817_bat_parse_dt(struct rk817_battery_device *battery)
 	}
 
 	if (pdata->ntc_size) {
-		pdata->ntc_table = devm_kzalloc(dev, pdata->ntc_size * sizeof(u32),
+		pdata->ntc_table = devm_kzalloc(battery->dev, pdata->ntc_size * sizeof(u32),
 						GFP_KERNEL);
 		if (!pdata->ntc_table)
 			return -ENOMEM;
@@ -3533,11 +3534,11 @@ static int rk817_battery_probe(struct platform_device *pdev)
 	rk817_kobj = kobject_create_and_add("rk809", NULL);
 	if (rk817_kobj && sysfs_create_file(rk817_kobj, &rk817_attrs.attr))
 		DBG("rk817-bat: create rk817 sysfs error\n");
-	fg_init_done = 1;
 
 	DBG("name: 0x%x", rk817_bat_field_read(battery, CHIP_NAME_H));
 	DBG("%x\n", rk817_bat_field_read(battery, CHIP_NAME_L));
 	DBG("driver version %s\n", DRIVER_VERSION);
+	fg_init_done = 1;	/* after the DBGs, as stock: str @rk817_battery_probe+0x1dc0 follows the prints */
 
 	return 0;
 }
