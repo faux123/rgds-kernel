@@ -576,3 +576,9 @@ full and 12 W at the meter.
 Charge LED, 2026-11-17 09:38 (Paul's eyes plus driver log): plugged in at 100%: green
 (led_update_charger_soc_status charger=1 soc=100); unplugged at 100%: no LED lit (charger=0,
 gpio-21 battery_charging low). Charging colour below full and 12 W at the meter: still to check.
+Charge LED at 90%, plugged in (2026-11-17, Paul): green. Driver: charger=1 soc=90, gpio-20 battery_full
+high, gpio-21 low. Stock led_update_charger_soc_status (stock.elf @ffffffc008edb31c) compares
+`cmp w19, #0x5a; b.lt` -> yellow below 90, green at 90 and above; low-power red below 0x14 (20)
+when unplugged. Same thresholds in our source. Charger: ac online, 0xE4=0xde, 0xE5=0xcf (ilim 7 =
+3000 mA), 1.79 A into the cell at 4.33 V (CV taper at 90%). Yellow (below 90) and 12 W at the meter
+need a lower state of charge.
