@@ -3188,9 +3188,6 @@ static irqreturn_t rk809_plug_in_isr(int irq, void *cg)
 	battery = (struct rk817_battery_device *)cg;
 	battery->plugin_trigger = 1;
 	battery->plugout_trigger = 0;
-	power_supply_changed(battery->bat);
-	if (battery->is_register_chg_psy)
-		power_supply_changed(battery->chg_psy);
 
 	return IRQ_HANDLED;
 }
@@ -3202,9 +3199,6 @@ static irqreturn_t rk809_plug_out_isr(int irq, void *cg)
 	battery = (struct rk817_battery_device *)cg;
 	battery->plugin_trigger = 0;
 	battery->plugout_trigger = 1;
-	power_supply_changed(battery->bat);
-	if (battery->is_register_chg_psy)
-		power_supply_changed(battery->chg_psy);
 
 	return IRQ_HANDLED;
 }
