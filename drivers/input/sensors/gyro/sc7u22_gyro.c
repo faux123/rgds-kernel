@@ -39,9 +39,9 @@ struct sc7u22_code sc7u22_gyro_odr[] = {
 	{ 800, 0xb }, { 1600, 0xc }, { 3200, 0xd },
 };
 
-/* Range in dps. Only the first entry (2000) is confirmed by position. */
+/* Range in dps, in stock order (sc7u22_gyro_range @ELF: 125/4, 250/3, 500/2, 1000/1, 2000/0). */
 struct sc7u22_code sc7u22_gyro_range[] = {
-	{ 2000, 0x0 }, { 1000, 0x1 }, { 500, 0x2 }, { 250, 0x3 }, { 125, 0x4 },
+	{ 125, 0x4 }, { 250, 0x3 }, { 500, 0x2 }, { 1000, 0x1 }, { 2000, 0x0 },
 };
 
 /* Every register update is written twice, as the stock driver does. */
@@ -170,7 +170,7 @@ struct sensor_operate gyro_sc7u22_ops = {
 	.id_data	= SC7U22_CHIP_ID,
 	.precision	= 16,
 	.ctrl_reg	= SC7U22_GYR_ODR_REG,
-	.int_status_reg	= SENSOR_UNKNOW_DATA,
+	/* .int_status_reg left 0: stock ops+0x40 = 0 */
 	.range		= { -32768, 32768 },
 	.trig		= IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
 	.active		= sensor_active,
