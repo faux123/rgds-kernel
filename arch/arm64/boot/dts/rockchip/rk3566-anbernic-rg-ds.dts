@@ -874,35 +874,27 @@
 	rockchip,hw = <&rkisp>;
 };
 
-/ {
-	sdmmc2: dwmmc@fe000000 {
-		compatible = "rockchip,rk3568-dw-mshc", "rockchip,rk3288-dw-mshc";
-		reg = <0x0 0xfe000000 0x0 0x4000>;
-		interrupts = <0x0 0x64 0x4>;
-		clocks = <&cru 0xc1 &cru 0xc2 &cru 0x18e &cru 0x18f>;
-		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
-		fifo-depth = <0x100>;
-		max-frequency = <0x5f5e100>;
-		resets = <&cru 0xeb>;
-		reset-names = "reset";
-		status = "okay";
-		no-sd;
-		no-mmc;
-		bus-width = <0x4>;
-		disable-wp;
-		cap-sd-highspeed;
-		cap-sdio-irq;
-		keep-power-in-suspend;
-		mmc-pwrseq = <&sdio_pwrseq>;
-		non-removable;
-		pinctrl-names = "default";
-		pinctrl-0 = <&sdmmc2m0_bus4 &sdmmc2m0_cmd &sdmmc2m0_clk>;
-		sd-uhs-sdr12;
-		sd-uhs-sdr25;
-		sd-uhs-sdr50;
-		sd-uhs-sdr104;
-		rockchip,default-sample-phase = <0x5a>;
-	};
+&sdmmc2 {
+	clocks = <&cru 0xc1 &cru 0xc2 &cru 0x18e &cru 0x18f>;
+	max-frequency = <0x5f5e100>;
+	resets = <&cru 0xeb>;
+	status = "okay";
+	no-sd;
+	no-mmc;
+	bus-width = <0x4>;
+	disable-wp;
+	cap-sd-highspeed;
+	cap-sdio-irq;
+	keep-power-in-suspend;
+	mmc-pwrseq = <&sdio_pwrseq>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc2m0_bus4 &sdmmc2m0_cmd &sdmmc2m0_clk>;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	rockchip,default-sample-phase = <0x5a>;
 };
 
 &gmac_uio1 {
@@ -1222,45 +1214,26 @@
 	resets = <&cru 0xa1>;
 };
 
-/ {
-	sdmmc0: dwmmc@fe2b0000 {
-		compatible = "rockchip,rk3568-dw-mshc", "rockchip,rk3288-dw-mshc";
-		reg = <0x0 0xfe2b0000 0x0 0x4000>;
-		interrupts = <0x0 0x62 0x4>;
-		clocks = <&cru 0xb0 &cru 0xb1 &cru 0x18a &cru 0x18b>;
-		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
-		fifo-depth = <0x100>;
-		max-frequency = <0x8f0d180>;
-		resets = <&cru 0xd4>;
-		reset-names = "reset";
-		status = "okay";
-		no-sdio;
-		no-mmc;
-		bus-width = <0x4>;
-		cap-mmc-highspeed;
-		cap-sd-highspeed;
-		disable-wp;
-		sd-uhs-sdr104;
-		vmmc-supply = <&vcc_sd>;
-		vqmmc-supply = <&vccio_sd>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
-	};
+&sdmmc0 {
+	clocks = <&cru 0xb0 &cru 0xb1 &cru 0x18a &cru 0x18b>;
+	resets = <&cru 0xd4>;
+	status = "okay";
+	no-sdio;
+	no-mmc;
+	bus-width = <0x4>;
+	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	disable-wp;
+	sd-uhs-sdr104;
+	vmmc-supply = <&vcc_sd>;
+	vqmmc-supply = <&vccio_sd>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
 };
 
-/ {
-	sdmmc1: dwmmc@fe2c0000 {
-		compatible = "rockchip,rk3568-dw-mshc", "rockchip,rk3288-dw-mshc";
-		reg = <0x0 0xfe2c0000 0x0 0x4000>;
-		interrupts = <0x0 0x63 0x4>;
-		clocks = <&cru 0xb2 &cru 0xb3 &cru 0x18c &cru 0x18d>;
-		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
-		fifo-depth = <0x100>;
-		max-frequency = <0x8f0d180>;
-		resets = <&cru 0xd6>;
-		reset-names = "reset";
-		status = "disabled";
-	};
+&sdmmc1 {
+	clocks = <&cru 0xb2 &cru 0xb3 &cru 0x18c &cru 0x18d>;
+	resets = <&cru 0xd6>;
 };
 
 &sfc {
@@ -1268,24 +1241,16 @@
 	assigned-clocks = <&cru 0x78>;
 };
 
-/ {
-	sdhci: sdhci@fe310000 {
-		compatible = "rockchip,rk3568-dwcmshc", "rockchip,dwcmshc-sdhci";
-		reg = <0x0 0xfe310000 0x0 0x10000>;
-		interrupts = <0x0 0x13 0x4>;
-		assigned-clocks = <&cru 0x7b &cru 0x7d &cru 0x7c>;
-		assigned-clock-rates = <0xbebc200 0x16e3600 0xbebc200>;
-		clocks = <&cru 0x7c &cru 0x7a &cru 0x79 &cru 0x7b &cru 0x7d>;
-		clock-names = "core", "bus", "axi", "block", "timer";
-		resets = <&cru 0x78 &cru 0x76 &cru 0x75 &cru 0x77 &cru 0x79>;
-		reset-names = "core", "bus", "axi", "block", "timer";
-		status = "okay";
-		bus-width = <0x8>;
-		no-sdio;
-		no-sd;
-		non-removable;
-		max-frequency = <0xbebc200>;
-	};
+&sdhci {
+	assigned-clocks = <&cru 0x7b &cru 0x7d &cru 0x7c>;
+	clocks = <&cru 0x7c &cru 0x7a &cru 0x79 &cru 0x7b &cru 0x7d>;
+	resets = <&cru 0x78 &cru 0x76 &cru 0x75 &cru 0x77 &cru 0x79>;
+	status = "okay";
+	bus-width = <0x8>;
+	no-sdio;
+	no-sd;
+	non-removable;
+	max-frequency = <0xbebc200>;
 };
 
 &nfc {
@@ -3788,7 +3753,3 @@
 	};
 };
 
-/delete-node/ &sdmmc2;
-/delete-node/ &sdmmc0;
-/delete-node/ &sdmmc1;
-/delete-node/ &sdhci;
