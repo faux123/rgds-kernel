@@ -2172,7 +2172,9 @@ static s8 gtp_request_input_dev(struct i2c_client *client,
     }
     
     ts->panel_nb.notifier_call = rockchip_panel_notifier_call;
-    devm_rockchip_panel_notifier_register_client(&client->dev, &ts->panel_nb);
+    ret = devm_rockchip_panel_notifier_register_client(&ts->client->dev, &ts->panel_nb);
+    if (ret)
+        printk(" Unable to register fb_notifier: %d\n", ret);
 
 #if GTP_WITH_PEN
     gtp_pen_init(ts);
