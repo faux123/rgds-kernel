@@ -611,3 +611,13 @@ hyn_probe @0xcc2f28 (its own build). Inventory vs the stock kernel (device/inven
 same as the fixes-branch result, every section identical except the run-to-run items (USB bus
 numbers, Mali use count, ashmem name, init pids/times; one servicemanager keystore lazy-start
 message only in the stock capture).
+
+## Baseline tag (2026-11-17, Paul: "TAG as stock 1.21-recon-baseline")
+
+- `v1.21-recon-baseline` (annotated) = rgds-v1.21-stock cccbcebdd82d, the booted and inventoried stock
+  reconstruction. Pushed; `ls-remote` peels to cccbcebdd82d.
+- rgds-v1.21 b325cd86e6e9 = merge of the baseline into the fixes branch (tree identical to df59b5fd0276,
+  stock + 3 FIX commits), so the baseline is now an ancestor; no force push. Fixes and enhancements
+  land on rgds-v1.21 from here as ordinary commits.
+- GitHub release for the tag: not created (the gh release call was refused by the auto-mode
+  classifier; needs Paul's explicit go).
