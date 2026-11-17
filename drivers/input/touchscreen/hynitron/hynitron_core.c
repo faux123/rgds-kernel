@@ -649,16 +649,18 @@ static noinline void cst3xx_touch_up(struct input_dev *input_dev, int id)
 }
 
 static void cst3xx_touch_report(struct work_struct *work)
+/* Body structured after Hynitron MTK V2.2 20210129 (flitsmeister/android-os-kernel @a2462c8a7b74) without that
+ * tree's vendor gesture-in-suspend code (stock has no such strings); matched to stock @ffffffc008cc1b88..21b8. */
 {
-	unsigned char buf[30];
+	unsigned char buf[70];
 	unsigned char i2c_buf[8];
 	unsigned char key_status, key_id = 0, finger_id, sw;
 	unsigned int  input_x = 0; 
 	unsigned int  input_xy_temp=0;
 	unsigned int  input_y = 0; 
 	unsigned int  input_w = 0;
-    unsigned char cnt_up, cnt_down;
-	int   i, ret, idx; 
+    unsigned char cnt_up=0, cnt_down=0;
+	int i,ret, idx; 
 	int cnt, i2c_len;
 #if HYN_IIC_TRANSFER_LIMIT
 	int  len_1, len_2;
@@ -684,29 +686,49 @@ static void cst3xx_touch_report(struct work_struct *work)
 #endif
 
 #if HYN_GESTURE_EN
-    hyn_gesture_readdata();
+    if(hyn_gesture_readdata()==0)
+	goto END;	
 #endif
-	
+
+#if 0
+{
+
+   	unsigned char value_buf[28];
+	value_buf[0] = 0xD0;
+	value_buf[1] = 0xFF;
+	ret = cst3xx_i2c_read_register(hyn_ts_data->client, value_buf, 28);
+	if(ret < 0) {
+		HYN_ERROR("  iic read touch point data failed.\n");
+	}
+
+	hyn_save_log((unsigned char *)(value_buf));
+}	
+#endif
     key_status = 0;
 	buf[0] = 0xD0;
 	buf[1] = 0x00;
 	ret = cst3xx_i2c_read_register(hyn_ts_data->client, buf, 7);
+	printk("cst3xx_i2c_read_register: %d, %d, %d, %d, %d, %d, %d\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6]);
 	if(ret < 0) {
 		HYN_ERROR("  iic read touch point data failed.\n");
 		goto OUT_PROCESS;
 	}
 	
 	if(buf[6] != 0xAB) {
-		HYN_ERROR("  data is not valid..\r\n");
+		HYN_ERROR("  buf[6] != 0xAB data is not valid..\n");
 		goto OUT_PROCESS;
 	}
+	if(buf[0] == 0xAB) {
+		HYN_ERROR("  buf[0]=0xAB,data is not valid..\n");
+		goto OUT_PROCESS;
+	}
+
 
 	if(buf[5] == 0x80) {
 		key_status = buf[0];
 		key_id = buf[1];		
 		goto KEY_PROCESS;
 	} 
-	
 	cnt = buf[5] & 0x7F;
 	if(cnt > HYN_MAX_POINTS) 		goto OUT_PROCESS;
 	else if(cnt==0)     			goto CLR_POINT;
@@ -811,22 +833,41 @@ FINGER_PROCESS:
 	i2c_buf[2] = 0xAB;
 	ret = cst3xx_i2c_write(hyn_ts_data->client, i2c_buf, 3);
 	if(ret < 0) {
-		HYN_ERROR(" cst3xx hyn send read touch info ending failed.\r\n"); 
+		HYN_ERROR(" cst3xx hyn send read touch info ending failed.\n"); 
 		goto OUT_PROCESS;
 	}
 #if (HYN_DEBUG_EN && (HYN_DEBUG_LEVEL == 2))
     hyn_show_touch_buffer(buf, cnt);
 #endif
+
 	idx = 0;
     cnt_up = 0;
     cnt_down = 0;
 	for (i = 0; i < cnt; i++) {
-		
+		//u16 checksum;
 		input_x = (unsigned int)((buf[idx + 1] << 4) | ((buf[idx + 3] >> 4) & 0x0F));
 		input_y = (unsigned int)((buf[idx + 2] << 4) | (buf[idx + 3] & 0x0F));	
 		input_w = (unsigned int)(buf[idx + 4]);
 		sw = (buf[idx] & 0x0F) >> 1;
 		finger_id = (buf[idx] >> 4) & 0x0F;
+
+#if 0
+	    checksum=0;
+		checksum+=buf[idx + 0];
+		checksum+=buf[idx + 1];
+		checksum+=buf[idx + 2];
+		checksum+=buf[idx + 3];
+		checksum+=0xA8;
+
+
+		if((report_check_flag==0)&&((checksum&0xff)==input_w)){
+			report_check_flag=1;
+		}else if((report_check_flag==1)&&((checksum&0xff)!=input_w)){	
+			HYN_ERROR(" cst3xx hyn read touch info checksum failed:0x%x .\n",checksum); 
+			continue;		
+		}
+#endif
+		
         if(hyn_ts_data->pdata->xy_exchange){
 		  	input_xy_temp=input_x;
 			input_x =input_y ;
@@ -840,8 +881,13 @@ FINGER_PROCESS:
 		input_y = hyn_ts_data->pdata->y_resolution-input_y;
 		}
 #if (HYN_DEBUG_EN && (HYN_DEBUG_LEVEL == 2))	   
-        HYN_INFO(" cst3xx Point x:%d, y:%d, id:%d, sw:%d. \n", input_x, input_y, finger_id, sw);
+        HYN_INFO(" cst3xx Point x:%d, y:%d, id:%d, sw:%d, press:%d. \n", input_x, input_y, finger_id, sw,input_w);
 #endif
+		if((hyn_ts_data->pdata->max_touch_num <finger_id)
+			||((sw!=0x03)&&(sw!=0x0))){
+        	HYN_INFO(" cst3xx error Point x:%d, y:%d, id:%d, sw:%d, press:%d. \n", input_x, input_y, finger_id, sw,input_w);
+			break;
+		}	
 		if (sw == 0x03) {
 			cst3xx_touch_down(hyn_ts_data->input_dev, finger_id, input_x, input_y, input_w);
             cnt_down++;
@@ -879,7 +925,7 @@ KEY_PROCESS:
 	i2c_buf[2] = 0xAB;
 	ret = cst3xx_i2c_write(hyn_ts_data->client, i2c_buf, 3);
 	if (ret < 0) {
-		HYN_ERROR(" cst3xx hyn send read touch info ending failed.\r\n"); 
+		HYN_ERROR(" cst3xx hyn send read touch info ending failed.\n"); 
 		hyn_reset_proc(20);
 	}
 	
@@ -888,16 +934,19 @@ KEY_PROCESS:
 			i = (key_id>>4)-1;
 	        if((key_status&0x7F)==0x03) {
 				if((i==hyn_ts_data->key_index)||(hyn_ts_data->key_index==0xFF)) {
-	                input_report_key(hyn_ts_data->input_dev, hyn_ts_data->pdata->key_code[i], 1);
+					HYN_INFO(" cst3xx key down code:%d,key id:%d. \n", hyn_ts_data->pdata->key_code[i], i);
+					input_report_key(hyn_ts_data->input_dev, hyn_ts_data->pdata->key_code[i], 1);
 	    			hyn_ts_data->report_flag = 0xA5;
 					hyn_ts_data->key_index   = i;
 				}
 				else {
+					HYN_INFO(" cst3xx key up code:%d,key id:%d. \n", hyn_ts_data->pdata->key_code[hyn_ts_data->key_index], hyn_ts_data->key_index);
 	                input_report_key(hyn_ts_data->input_dev, hyn_ts_data->pdata->key_code[hyn_ts_data->key_index], 0);
 					hyn_ts_data->key_index = 0xFF;
 				}
 			}
 	    	else {
+				HYN_INFO(" cst3xx key up code:%d,key id:%d. \n", hyn_ts_data->pdata->key_code[i], i);
 				input_report_key(hyn_ts_data->input_dev, hyn_ts_data->pdata->key_code[i], 0);
 	            cst3xx_touch_up(hyn_ts_data->input_dev, 0);
 				hyn_ts_data->report_flag = 0;	
@@ -909,7 +958,8 @@ KEY_PROCESS:
 			i = (key_id>>4)-1;
 	        if((key_status&0x7F)==0x03) {
 				if((i==hyn_ts_data->key_index)||(hyn_ts_data->key_index==0xFF)) {
-	        		cst3xx_touch_down(hyn_ts_data->input_dev, 0, hyn_ts_data->pdata->key_x_coords[i], hyn_ts_data->pdata->key_y_coords[i], 50);
+					HYN_INFO(" cst3xx key down x:%d,y id:%d. \n",hyn_ts_data->pdata->key_x_coords[i], hyn_ts_data->pdata->key_y_coords[i]);
+					cst3xx_touch_down(hyn_ts_data->input_dev, 0, hyn_ts_data->pdata->key_x_coords[i], hyn_ts_data->pdata->key_y_coords[i], 50);
 	    			hyn_ts_data->report_flag = 0xA5;
 					hyn_ts_data->key_index   = i;
 				}
@@ -919,6 +969,7 @@ KEY_PROCESS:
 				}
 			}
 	    	else {
+				HYN_INFO(" cst3xx key up. \n");
 	            cst3xx_touch_up(hyn_ts_data->input_dev, 0);
 				hyn_ts_data->report_flag = 0;	
 				hyn_ts_data->key_index = 0xFF;
@@ -931,7 +982,7 @@ KEY_PROCESS:
     goto END;
 
 CLR_POINT:
-
+	HYN_ERROR(" CLEAR POINT.\n"); 
 #if HYN_MT_PROTOCOL_B_EN
 	for(i=0; i<=10; i++) {	
 		input_mt_slot(hyn_ts_data->input_dev, i);
@@ -944,8 +995,6 @@ CLR_POINT:
 	input_mt_sync(hyn_ts_data->input_dev);
 #endif
 	input_sync(hyn_ts_data->input_dev);	
-		
-		
 OUT_PROCESS:
 	buf[0] = 0xD0;
 	buf[1] = 0x00;
@@ -953,7 +1002,7 @@ OUT_PROCESS:
 	ret = cst3xx_i2c_write(hyn_ts_data->client, buf, 3);
 	if (ret < 0) {
 		HYN_ERROR("  send read touch info ending failed.\n"); 
-		hyn_reset_proc(20);
+		//hyn_reset_proc(20);
 	}
 	
 END:	
