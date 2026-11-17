@@ -107,6 +107,12 @@ enum {
 enum {
 	SILERGY_SYR82X = 8,
 	SILERGY_SYR83X = 9,
+	/*
+	 * RG DS stock also accepts Silergy chip ID 13 with the SYR82X/83X
+	 * range (fan53555_device_setup, ffffffc0087ab698..ab6b4: mask 0x2300
+	 * = IDs 8, 9, 13). The name is ours.
+	 */
+	SILERGY_CHIP_ID_13 = 13,
 };
 
 struct fan53555_device_info {
@@ -336,6 +342,7 @@ static int fan53555_voltages_setup_silergy(struct fan53555_device_info *di)
 	switch (di->chip_id) {
 	case SILERGY_SYR82X:
 	case SILERGY_SYR83X:
+	case SILERGY_CHIP_ID_13:
 		di->vsel_min = 712500;
 		di->vsel_step = 12500;
 		break;
