@@ -3415,8 +3415,8 @@ static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute 
 	int ret;
 
 	otg = regulator_get(NULL, "otg_switch");
-	if (IS_ERR(otg))	/* STOCK QUIRK: stock passes the kobject as the device and carries on */
-		dev_warn((struct device *)kobj, "failed to get sw1 regulator: %d\n", (int)PTR_ERR(otg));
+	if (IS_ERR(otg))
+		dev_warn(g_battery->dev, "failed to get sw1 regulator: %d\n", (int)PTR_ERR(otg));
 
 	sscanf(buf, "%c ", &c);
 	switch (c) {
@@ -3436,7 +3436,7 @@ static ssize_t battery_adjust_store(struct kobject *kobj, struct kobj_attribute 
 
 		DBG("rk817-bat: enable charging\n");
 		regmap_field_write(bat->rmap_fields[BAT_LTS_TS], 0xfa);
-		if (regulator_is_enabled(otg)) {	/* STOCK QUIRK: no IS_ERR check */
+		if (!IS_ERR(otg) && regulator_is_enabled(otg)) {
 			ret = regulator_disable(otg);
 			if (ret)
 				DBG("rk817-bat: disable sw1 failed:%d\n", ret);
