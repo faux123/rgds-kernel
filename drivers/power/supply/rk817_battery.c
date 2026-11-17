@@ -1606,20 +1606,24 @@ static void rk817_bat_calc_sm_linek(struct rk817_battery_device *battery)
 	int diff, delta;
 	int current_avg = rk817_bat_get_avg_current(battery);
 
-	delta = abs(battery->dsoc - battery->rsoc);
+	/*
+	 * Stock (ffffffc008ee0024): delta and the comparisons use whole
+	 * percents (dsoc / 1000, rsoc / 1000), ffffffc008ee00a4..00f8.
+	 */
+	delta = abs(battery->dsoc / 1000 - battery->rsoc / 1000);
 	diff = delta * 3;/* speed:3/4 */
 
 	if (current_avg > 0) {
-		if (battery->dsoc < battery->rsoc)
+		if (battery->dsoc / 1000 < battery->rsoc / 1000)
 			linek = 1000 * (delta + diff) / DIV(diff);
-		else if (battery->dsoc > battery->rsoc)
+		else if (battery->dsoc / 1000 > battery->rsoc / 1000)
 			linek = 1000 * diff / DIV(delta + diff);
 		else
 			linek = 1000;
 	} else {
-		if (battery->dsoc < battery->rsoc)
+		if (battery->dsoc / 1000 < battery->rsoc / 1000)
 			linek = -1000 * diff / DIV(delta + diff);
-		else if (battery->dsoc > battery->rsoc)
+		else if (battery->dsoc / 1000 > battery->rsoc / 1000)
 			linek = -1000 * (delta + diff) / DIV(diff);
 		else
 			linek = -1000;
