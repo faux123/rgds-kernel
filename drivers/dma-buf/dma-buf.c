@@ -846,11 +846,13 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
 #endif
 	mutex_unlock(&db_list.lock);
 
-	if (IS_ENABLED(CONFIG_RK_DMABUF_DEBUG))
-		dma_buf_set_default_name(dmabuf);
 	ret = dma_buf_stats_setup(dmabuf, file);
 	if (ret)
 		goto err_sysfs;
+
+	/* stock names the buffer after the sysfs stats setup (ffffffc008a4a8fc) */
+	if (IS_ENABLED(CONFIG_RK_DMABUF_DEBUG))
+		dma_buf_set_default_name(dmabuf);
 
 	return dmabuf;
 
