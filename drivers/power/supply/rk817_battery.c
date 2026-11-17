@@ -1764,6 +1764,8 @@ static void rk817_bat_init_fg(struct rk817_battery_device *battery)
 	battery->dbg_pwr_rsoc = battery->rsoc;
 	battery->dbg_pwr_vol = battery->voltage_avg;
 	battery->temperature = VIRTUAL_TEMPERATURE;
+	/* stock rk817_battery_probe @ffffffc008edb9e4: rmap_fields[143] (reg 0xE9) = 0xfa at init */
+	rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
 
 	DBG("probe init: battery->dsoc = %d, rsoc = %d\n"
 	    "remain_cap = %d\n, battery_vol = %d\n, system_vol = %d, qmax = %d\n",
