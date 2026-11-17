@@ -75,6 +75,7 @@ The vendor Wi-Fi and Bluetooth modules on the device report vermagic
 | Vibrator | `drivers/staging/android/timed_output.*`, `rk_timed_gpio.c` | Copied from TheGammaSqueeze/rg_ds_kernel `ba9053b290`; verified instruction-identical to the stock binary function by function, initcall lines match (stock has no `timed_gpio`) |
 | Board device tree | `arch/arm64/boot/dts/rockchip/rk3566-anbernic-rg-ds.dts` | Rebuilt from the stock DTB on the Rockchip SoC dtsi; no semantic difference from stock (tools in `scripts/rgds/dts/`) |
 | xt_quota2 | `net/netfilter/xt_quota2.c` | Android Common Kernel (part of the ACK delta) |
+| Wi-Fi (RTL8821CS) | `drivers/net/wireless/rockchip_wlan/rtl8821cs/` | Realtek v5.15.9.3 from the Rockchip SDK (rkwifibt), built as a module (`CONFIG_RTL8821CS=m`, stock option set); the built `8821cs.o` matches the stock `8821cs.ko` (5044 functions, every size equal). Stock ships it out of tree, so its config has `RTL8821CS` unset |
 | DMA heaps | `drivers/dma-buf/heaps/rk_system_heap.c`, `rk_cma_heap.c` | Rockchip heaps built as stock does, ported to 6.1 |
 | SC7U22 accelerometer and gyroscope | `drivers/input/sensors/{accel,gyro}/sc7u22_*.c` | Reconstructed from stock disassembly |
 | RK817 battery | `drivers/power/supply/rk817_battery.c` | Rockchip `develop-4.19` revision (`d1d1ad90afcc`), ported to 6.1, plus stock-only parts reconstructed from disassembly: resume handling, low-power check, field table tail, LED layer, `/sys/rk809/battery_adjust`, CW2015 SOC reporting |
