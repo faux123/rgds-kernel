@@ -1783,6 +1783,7 @@ Output:
 s32 gtp_read_version(struct i2c_client *client, u16* version)
 {
     s32 ret = -1;
+    u8 cfg_ver = 0;
     u8 buf[8] = {GTP_REG_VERSION >> 8, GTP_REG_VERSION & 0xff};
 
     GTP_DEBUG_FUNC();
@@ -1805,6 +1806,13 @@ s32 gtp_read_version(struct i2c_client *client, u16* version)
     else
     {
         GTP_INFO("IC Version: %c%c%c%c_%02x%02x", buf[2], buf[3], buf[4], buf[5], buf[7], buf[6]);
+    }
+
+    /* stock @ffffffc008cbfa98: also reads the IC config version (debug at stock line 1501) */
+    ret = gtp_i2c_read_dbl_check(client, GTP_REG_CONFIG_DATA, &cfg_ver, 1);
+    if (ret == SUCCESS)
+    {
+        GTP_DEBUG("######## IC Config Version: %d, 0x%02X", cfg_ver, cfg_ver);
     }
     return ret;
 }
