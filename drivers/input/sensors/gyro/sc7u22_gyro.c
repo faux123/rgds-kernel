@@ -34,13 +34,13 @@ struct sc7u22_code {
 	u8 code;
 };
 
-static const struct sc7u22_code sc7u22_gyro_odr[] = {
+struct sc7u22_code sc7u22_gyro_odr[] = {
 	{ 25, 0x6 }, { 50, 0x7 }, { 100, 0x8 }, { 200, 0x9 }, { 400, 0xa },
 	{ 800, 0xb }, { 1600, 0xc }, { 3200, 0xd },
 };
 
 /* Range in dps. Only the first entry (2000) is confirmed by position. */
-static const struct sc7u22_code sc7u22_gyro_range[] = {
+struct sc7u22_code sc7u22_gyro_range[] = {
 	{ 2000, 0x0 }, { 1000, 0x1 }, { 500, 0x2 }, { 250, 0x3 }, { 125, 0x4 },
 };
 
@@ -52,7 +52,7 @@ static void sc7u22_write_twice(struct i2c_client *client, int reg, int val)
 }
 
 /* Picks the first rate >= the request; a request above 3200 Hz is ignored. */
-static void sc7u22_set_gyro_odr(struct i2c_client *client, int rate)
+void sc7u22_set_gyro_odr(struct i2c_client *client, int rate)
 {
 	int i, val;
 
@@ -68,7 +68,7 @@ static void sc7u22_set_gyro_odr(struct i2c_client *client, int rate)
 }
 
 /* Exact match only; an unknown range leaves the register untouched. */
-static void sc7u22_set_gyro_range(struct i2c_client *client, int range)
+void sc7u22_set_gyro_range(struct i2c_client *client, int range)
 {
 	int i, val;
 
@@ -160,7 +160,7 @@ static int sensor_report_value(struct i2c_client *client)
 	return 0;
 }
 
-static struct sensor_operate gyro_sc7u22_ops = {
+struct sensor_operate gyro_sc7u22_ops = {
 	.name		= "sc7u22_gyro",
 	.type		= SENSOR_TYPE_GYROSCOPE,
 	.id_i2c		= GYRO_ID_SC7U22,
