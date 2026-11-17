@@ -264,6 +264,7 @@ static int rk817_codec_ctl_gpio(struct rk817_codec_priv *rk817,
 		if (level && rk817->spk_mute_delay)
 			msleep(rk817->spk_mute_delay);
 		gpiod_set_value(rk817->spk_ctl_gpio, level);
+		if (level) { enable_pa_spk_right(); enable_pa_spk_left(); } else { disable_pa_spk_right(); disable_pa_spk_left(); }
 		DBG("%s set spk clt %d\n", __func__, level);
 		if (!level && rk817->spk_mute_delay)
 			msleep(rk817->spk_mute_delay);
@@ -1177,9 +1178,6 @@ static int rk817_digital_mute_dac(struct snd_soc_dai *dai, int mute, int stream)
 
 	if (mute) {
 		rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
-		/* stock rk817_digital_mute @ffffffc00911dbc4: spk gpio, then PAs off right, left */
-		disable_pa_spk_right();
-		disable_pa_spk_left();
 		rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 0);
 
 		snd_soc_component_update_bits(component,
@@ -1212,9 +1210,6 @@ static int rk817_digital_mute_dac(struct snd_soc_dai *dai, int mute, int stream)
 						PWD_DACL_ON | PWD_DACR_ON);
 			}
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
-			/* stock @ffffffc00911dd7c: spk gpio, then PAs on right, left */
-			enable_pa_spk_right();
-			enable_pa_spk_left();
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 0);
 			break;
 		case HP_PATH:
@@ -1225,9 +1220,6 @@ static int rk817_digital_mute_dac(struct snd_soc_dai *dai, int mute, int stream)
 					PWD_DACBIAS_ON | PWD_DACD_DOWN |
 					PWD_DACL_ON | PWD_DACR_ON);
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 0);
-			/* stock @ffffffc00911dda8 */
-			disable_pa_spk_right();
-			disable_pa_spk_left();
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
 			break;
 		case SPK_HP:
@@ -1236,9 +1228,6 @@ static int rk817_digital_mute_dac(struct snd_soc_dai *dai, int mute, int stream)
 					PWD_DACBIAS_ON | PWD_DACD_ON |
 					PWD_DACL_ON | PWD_DACR_ON);
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_SPK, 1);
-			/* stock @ffffffc00911de34 */
-			enable_pa_spk_right();
-			enable_pa_spk_left();
 			rk817_codec_ctl_gpio(rk817, CODEC_SET_HP, 1);
 			break;
 		default:
