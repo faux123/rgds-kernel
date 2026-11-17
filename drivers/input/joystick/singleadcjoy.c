@@ -1858,40 +1858,45 @@ static noinline void joypad_adc_check(struct input_dev *input)
 	 * *98/100 = mul 0x62, smull 0x51eb851f, asr #37. */
 	for (i = 0; i < joypad->amux_count; i++) {
 		struct stock_adc_channel *e = &a[i];
-		int v = e->value, hi, lo, sw, out, sp, sn, axv, ayv;
+		int v = e->value, hi, lo, out = 0;
 
-		if (i <= 3) {		/* table @ffffffc0097195e6 -> @..764ec/76544/76594/765e4 */
-			int left = i < 2;
-			axv = left ? adc_abs_lx : adc_abs_rx;
-			ayv = left ? adc_abs_ly : adc_abs_ry;
-			sw = left ? jokstick_cal_switch_l : jokstick_cal_switch_r;
-			out = (axv > jokstick_cal_deadzone || ayv > jokstick_cal_deadzone);	/* @..76500..76510 */
-			switch (i) {
-			case 0: sp = jokstick_cal_lxr_scale; sn = jokstick_cal_lxl_scale; break;
-			case 1: sp = jokstick_cal_lyd_scale; sn = jokstick_cal_lyu_scale; break;
-			case 2: sp = jokstick_cal_rxr_scale; sn = jokstick_cal_rxl_scale; break;
-			default: sp = jokstick_cal_ryd_scale; sn = jokstick_cal_ryu_scale; break;
-			}
-			if (!sw) {				/* @..76634 */
-				if (!out)
-					v = 0;
-				v = v * jokstick_cal_scale / 1000;	/* @..7665c */
-				e->value = v;
-				e->shown = e->invert ? -v : v;		/* stp @..76670 */
-			} else {
-				if (!out) {			/* @..76678 */
-					v = 0;
-					e->value = 0;
-					e->shown = 0;
-				} else {
-					e->shown = v;		/* @..76528 */
-				}
-				v = v * ((out && v > 0) ? sp : sn) / 1000;	/* @..766d4..766f4 */
-				e->value = v;
-				v = v * jokstick_cal_scale / 1000;		/* @..76700..76714 */
-				e->value = v;
-			}
+		/* D1 written out per axis (jump table @ffffffc0097195e6 -> @..764ec/76544/76594/765e4) */
+#define D1_AXIS(AX, AY, SW, PS, NS)							\
+		do {									\
+			out = (adc_abs_##AX > jokstick_cal_deadzone ||			\
+			       adc_abs_##AY > jokstick_cal_deadzone);			\
+			if (!jokstick_cal_switch_##SW)					\
+				goto d1_plain;						\
+			if (!out) {							\
+				v = 0;							\
+				e->value = 0;						\
+				e->shown = 0;						\
+				v = v * jokstick_cal_##NS##_scale / 1000;		\
+			} else {							\
+				e->shown = v;						\
+				v = v * (v > 0 ? jokstick_cal_##PS##_scale		\
+					       : jokstick_cal_##NS##_scale) / 1000;	\
+			}								\
+			e->value = v;							\
+			v = v * jokstick_cal_scale / 1000;				\
+			e->value = v;							\
+			goto d1_done;							\
+		} while (0)
+		switch (i) {
+		case 0: D1_AXIS(lx, ly, l, lxr, lxl);
+		case 1: D1_AXIS(lx, ly, l, lyd, lyu);
+		case 2: D1_AXIS(rx, ry, r, rxr, rxl);
+		case 3: D1_AXIS(rx, ry, r, ryd, ryu);
+		default: goto d1_done;	/* channels 4/5 keep their value (@..7653c) */
 		}
+d1_plain:						/* switch off, shared tail @..76634 */
+		if (!out)
+			v = 0;
+		v = v * jokstick_cal_scale / 1000;
+		e->value = v;
+		e->shown = e->invert ? -v : v;
+d1_done:
+#undef D1_AXIS
 		/* D2 clamp @..7671c..767b4 */
 		hi = e->max * 98 / 100;
 		if (v > hi) {
