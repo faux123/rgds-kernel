@@ -1599,9 +1599,10 @@ static void rk817_bat_smooth_algo_prepare(struct rk817_battery_device *battery)
 static void rk817_bat_finish_algo_prepare(struct rk817_battery_device *battery)
 {
 	battery->finish_base = get_boot_sec();
-
+	DBG("rk817_bat_finish_algo_prepare_finish_base1 = %lu\n", battery->finish_base);
 	if (!battery->finish_base)
 		battery->finish_base = 1;
+	DBG("rk817_bat_finish_algo_prepare_finish_base2 = %lu\n", battery->finish_base);
 }
 
 static void rk817_bat_init_dsoc_algorithm(struct rk817_battery_device *battery)
@@ -2836,16 +2837,21 @@ static void rk817_bat_finish_algorithm(struct rk817_battery_device *battery)
 			(battery->fcc * 1000 - battery->remain_cap);
 		rk817_bat_init_coulomb_cap(battery, battery->fcc);
 		rk817_bat_get_capacity_mah(battery);
+		DBG("enter rk817_bat_finish_algorithm.\n");
 	}
 
 	/* dsoc */
 	if (battery->dsoc < 100 * 1000) {
-		if (!battery->finish_base)
+		if (!battery->finish_base) {
 			battery->finish_base = get_boot_sec();
+			DBG("finish_algorithm_get_boot_sec1: %lu\n", battery->finish_base);
+		}
 
 		finish_current = (battery->rsoc - battery->dsoc) > FINISH_MAX_SOC_DELAY ?
 					FINISH_CHRG_CUR2 : FINISH_CHRG_CUR1;
 		finish_sec = base2sec(battery->finish_base);
+		DBG("finish_algorithm_get_boot_sec2 = %lu , finish_sec = %lu\n",
+		    battery->finish_base, finish_sec);
 
 		soc_sec = battery->fcc * 3600 / 100 / DIV(finish_current);
 		plus_soc = finish_sec / DIV(soc_sec);
@@ -2855,6 +2861,8 @@ static void rk817_bat_finish_algorithm(struct rk817_battery_device *battery)
 			battery->finish_base = get_boot_sec();
 			if (battery->finish_base > rest)
 				battery->finish_base = get_boot_sec() - rest;
+			DBG("%s-----%d,finish_sec = %lu, soc_sec = %lu, rest=%d,  get_boot_sec = %lld\n",
+			    __func__, __LINE__, finish_sec, soc_sec, rest, get_boot_sec());
 		}
 		DBG("CHARGE_FINISH:dsoc<100,dsoc=%d\n"
 		    "soc_time=%lu, sec_finish=%lu, plus_soc=%d, rest=%d\n",
