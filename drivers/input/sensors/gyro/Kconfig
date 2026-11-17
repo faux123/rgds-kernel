@@ -52,4 +52,10 @@ config GYRO_IAM20680
 	help
 	  To have support for your specific gyroscope you will have to
 	  select the proper drivers which depend on this option.
+config GYRO_SC7U22
+	tristate "gyroscope sc7u22"
+	help
+	  Gyroscope part of the Silan SC7U22 6-axis IMU (I2C, DT
+	  compatible "sc7u22_gyro").
+
 endif

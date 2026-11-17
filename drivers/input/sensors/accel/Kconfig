@@ -171,4 +171,10 @@ config IAM20680_ACC
 	  To have support for your specific gsesnor you will have to
 	  select the proper drivers which depend on this option.
 
+config SC7U22_ACC
+	tristate "gsensor sc7u22"
+	help
+	  Accelerometer part of the Silan SC7U22 6-axis IMU (I2C, DT
+	  compatible "sc7u22_acc").
+
 endif
