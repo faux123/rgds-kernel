@@ -508,8 +508,8 @@ struct battery_platform_data {
 	u32 bat_res_up;
 	u32 bat_res_down;
 	u32 design_max_voltage;
-	bool extcon;
-	u32 low_pwr_sleep;
+	/* stock ends here: devm_kzalloc(0x208) in rk817_battery_probe+0xe0; no extcon or */
+	/* low_pwr_sleep fields (neither is read anywhere in this driver) */
 };
 
 struct rk817_battery_device {
