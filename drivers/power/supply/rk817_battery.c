@@ -2263,14 +2263,14 @@ static int rk809_chg_get_property(struct power_supply *psy,
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
 		val->intval = online;
-		dev_dbg(battery->dev, "report online: %d\n", val->intval);
+		dev_err(battery->dev, "report online: %d\n", val->intval);
 		break;
 	case POWER_SUPPLY_PROP_STATUS:
 		if (online)
 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
 		else
 			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
-		dev_dbg(battery->dev, "report prop: %d\n", val->intval);
+		dev_err(battery->dev, "report prop: %d\n", val->intval);
 		break;
 	default:
 		ret = -EINVAL;
