@@ -34,7 +34,7 @@
 #include <linux/of_gpio.h>
 #include <linux/gpio.h>
 #include <linux/slab.h>
-#include "../tp_suspend.h"
+#include <linux/rockchip-panel-notifier.h>
 
 //#include <mach/gpio.h>
 //#include <linux/earlysuspend.h>
@@ -124,7 +124,7 @@ struct goodix_ts_data {
     u8  pnl_init_error;
 	u8 cfg_file_num;
 //add struct tp_device by Sam
-    struct  tp_device  tp;
+    struct  notifier_block  panel_nb;
 
     //add by Daniel(yc)
     int irq;
@@ -154,7 +154,6 @@ struct goodix_ts_data {
     u8 rqst_processing;
     u8 is_950;
 #endif
-    struct regulator *tp_regulator;
 };
 
 //extern u16 show_len;

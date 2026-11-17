@@ -1972,13 +1972,10 @@ Input:
 Output:
     None.
 *******************************************************/
-static int goodix_ts_early_suspend(struct tp_device *tp_d)
+static int goodix_ts_early_suspend(struct goodix_ts_data *ts)
 {
-    struct goodix_ts_data *ts;
     s8 ret = -1;
-    int reg = 0;
 
-    ts = container_of(tp_d, struct goodix_ts_data, tp);
     GTP_DEBUG_FUNC();
 
     GTP_INFO("System suspend.");
@@ -2008,11 +2005,6 @@ static int goodix_ts_early_suspend(struct tp_device *tp_d)
     // to avoid waking up while not sleeping
     //  delay 48 + 10ms to ensure reliability
     msleep(58);
-
-	reg = regulator_disable(ts->tp_regulator);
-	if (reg < 0)
-		GTP_ERROR("failed to disable tp regulator\n");
-	msleep(20);
 	return 0;
 }
 
@@ -2024,20 +2016,12 @@ Input:
 Output:
     None.
 *******************************************************/
-static int goodix_ts_early_resume(struct tp_device *tp_d)
+static int goodix_ts_early_resume(struct goodix_ts_data *ts)
 {
-    struct goodix_ts_data *ts;
     s8 ret = -1;
-    int reg = 0;
-    ts = container_of(tp_d, struct goodix_ts_data, tp);
     GTP_DEBUG_FUNC();
 
     GTP_INFO("System resume.");
-
-	reg = regulator_enable(ts->tp_regulator);
-	if (reg < 0)
-		GTP_ERROR("failed to enable tp regulator\n");
-	msleep(10);
 
     ret = gtp_wakeup_sleep(ts);
 
@@ -2075,6 +2059,30 @@ static int goodix_ts_early_resume(struct tp_device *tp_d)
 #endif
 
 	return 0;
+}
+
+/*
+ * Anbernic RG DS stock: suspend/resume driven by the Rockchip panel notifier
+ * instead of tp_register_fb (stock rockchip_panel_notifier_call @ffffffc008cbfb08,
+ * registered from gtp_request_input_dev @ffffffc008cc10e0; stock also has no
+ * "tp" regulator handling in probe or suspend/resume).
+ */
+int rockchip_panel_notifier_call(struct notifier_block *self,
+				 unsigned long val, void *v)
+{
+	enum rockchip_panel_event event = (enum rockchip_panel_event)val;
+	struct goodix_ts_data *ts =
+		container_of(self, struct goodix_ts_data, panel_nb);
+
+	printk("********** notify to tp");
+	if (event == PANEL_PRE_DISABLE) {
+		printk("********** notify to suspend");
+		goodix_ts_early_suspend(ts);
+	} else if (event == PANEL_ENABLED) {
+		printk("********** notify to resume");
+		goodix_ts_early_resume(ts);
+	}
+	return NOTIFY_OK;
 }
 
 /*******************************************************
@@ -2155,9 +2163,8 @@ static s8 gtp_request_input_dev(struct i2c_client *client,
         return -ENODEV;
     }
     
-    ts->tp.tp_resume = goodix_ts_early_resume;
-    ts->tp.tp_suspend = goodix_ts_early_suspend;
-    tp_register_fb(&ts->tp);
+    ts->panel_nb.notifier_call = rockchip_panel_notifier_call;
+    devm_rockchip_panel_notifier_register_client(&client->dev, &ts->panel_nb);
 
 #if GTP_WITH_PEN
     gtp_pen_init(ts);
@@ -2732,18 +2739,6 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
 		gtp_y_reverse = TRUE;
 	}
 
-	ts->tp_regulator = devm_regulator_get(&client->dev, "tp");
-	if (IS_ERR(ts->tp_regulator)) {
-		dev_err(&client->dev, "failed to get regulator, %ld\n",
-			PTR_ERR(ts->tp_regulator));
-		return PTR_ERR(ts->tp_regulator);
-	}
-
-	ret = regulator_enable(ts->tp_regulator);
-	if (ret < 0)
-		GTP_ERROR("failed to enable tp regulator\n");
-	msleep(20);
-
     ts->irq_pin = of_get_named_gpio_flags(np, "touch-gpio", 0, (enum of_gpio_flags *)(&ts->irq_flags));
     ts->rst_pin = of_get_named_gpio_flags(np, "reset-gpio", 0, &rst_flags);
     ts->pwr_pin = of_get_named_gpio_flags(np, "power-gpio", 0, &pwr_flags);
@@ -2900,7 +2895,6 @@ probe_init_error:
     GTP_GPIO_FREE(ts->rst_pin);
     GTP_GPIO_FREE(ts->irq_pin);
 probe_init_error_requireio:
-    tp_unregister_fb(&ts->tp); 
     kfree(ts);
     return ret;
 }
@@ -2918,8 +2912,6 @@ static void goodix_ts_remove(struct i2c_client *client)
 {
     struct goodix_ts_data *ts = i2c_get_clientdata(client);
     
-    tp_unregister_fb(&ts->tp);
-
     GTP_DEBUG_FUNC();
 
 #if GTP_CREATE_WR_NODE
