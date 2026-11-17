@@ -559,6 +559,24 @@ struct sched_entity {
 	u64				sum_exec_runtime;
 	u64				vruntime;
 	u64				prev_sum_exec_runtime;
+#if defined(CONFIG_SCHED_BORE) && !defined(__GENKSYMS__)
+	/*
+	 * Hidden from genksyms: CONFIG_ANDROID_KABI_RESERVE is off in the stock
+	 * config, so these fields would otherwise change the symbol version of
+	 * everything that reaches struct task_struct (117 of the 225 symbols the
+	 * stock 8821cs Wi-Fi module imports) and the module would refuse to load.
+	 * Safe only because no loaded module dereferences task_struct fields at
+	 * or after sched_entity; recheck that before loading any other module.
+	 */
+	u64				burst_time;
+	u8				prev_burst_penalty;
+	u8				curr_burst_penalty;
+	u8				burst_penalty;
+	u8				burst_score;
+	u8				child_burst;
+	u32				child_burst_cnt;
+	u64				child_burst_last_cached;
+#endif // CONFIG_SCHED_BORE
 
 	u64				nr_migrations;
 
