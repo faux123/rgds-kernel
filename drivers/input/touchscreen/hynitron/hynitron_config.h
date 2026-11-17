@@ -71,6 +71,7 @@
 */
  
 #define HYN_EN_AUTO_UPDATE                      1
+#define HYN_EN_AUTO_UPDATE_CST644K              0	/* MTK V2.2 value */
 #define HYN_EN_AUTO_UPDATE_CST0xxSE             0
 #define HYN_EN_AUTO_UPDATE_CST0xx               0
 #define HYN_EN_AUTO_UPDATE_CST1xx               0

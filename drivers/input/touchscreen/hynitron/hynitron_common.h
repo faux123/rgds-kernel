@@ -35,6 +35,7 @@
 #define HYN_CHIP_CST7XX						700
 #define HYN_CHIP_CST8XX						800
 #define HYN_CHIP_CST9XX						900
+#define HYN_CHIP_CST644K					644	/* stock chip_type_grp has {644, 644, 1, 0x5a}; from MTK V2.2 */
 /******************************************************/
 
 /************THE CHIP TYPE OF SERIES SUPPORT********************/

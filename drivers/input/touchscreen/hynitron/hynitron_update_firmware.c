@@ -2502,26 +2502,54 @@ static int cst8xx_bootloader_enter(struct i2c_client *client)
     return -1;
 }
 
+/* from Hynitron MTK V2.2; stock has its messages ("cst644K_bootloader_enter detect success,buf[0]=0x%x.") */
+static int cst644K_bootloader_enter(struct i2c_client *client)
+{
+	int ret=-1;
+	u8  retry;
+	unsigned char buf[4];
+
+	HYN_FUNC_ENTER();
+    for(retry=0;retry<10;retry++){
+
+		hyn_reset_proc(7+retry);
+		if(hyn_ts_data->chip_ic_bootloader_addr!=client->addr){
+			client->addr=hyn_ts_data->chip_ic_bootloader_addr;
+		}
+		HYN_DEBUG(" bootloader mode client->addr:0x%x.\r\n",client->addr);
+		buf[0] = 0xA0;
+		buf[1] = 0x01;
+		buf[2] = 0xAA;	//set cmd to enter program mode
+		ret = cst3xx_i2c_write(client, buf, 3);
+		if (ret < 0) continue;
+		mdelay(2);
+
+		buf[0] = 0xA0;
+		buf[1] = 0x02;	//check whether into program mode
+		ret = cst3xx_i2c_read_register(client, buf, 1);
+		if (ret < 0)  continue;
+
+		if (buf[0] == 0x55) 
+            break;
+		
+    }
+
+	if (buf[0] != 0x55)
+	{
+		HYN_ERROR("cst644K_bootloader_enter error,please check VCC/RST/SDA/SCL and chip type.\r\n");
+		return -1;
+	}else{
+    	HYN_DEBUG("cst644K_bootloader_enter detect success,buf[0]=0x%x.\n", buf[0]);	
+	}
+			
+	HYN_FUNC_EXIT();
+	return 0;
+}
+
 int hyn_detect_bootloader(struct i2c_client *client)
 {
 	int ret =-1;
-	unsigned char scan_id;
-	
-	HYN_FUNC_ENTER();
-	
-	for(scan_id=0;scan_id<ARRAY_SIZE(hynitron_chip_type_grp);scan_id++){
-		if(hyn_ts_data->config_chip_type == hynitron_chip_type_grp[scan_id].chip_type){
-			hyn_ts_data->config_chip_series      =hynitron_chip_type_grp[scan_id].chip_series;
-			hyn_ts_data->config_chip_product_line=hynitron_chip_type_grp[scan_id].chip_product_line;		
-			hyn_ts_data->chip_ic_bootloader_addr   =hynitron_chip_type_grp[scan_id].chip_boot_addr;		
-			break;
-		}
-	}
-	if(scan_id==ARRAY_SIZE(hynitron_chip_type_grp))
-	{
-		HYN_ERROR("config chip type error,please check HYN_CHIP_TYPE_CONFIG(common.h).\r\n");
-		return -1;
-	}	
+
     switch(hyn_ts_data->config_chip_series){
 		case HYN_CHIP_CST0XX: 
 			 ret=cst0xx_bootloader_enter(client);
@@ -2534,7 +2562,6 @@ int hyn_detect_bootloader(struct i2c_client *client)
 			 break;
 		case HYN_CHIP_CST1XX:
 		case HYN_CHIP_CST3XX: 
-		case HYN_CHIP_CST9XX: 
 			 ret=cst3xx_bootloader_enter(client);
 			 break;
 		case HYN_CHIP_CST1XXSE:
@@ -2545,6 +2572,9 @@ int hyn_detect_bootloader(struct i2c_client *client)
 		case HYN_CHIP_CST7XX:
 		case HYN_CHIP_CST8XX:
 			 ret=cst8xx_bootloader_enter(client);
+			 break;
+        case HYN_CHIP_CST644K:
+             ret=cst644K_bootloader_enter(client);
 			 break;
 		default :
 			 break;
