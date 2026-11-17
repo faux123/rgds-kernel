@@ -110,6 +110,9 @@ struct goodix_ts_data {
     u16 abs_x_max;
     u16 abs_y_max;
     u8  max_touch_num;
+    u8  ext_lcd_tp;
+    u8  flip_report_tp;
+    u8  com_lcd_tp;
     u8  int_trigger_type;
     u8  green_wake_mode;
     u8  enter_update;
