@@ -2735,8 +2735,17 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
 
 	battery->zero_remain_cap = battery->remain_cap;
 	battery->zero_timeout_cnt = 0;
+	/*
+	 * Stock zero_linek ladder (rk817_bat_calc_zero_linek, ffffffc008ee0ee8..
+	 * ee148c): same shape as Rockchip's, different slopes. Stock values
+	 * vs our develop-4.19 base: entry 950 (400), step0 600 (300),
+	 * step1 1100/900/950/1000 (1200/400/600/800), step2 1400 (1800),
+	 * step3 1050 (1200), step4 1050 flat (800/1200), step5 980 flat
+	 * (1200/900/1000), step6 1100/900 (1200/800), plus a stock-only clamp
+	 * of linek > 1400 to 1300 without a debug print.
+	 */
 	if ((battery->dsoc / 1000 <= 1) && (xsoc > 0)) {
-		battery->zero_linek = 400;
+		battery->zero_linek = 950;
 		battery->zero_drop_sec = 0;
 	} else if (xsoc >= 0) {
 		battery->zero_drop_sec = 0;
@@ -2746,7 +2755,7 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
 		if ((battery->pdata->energy_mode) &&
 		    (xsoc - battery->dsoc / 1000 >= MIN_ZERO_GAP_XSOC3) &&
 		    (battery->dsoc  / 1000 <= 10) && (battery->zero_linek < 300)) {
-			battery->zero_linek = 300;
+			battery->zero_linek = 600;
 			DBG("ZERO-new: zero_linek adjust step0...\n");
 		/* reserve enough power yet, slow down any way */
 		} else if ((xsoc - battery->dsoc / 1000 >= min_gap_xsoc) ||
@@ -2754,55 +2763,44 @@ static void rk817_bat_calc_zero_linek(struct rk817_battery_device *battery)
 			    (battery->dsoc / 1000 <= 10) && (xsoc > 15))) {
 			if (xsoc <= 20 &&
 			    battery->dsoc / 1000 >= battery->pdata->zero_reserve_dsoc)
-				battery->zero_linek = 1200;
+				battery->zero_linek = 1100;
 			else if (xsoc - battery->dsoc / 1000 >= 2 * min_gap_xsoc)
-				battery->zero_linek = 400;
+				battery->zero_linek = 900;
 			else if (xsoc - battery->dsoc / 1000 >= 3 + min_gap_xsoc)
-				battery->zero_linek = 600;
+				battery->zero_linek = 950;
 			else
-				battery->zero_linek = 800;
+				battery->zero_linek = 1000;
 			DBG("ZERO-new: zero_linek adjust step1...\n");
 		/* control zero mode beginning enter */
 		} else if ((battery->zero_linek > 1800) &&
 			   (battery->dsoc / 1000 > 70)) {
-			battery->zero_linek = 1800;
+			battery->zero_linek = 1400;
 			DBG("ZERO-new: zero_linek adjust step2...\n");
 		/* dsoc close to xsoc: it must reserve power */
 		} else if ((battery->zero_linek > 1000) &&
 			   (battery->zero_linek < 1200)) {
-			battery->zero_linek = 1200;
+			battery->zero_linek = 1050;
 			DBG("ZERO-new: zero_linek adjust step3...\n");
 		/* dsoc[5~15], dsoc < xsoc */
 		} else if ((battery->dsoc / 1000 <= 15 && battery->dsoc > 5) &&
 			   (battery->zero_linek <= 1200)) {
-			/* slow down */
-			if ((xsoc - battery->dsoc / 1000) >= min_gap_xsoc)
-				battery->zero_linek = 800;
-			/* reserve power */
-			else
-				battery->zero_linek = 1200;
+			battery->zero_linek = 1050;
 			DBG("ZERO-new: zero_linek adjust step4...\n");
 		/* dsoc[5, 100], dsoc < xsoc */
 		} else if ((battery->zero_linek < 1000) &&
 			   (battery->dsoc / 1000 >= 5)) {
-			if ((xsoc - battery->dsoc / 1000) < min_gap_xsoc) {
-				/* reserve power */
-				battery->zero_linek = 1200;
-			} else {
-				if (abs(battery->current_avg) > 500)/* heavy */
-					battery->zero_linek = 900;
-				else
-					battery->zero_linek = 1000;
-			}
+			battery->zero_linek = 980;
 			DBG("ZERO-new: zero_linek adjust step5...\n");
 		/* dsoc[0~5], dsoc < xsoc */
 		} else if ((battery->zero_linek < 1000) &&
 			   (battery->dsoc  / 1000 <= 5)) {
 			if ((xsoc - battery->dsoc / 1000) <= 3)
-				battery->zero_linek = 1200;
+				battery->zero_linek = 1100;
 			else
-				battery->zero_linek = 800;
+				battery->zero_linek = 900;
 			DBG("ZERO-new: zero_linek adjust step6...\n");
+		} else if (battery->zero_linek > 1400) {
+			battery->zero_linek = 1300;
 		}
 	} else {
 		/* xsoc < 0 */
