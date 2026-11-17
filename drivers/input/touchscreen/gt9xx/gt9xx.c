@@ -56,8 +56,8 @@
     #include <linux/input/mt.h>
 #endif
 
-static u8 m89or101 = TRUE;
-static u8 bgt911 = FALSE;
+static u8 m89or101 = FALSE;
+static u8 bgt911 = TRUE;
 static u8 bgt9110 = FALSE;
 static u8 bgt9111 = FALSE;
 static u8 bgt970 = FALSE;
@@ -454,14 +454,14 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 	 * maps the panel's full Y range onto half of abs_y_max (ext_lcd_tp
 	 * panel: top half, y/2; other panel: bottom half, y/2 + abs_y_max/2).
 	 */
-	if (!gtp_change_x2y)
+	if (gtp_change_x2y)
 		GTP_SWAP(x, y);
 
-	if (!bgt911) {
-		if (gtp_x_reverse == 1)
+	if (bgt911) {
+		if (gtp_x_reverse)
 			x = ts->abs_x_max - x;
 
-		if (!gtp_y_reverse)
+		if (gtp_y_reverse)
 			y = ts->abs_y_max - y;
 	}
 
@@ -2755,47 +2755,47 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
 	 */
 	if (val == 89) {
 		m89or101 = TRUE;
-		gtp_change_x2y = FALSE;
-		gtp_x_reverse = FALSE;
-		gtp_y_reverse = FALSE;
-	} else if (val == 101) {
-		m89or101 = FALSE;
-		gtp_change_x2y = FALSE;
-		gtp_x_reverse = TRUE;
-		gtp_y_reverse = TRUE;
-	} else if (val == 911) {
-		m89or101 = FALSE;
-		bgt911 = FALSE;
 		gtp_change_x2y = TRUE;
 		gtp_x_reverse = FALSE;
 		gtp_y_reverse = TRUE;
+	} else if (val == 101) {
+		m89or101 = FALSE;
+		gtp_change_x2y = TRUE;
+		gtp_x_reverse = TRUE;
+		gtp_y_reverse = FALSE;
+	} else if (val == 911) {
+		m89or101 = FALSE;
+		bgt911 = TRUE;
+		gtp_change_x2y = FALSE;
+		gtp_x_reverse = FALSE;
+		gtp_y_reverse = FALSE;
 	} else if (val == 9110) {
 		m89or101 = FALSE;
 		bgt9110 = TRUE;
-		gtp_change_x2y = TRUE;
-		gtp_x_reverse = FALSE;
-		gtp_y_reverse = TRUE;
-	} else if (val == 9111) {
-		m89or101 = FALSE;
-		bgt9111 = TRUE;
-		gtp_change_x2y = TRUE;
-		gtp_x_reverse = TRUE;
-		gtp_y_reverse = FALSE;
-	} else if (val == 970) {
-		m89or101 = FALSE;
-		bgt911 = TRUE;
-		bgt970 = TRUE;
-		gtp_change_x2y = TRUE;
-		gtp_x_reverse = FALSE;
-		gtp_y_reverse = FALSE;
-	} else if (val == 910) {
-		m89or101 = FALSE;
-		bgt911 = TRUE;
-		bgt970 = FALSE;
-		bgt910 = TRUE;
 		gtp_change_x2y = FALSE;
 		gtp_x_reverse = FALSE;
 		gtp_y_reverse = FALSE;
+	} else if (val == 9111) {
+		m89or101 = FALSE;
+		bgt9111 = TRUE;
+		gtp_change_x2y = FALSE;
+		gtp_x_reverse = TRUE;
+		gtp_y_reverse = TRUE;
+	} else if (val == 970) {
+		m89or101 = FALSE;
+		bgt911 = FALSE;
+		bgt970 = TRUE;
+		gtp_change_x2y = FALSE;
+		gtp_x_reverse = FALSE;
+		gtp_y_reverse = TRUE;
+	} else if (val == 910) {
+		m89or101 = FALSE;
+		bgt911 = FALSE;
+		bgt970 = FALSE;
+		bgt910 = TRUE;
+		gtp_change_x2y = TRUE;
+		gtp_x_reverse = FALSE;
+		gtp_y_reverse = TRUE;
 	}
 
     ts->irq_pin = of_get_named_gpio_flags(np, "touch-gpio", 0, (enum of_gpio_flags *)(&ts->irq_flags));
