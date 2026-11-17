@@ -907,8 +907,14 @@ FINGER_PROCESS:
 	#endif
 
     #if( !HYN_MT_PROTOCOL_B_EN)
-    if((cnt_up>0) && (cnt_down==0))
-        cst3xx_touch_up(hyn_ts_data->input_dev, 0);
+    if((cnt_up>0) && (cnt_down==0)) {
+        /* written out here: stock inlines this one release (input_event x2 @ffffffc008cc206c/@..2080)
+         * while the key path keeps the call to cst3xx_touch_up */
+        struct input_dev *in = hyn_ts_data->input_dev;
+
+        input_report_key(in, BTN_TOUCH, 0);
+        input_mt_sync(in);
+    }
     #endif
 
 	if(cnt_down==0)  hyn_ts_data->report_flag = 0;
