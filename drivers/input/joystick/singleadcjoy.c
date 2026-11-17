@@ -445,8 +445,6 @@ int adc_abs_lx, adc_abs_ly, adc_abs_rx, adc_abs_ry;    /* @..5bac..@..5bb8 */
  * Struct type names are placeholders; offsets are stock.
  */
 struct stock_amux { struct iio_channel *chan; int sel_a_gpio; int sel_b_gpio; int en_gpio; };
-static const int stock_amux_sel_a[4] = { 1, 1, 0, 0 };
-static const int stock_amux_sel_b[4] = { 1, 0, 0, 1 };
 static int __maybe_unused joypad_adc_read(struct stock_amux *amux, void *button)	/* callers (probe tail, joypad_adc_check) not yet written */
 {
 	int val = 0;
@@ -457,8 +455,12 @@ static int __maybe_unused joypad_adc_read(struct stock_amux *amux, void *button)
 		gpiod_set_raw_value(gpio_to_desc(amux->en_gpio), 1);
 		return 0;
 	}
-	gpiod_set_raw_value(gpio_to_desc(amux->sel_a_gpio), stock_amux_sel_a[idx]);
-	gpiod_set_raw_value(gpio_to_desc(amux->sel_b_gpio), stock_amux_sel_b[idx]);
+	{
+		/* sel-A {1,1,0,0}, sel-B {1,0,0,1} by idx (stock: unnamed rodata @ffffffc009d024e8 / @ffffffc009d02208) */
+		/* compound literals: anonymous rodata, no symbol names, as in stock */
+		gpiod_set_raw_value(gpio_to_desc(amux->sel_a_gpio), ((const int[4]){ 1, 1, 0, 0 })[idx]);
+		gpiod_set_raw_value(gpio_to_desc(amux->sel_b_gpio), ((const int[4]){ 1, 0, 0, 1 })[idx]);
+	}
 	usleep_range(10, 20);
 	iio_read_channel_processed(amux->chan, &val);	/* return value ignored in stock */
 	return (val << 15) / 1800;
@@ -1010,15 +1012,6 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 };
 void *poll_dev_private;			/* T @ffffffc00a4d5708, 8 bytes (next symbol @..5710) */
 
-/* Per channel: axis code, p/n tuning property names, invert byte (set via the shared tail @..70afc -> @..70950). */
-static const struct { int code; const char *p, *n; u8 invert; } stock_adc_axis[6] = {
-	{ 0, "abs_x-p-tuning",  "abs_x-n-tuning",  1 },	/* i0 @..709c4, tail @..70afc */
-	{ 1, "abs_y-p-tuning",  "abs_y-n-tuning",  1 },	/* i1 @..70ac0, falls into @..70afc */
-	{ 3, "abs_rx-p-tuning", "abs_rx-n-tuning", 0 },	/* i2 @..70a40, tail @..70b54 */
-	{ 4, "abs_ry-p-tuning", "abs_ry-n-tuning", 1 },	/* i3 @..70a80, tail @..70afc */
-	{ 2, "abs_z-p-tuning",  "abs_z-n-tuning",  0 },	/* i4 @..70a00, tail @..70b54 */
-	{ 5, "abs_rz-p-tuning", "abs_rz-n-tuning", 0 },	/* i5 @..70b18, falls into @..70b54 */
-};
 
 /* Inlined into joypad_probe in stock (@..707b8..70b70). Returns 0 or -errno. */
 static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **out)
@@ -1065,12 +1058,25 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		e->invert = 0;
 		if (i > 5)
 			continue;	/* default branch @..70c58: not decoded yet */
-		e->code = stock_adc_axis[i].code;
-		if (device_property_read_u32(dev, stock_adc_axis[i].p, &e->tuning_p))
-			e->tuning_p = 180;		/* 0xb4 @..70948 */
-		if (device_property_read_u32(dev, stock_adc_axis[i].n, &e->tuning_n))
-			e->tuning_n = 180;
-		e->invert = stock_adc_axis[i].invert;
+		{
+			/* switch(i) via jump table @ffffffc0097195c0; invert set through the shared tail @..70afc -> @..70950 */
+			const char *pp, *nn;
+			u8 inv;
+
+			switch (i) {
+			case 0: e->code = 0; pp = "abs_x-p-tuning";  nn = "abs_x-n-tuning";  inv = 1; break;	/* @..709c4 */
+			case 1: e->code = 1; pp = "abs_y-p-tuning";  nn = "abs_y-n-tuning";  inv = 1; break;	/* @..70ac0 */
+			case 2: e->code = 3; pp = "abs_rx-p-tuning"; nn = "abs_rx-n-tuning"; inv = 0; break;	/* @..70a40 */
+			case 3: e->code = 4; pp = "abs_ry-p-tuning"; nn = "abs_ry-n-tuning"; inv = 1; break;	/* @..70a80 */
+			case 4: e->code = 2; pp = "abs_z-p-tuning";  nn = "abs_z-n-tuning";  inv = 0; break;	/* @..70a00 */
+			default: e->code = 5; pp = "abs_rz-p-tuning"; nn = "abs_rz-n-tuning"; inv = 0; break;	/* @..70b18 */
+			}
+			if (device_property_read_u32(dev, pp, &e->tuning_p))
+				e->tuning_p = 180;		/* 0xb4 @..70948 */
+			if (device_property_read_u32(dev, nn, &e->tuning_n))
+				e->tuning_n = 180;
+			e->invert = inv;
+		}
 	}
 	*out = joypad;
 	return 0;
@@ -1523,20 +1529,6 @@ extern int remapkey_xbox_switch, remapkey_xbox_switch_bt_tr;	/* @..5714, @..5718
  * which is Y's slot, then stores 6. Y uses the same test correctly (@..701a8/@..701f0). Kept as in stock.
  * The RG556 .ko keypad2touchpanel_abs has the same 4 `tst ..., #0xfffffffb` sites, so the quirk predates the RG DS. */
 struct stock_key { int code, slot, *mode, *x, *y; int accept; };
-static const struct stock_key stock_keys[] = {
-	{ 0x130, 5,  &remapkey_a_mode,      &remapkey_a_x,      &remapkey_a_y, 5 },
-	{ 0x131, 6,  &remapkey_b_mode,      &remapkey_b_x,      &remapkey_b_y, 4 },
-	{ 0x133, 3,  &remapkey_x_mode,      &remapkey_x_x,      &remapkey_x_y, 3 },
-	{ 0x134, 4,  &remapkey_y_mode,      &remapkey_y_x,      &remapkey_y_y, 4 },
-	{ 0x136, 14, &remapkey_l1_mode,     &remapkey_l1_x,     &remapkey_l1_y, 14 },
-	{ 0x137, 10, &remapkey_r1_mode,     &remapkey_r1_x,     &remapkey_r1_y, 10 },
-	{ 0x138, 9,  &remapkey_l2_mode,     &remapkey_l2_x,     &remapkey_l2_y, 9 },
-	{ 0x139, 11, &remapkey_r2_mode,     &remapkey_r2_x,     &remapkey_r2_y, 11 },
-	{ 0x13a, 7,  &remapkey_select_mode, &remapkey_select_x, &remapkey_select_y, 7 },
-	{ 0x13b, 8,  &remapkey_start_mode,  &remapkey_start_x,  &remapkey_start_y, 8 },
-	{ 0x13d, 12, &remapkey_left_joy_mid_mode,  &remapkey_left_joy_mid_x,  &remapkey_left_joy_mid_y, 12 },
-	{ 0x13e, 13, &remapkey_right_joy_mid_mode, &remapkey_right_joy_mid_x, &remapkey_right_joy_mid_y, 13 },
-};
 static __always_inline void stock_slot_down(int slot, int x, int y)
 {
 	*(u64 *)&touch_data[slot * 4] = 0x100000001ULL;
@@ -1546,14 +1538,24 @@ static __always_inline void stock_slot_down(int slot, int x, int y)
 static __always_inline void stock_slot_up(int slot) { *(u64 *)&touch_data[slot * 4] = 1; }
 int keypad2touchpanel_abs(int code, int pressed)
 {
-	const struct stock_key *k = NULL;
-	int i, mode;
+	struct stock_key kk, *k = &kk;
+	int mode;
 
-	for (i = 0; i < ARRAY_SIZE(stock_keys); i++)
-		if (stock_keys[i].code == code)
-			k = &stock_keys[i];
-	if (!k)
-		return 0;
+	switch (code) {	/* halfword jump table @ffffffc0097195a0 */
+	case 0x130: kk = (struct stock_key){ 0x130, 5,  &remapkey_a_mode,      &remapkey_a_x,      &remapkey_a_y, 5 }; break;
+	case 0x131: kk = (struct stock_key){ 0x131, 6,  &remapkey_b_mode,      &remapkey_b_x,      &remapkey_b_y, 4 }; break;
+	case 0x133: kk = (struct stock_key){ 0x133, 3,  &remapkey_x_mode,      &remapkey_x_x,      &remapkey_x_y, 3 }; break;
+	case 0x134: kk = (struct stock_key){ 0x134, 4,  &remapkey_y_mode,      &remapkey_y_x,      &remapkey_y_y, 4 }; break;
+	case 0x136: kk = (struct stock_key){ 0x136, 14, &remapkey_l1_mode,     &remapkey_l1_x,     &remapkey_l1_y, 14 }; break;
+	case 0x137: kk = (struct stock_key){ 0x137, 10, &remapkey_r1_mode,     &remapkey_r1_x,     &remapkey_r1_y, 10 }; break;
+	case 0x138: kk = (struct stock_key){ 0x138, 9,  &remapkey_l2_mode,     &remapkey_l2_x,     &remapkey_l2_y, 9 }; break;
+	case 0x139: kk = (struct stock_key){ 0x139, 11, &remapkey_r2_mode,     &remapkey_r2_x,     &remapkey_r2_y, 11 }; break;
+	case 0x13a: kk = (struct stock_key){ 0x13a, 7,  &remapkey_select_mode, &remapkey_select_x, &remapkey_select_y, 7 }; break;
+	case 0x13b: kk = (struct stock_key){ 0x13b, 8,  &remapkey_start_mode,  &remapkey_start_x,  &remapkey_start_y, 8 }; break;
+	case 0x13d: kk = (struct stock_key){ 0x13d, 12, &remapkey_left_joy_mid_mode,  &remapkey_left_joy_mid_x,  &remapkey_left_joy_mid_y, 12 }; break;
+	case 0x13e: kk = (struct stock_key){ 0x13e, 13, &remapkey_right_joy_mid_mode, &remapkey_right_joy_mid_x, &remapkey_right_joy_mid_y, 13 }; break;
+	default: return 0;	/* 0x132, 0x135, 0x13c and outside 0x130..0x13e */
+	}
 	mode = *k->mode;
 
 	if (mode == 1) {
