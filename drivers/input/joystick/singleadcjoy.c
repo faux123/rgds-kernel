@@ -1403,78 +1403,6 @@ extern int hat_y, hat_x;			/* T @ffffffc00a4d5b8c, @ffffffc00a4d5b88 (defined be
  * buttons 2/3 = sw3 "GPIO DPAD-LEFT" / sw4 "GPIO DPAD-RIGHT", state hat_x, ABS_HAT0X (0x10), touch slot 15
  * (@..59a4), remapkey_left_mode/right_mode (@..57d8/@..57dc), remapkey_left_x/_y (@..5750/5754),
  * remapkey_right_x/_y (@..5758/575c). LEFT reports -1 (@..75728), RIGHT +1 (@..75ea8). */
-struct stock_hat {
-	int idx, *state, code, slot;
-	int *neg_mode, *neg_x, *neg_y, *pos_mode, *pos_x, *pos_y;
-};
-static __always_inline void stock_hat_debounce(void) { usleep_range(32000, 35000); }
-static __always_inline void stock_hat_leave(const struct stock_hat *h)	/* @..7508c.. / @..75480.. */
-{
-	if (!remapkey_switch) {
-		input_event(poll_dev_input, EV_ABS, h->code, 0);
-	} else {
-		stock_hat_debounce();
-		if (*h->neg_mode == 1 && gts_dev)
-			*(u64 *)&touch_data[h->slot * 4] = 1;
-		if (*h->pos_mode == 1 && gts_dev)
-			*(u64 *)&touch_data[h->slot * 4] = 1;
-		g_touch_sync();
-	}
-	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
-}
-static __always_inline void stock_hat_press(const struct stock_hat *h, int neg)	/* Y: @..752f4/@..75398, X: @..756b8/@..7575c */
-{
-	stock_hat_debounce();
-	if (!remapkey_switch) {
-		input_event(poll_dev_input, EV_ABS, h->code, neg ? -1 : 1);
-	} else {
-		stock_hat_debounce();
-		if (*(neg ? h->neg_mode : h->pos_mode) == 1 && gts_dev) {
-			*(u64 *)&touch_data[h->slot * 4] = 0x100000001ULL;
-			touch_data[h->slot * 4 + 2] = *(neg ? h->neg_y : h->pos_y);
-			touch_data[h->slot * 4 + 3] = *(neg ? h->neg_x : h->pos_x);
-		}
-		g_touch_sync();				/* called even when mode != 1 */
-	}
-	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);
-}
-/* *state is +1 while the "neg" button (UP / LEFT) is held and -1 while the "pos" button is held. */
-static __always_inline void stock_gpio_hat(const struct stock_hat *h)
-{
-	int n0 = gpio_hat_value_new[h->idx], n1 = gpio_hat_value_new[h->idx + 1];
-
-	if (gpio_hat_value_old[h->idx] == n0 && gpio_hat_value_old[h->idx + 1] == n1)
-		return;
-	if (!(n0 | n1)) {
-		if (*h->state) {
-			*h->state = 0;
-			stock_hat_debounce();
-			stock_hat_leave(h);
-		}
-	} else if (n0 == 1 && n1 == 0) {
-		if (*h->state == -1) {
-			*h->state = 1;
-			stock_hat_debounce();
-			stock_hat_leave(h);
-			stock_hat_press(h, 1);
-		} else if (*h->state == 0) {
-			*h->state = 1;
-			stock_hat_press(h, 1);
-		}
-	} else if (n0 == 0 && n1 == 1) {
-		if (*h->state == 1) {
-			*h->state = -1;
-			stock_hat_debounce();
-			stock_hat_leave(h);
-			stock_hat_press(h, 0);
-		} else if (*h->state == 0) {
-			*h->state = -1;
-			stock_hat_press(h, 0);
-		}
-	}
-	gpio_hat_value_old[h->idx] = n0;		/* Y @..7542c, X @..757f0 */
-	gpio_hat_value_old[h->idx + 1] = n1;
-}
 
 /* ---- tenpad2touchpanel_abs @ffffffc008c6f69c (0x168). Leaf, returns 0. (sel = linux,abs-value selector,
  * axis = ABS_HAT0X 0x10 / ABS_HAT0Y 0x11, pressed). Writes touch slot 2 (@..58d4) for BOTH axes, unlike the hat-X
@@ -1692,33 +1620,102 @@ static __always_inline void stock_gpio_buttons(void)
 			 * one is pressed: mark the neighbour button's last-raw byte (+1 slot for sel 1 @..758e8,
 			 * -1 slot for sel 2 @..759ac) as 1, and release touch slot 2 if this direction's mode == 1.
 			 * Then tenpad2touchpanel_abs(sel, code, val) and old = val. Only codes 0x10 / 0x11 act. */
-			int sel = b->abs_value, val = (sel == 1) ? pressed : -pressed;
-			int *cur, *old, *mode;
-
-			if (sel != 1 && sel != 2)		/* @..75890..7589c: other selectors do nothing */
-				goto next;
-			if (b->code == 0x10) {
-				cur = &abs_value_x_value; old = &abs_value_x_value_old;
-				mode = (sel == 1) ? &remapkey_right_mode : &remapkey_left_mode;
-			} else if (b->code == 0x11) {
-				cur = &abs_value_y_value; old = &abs_value_y_value_old;
-				mode = (sel == 1) ? &remapkey_down_mode : &remapkey_up_mode;
-			} else {
-				goto next;
+			/* written out per selector and axis as stock (four tenpad2touchpanel_abs call sites) */
+#define SEL_HALF(SEL, AX, MODE, OPP, NB)						\
+			do {								\
+				abs_value_##AX##_value = (SEL) == 1 ? pressed : -pressed; \
+				if (abs_value_##AX##_value_old == (OPP) && pressed) {	\
+					(b + (NB))->raw_not_high = 1;			\
+					if (remapkey_##MODE##_mode == 1 && gts_dev)	\
+						*(u64 *)&touch_data[8] = 1;		\
+				}							\
+				tenpad2touchpanel_abs(b->abs_value, b->code, (SEL) == 1 ? pressed : -pressed); \
+				abs_value_##AX##_value_old = (SEL) == 1 ? pressed : -pressed; \
+			} while (0)
+			if (b->abs_value == 1) {			/* @..758a0 */
+				if (b->code == 0x10)
+					SEL_HALF(1, x, right, -1, 1);
+				if (b->code == 0x11)
+					SEL_HALF(1, y, down, -1, 1);
+			} else if (b->abs_value == 2) {			/* @..75968 */
+				if (b->code == 0x10)
+					SEL_HALF(2, x, left, 1, -1);
+				if (b->code == 0x11)
+					SEL_HALF(2, y, up, 1, -1);
 			}
-			*cur = val;
-			if (*old == ((sel == 1) ? -1 : 1) && pressed) {
-				(b + ((sel == 1) ? 1 : -1))->raw_not_high = 1;
-				if (*mode == 1 && gts_dev)
-					*(u64 *)&touch_data[8] = 1;
-			}
-			tenpad2touchpanel_abs(sel, b->code, val);	/* @..75be0/75cd4/75dd0/75e30 */
-			*old = val;
+#undef SEL_HALF
 		}
-next:
 		b->raw_not_high = (v != 0);			/* strb @..75830 */
 	}
 }
+/* Hat block written out per axis, with stock's shared press tails (Y @..7502c..75430, X @..75430..757f4). */
+#define HAT_DEBOUNCE()	usleep_range(32000, 35000)
+#define HAT_LEAVE(CODE, SLOT, NK, PK)						\
+	do {									\
+		if (!remapkey_switch) {						\
+			input_event(poll_dev_input, EV_ABS, CODE, 0);		\
+		} else {							\
+			HAT_DEBOUNCE();						\
+			if (remapkey_##NK##_mode == 1 && gts_dev)		\
+				stock_slot_up(SLOT);				\
+			if (remapkey_##PK##_mode == 1 && gts_dev)		\
+				stock_slot_up(SLOT);				\
+			g_touch_sync();						\
+		}								\
+		input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);		\
+	} while (0)
+#define HAT_PRESS(CODE, SLOT, K, VAL)						\
+	do {									\
+		HAT_DEBOUNCE();							\
+		if (!remapkey_switch) {						\
+			input_event(poll_dev_input, EV_ABS, CODE, VAL);		\
+		} else {							\
+			HAT_DEBOUNCE();						\
+			if (remapkey_##K##_mode == 1 && gts_dev)		\
+				stock_slot_down(SLOT, remapkey_##K##_x, remapkey_##K##_y); \
+			g_touch_sync();						\
+		}								\
+		input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);		\
+	} while (0)
+#define HAT_BLOCK(IDX, ST, CODE, SLOT, NK, PK, L)				\
+	do {									\
+		int n0 = gpio_hat_value_new[IDX], n1 = gpio_hat_value_new[(IDX) + 1]; \
+		if (gpio_hat_value_old[IDX] == n0 && gpio_hat_value_old[(IDX) + 1] == n1) \
+			break;							\
+		if (!(n0 | n1)) {						\
+			if (ST) {						\
+				ST = 0;						\
+				HAT_DEBOUNCE();					\
+				HAT_LEAVE(CODE, SLOT, NK, PK);			\
+			}							\
+		} else if (n0 == 1 && n1 == 0) {				\
+			if (ST == -1) {						\
+				ST = 1;						\
+				HAT_DEBOUNCE();					\
+				HAT_LEAVE(CODE, SLOT, NK, PK);			\
+				goto L##_neg;					\
+			} else if (ST == 0) {					\
+				ST = 1;						\
+				goto L##_neg;					\
+			}							\
+		} else if (n0 == 0 && n1 == 1) {				\
+			if (ST == 1) {						\
+				ST = -1;					\
+				HAT_DEBOUNCE();					\
+				HAT_LEAVE(CODE, SLOT, NK, PK);			\
+				goto L##_pos;					\
+			} else if (ST == 0) {					\
+				ST = -1;					\
+				goto L##_pos;					\
+			}							\
+		}								\
+		goto L##_copy;							\
+L##_neg:	HAT_PRESS(CODE, SLOT, NK, -1);					\
+		goto L##_copy;							\
+L##_pos:	HAT_PRESS(CODE, SLOT, PK, 1);					\
+L##_copy:	gpio_hat_value_old[IDX] = n0;					\
+		gpio_hat_value_old[(IDX) + 1] = n1;				\
+	} while (0)
 static noinline void joypad_gpio_check(struct input_dev *input)
 {
 	struct stock_joypad *joypad = poll_dev_private;
@@ -1735,14 +1732,8 @@ static noinline void joypad_gpio_check(struct input_dev *input)
 		b[i].raw_not_high = (v != 1);
 		gpio_hat_value_new[i] = 1 - v;
 	}
-	{
-		static const struct stock_hat hy = { 0, &hat_y, ABS_HAT0Y, 2, &remapkey_up_mode, &remapkey_up_x,
-			&remapkey_up_y, &remapkey_down_mode, &remapkey_down_x, &remapkey_down_y };
-		static const struct stock_hat hx = { 2, &hat_x, ABS_HAT0X, 15, &remapkey_left_mode, &remapkey_left_x,
-			&remapkey_left_y, &remapkey_right_mode, &remapkey_right_x, &remapkey_right_y };
-		stock_gpio_hat(&hy);			/* block 2 @..7502c */
-		stock_gpio_hat(&hx);			/* block 3 @..75430 */
-	}
+	HAT_BLOCK(0, hat_y, ABS_HAT0Y, 2, up, down, haty);	/* block 2 @..7502c: UP reports -1, DOWN +1 */
+	HAT_BLOCK(2, hat_x, ABS_HAT0X, 15, left, right, hatx);	/* block 3 @..75430: LEFT -1, RIGHT +1 */
 	stock_gpio_buttons();				/* block 4 @..757f4 */
 	input_event(poll_dev_input, EV_SYN, SYN_REPORT, 0);	/* tail @..75e5c */
 	g_touch_sync();						/* @..75e60 */
