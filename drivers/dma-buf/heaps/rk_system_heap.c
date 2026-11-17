@@ -25,7 +25,6 @@
 #include <linux/rockchip/rockchip_sip.h>
 
 #include "page_pool.h"
-#include "deferred-free-helper.h"
 
 static struct dma_heap *sys_heap;
 static struct dma_heap *sys_dma32_heap;
@@ -44,7 +43,6 @@ struct system_heap_buffer {
 	struct sg_table sg_table;
 	int vmap_cnt;
 	void *vaddr;
-	struct deferred_freelist_item deferred_free;
 	struct dmabuf_page_pool **pools;
 	bool uncached;
 };
@@ -428,52 +426,66 @@ static int system_heap_zero_buffer(struct system_heap_buffer *buffer)
 
 	for_each_sgtable_page(sgt, &piter, 0) {
 		p = sg_page_iter_page(&piter);
-		vaddr = kmap_atomic(p);
+		vaddr = kmap_local_page(p);
 		memset(vaddr, 0, PAGE_SIZE);
-		kunmap_atomic(vaddr);
+		kunmap_local(vaddr);
 	}
 
 	return ret;
 }
 
-static void system_heap_buf_free(struct deferred_freelist_item *item,
-				 enum df_reason reason)
-{
+struct system_heap_work {
+	struct work_struct work;
 	struct system_heap_buffer *buffer;
+};
+
+static struct workqueue_struct *system_heap_wq;
+
+static void system_heap_dma_buf_release_sync(struct system_heap_buffer *buffer)
+{
 	struct sg_table *table;
 	struct scatterlist *sg;
 	int i, j;
 
-	buffer = container_of(item, struct system_heap_buffer, deferred_free);
 	/* Zero the buffer pages before adding back to the pool */
-	if (reason == DF_NORMAL)
-		if (system_heap_zero_buffer(buffer))
-			reason = DF_UNDER_PRESSURE; // On failure, just free
+	system_heap_zero_buffer(buffer);
 
 	table = &buffer->sg_table;
 	for_each_sgtable_sg(table, sg, i) {
 		struct page *page = sg_page(sg);
 
-		if (reason == DF_UNDER_PRESSURE) {
-			__free_pages(page, compound_order(page));
-		} else {
-			for (j = 0; j < NUM_ORDERS; j++) {
-				if (compound_order(page) == orders[j])
-					break;
-			}
-			dmabuf_page_pool_free(buffer->pools[j], page);
+		for (j = 0; j < NUM_ORDERS; j++) {
+			if (compound_order(page) == orders[j])
+				break;
 		}
+		dmabuf_page_pool_free(buffer->pools[j], page);
 	}
 	sg_free_table(table);
 	kfree(buffer);
 }
 
+static void system_heap_worker(struct work_struct *work)
+{
+	struct system_heap_work *w = container_of(work, struct system_heap_work, work);
+
+	system_heap_dma_buf_release_sync(w->buffer);
+	kfree(w);
+}
+
 static void system_heap_dma_buf_release(struct dma_buf *dmabuf)
 {
 	struct system_heap_buffer *buffer = dmabuf->priv;
-	int npages = PAGE_ALIGN(buffer->len) / PAGE_SIZE;
+	struct system_heap_work *w;
 
-	deferred_free(&buffer->deferred_free, system_heap_buf_free, npages);
+	w = kzalloc(sizeof(*w), GFP_KERNEL);
+	if (!w) {
+		system_heap_dma_buf_release_sync(buffer);
+		return;
+	}
+
+	INIT_WORK(&w->work, system_heap_worker);
+	w->buffer = buffer;
+	queue_work(system_heap_wq, &w->work);
 }
 
 static const struct dma_buf_ops system_heap_buf_ops = {
@@ -563,6 +575,10 @@ static struct dma_buf *system_heap_do_allocate(struct dma_heap *heap,
 		page = system_heap_alloc_largest_available(heap, buffer->pools,
 							   size_remaining,
 							   max_order);
+		if (!page) {
+			flush_workqueue(system_heap_wq);
+			page = system_heap_alloc_largest_available(heap, buffer->pools, size_remaining, max_order);
+		}
 		if (!page)
 			goto free_buffer;
 
@@ -831,6 +847,12 @@ static int system_heap_create(void)
 	if (ddr_map_info) {
 		bank_bit_first = ddr_map_info->bank_bit_first;
 		bank_bit_mask = ddr_map_info->bank_bit_mask;
+	}
+
+	system_heap_wq = create_singlethread_workqueue("system_heap_wq");
+	if (!system_heap_wq) {
+		pr_err("Failed to create system heap workqueue\n");
+		goto err_dma32_pool;
 	}
 
 	return 0;
