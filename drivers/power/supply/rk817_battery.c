@@ -2043,12 +2043,9 @@ static enum power_supply_property rk817_bat_props[] = {
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
 	POWER_SUPPLY_PROP_HEALTH,
 	POWER_SUPPLY_PROP_CAPACITY,
-	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
 	POWER_SUPPLY_PROP_TEMP,
 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
 	POWER_SUPPLY_PROP_CHARGE_FULL,
-	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
 };
 
 static int rk817_bat_get_usb_psy(struct device *dev, void *data)
@@ -2118,45 +2115,6 @@ static int rk817_bat_get_charge_state(struct rk817_battery_device *battery)
 	return (battery->usb_in || battery->ac_in);
 }
 
-static int rk817_get_capacity_leve(struct rk817_battery_device *battery)
-{
-	int dsoc;
-
-	if (battery->pdata->bat_mode == MODE_VIRTUAL)
-		return POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-
-	dsoc = (battery->dsoc + 500) / 1000;
-	if (dsoc < 1)
-		return POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-	else if (dsoc <= 20)
-		return POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-	else if (dsoc <= 70)
-		return POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-	else if (dsoc <= 90)
-		return POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
-	else
-		return POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-}
-
-static int rk817_battery_time_to_full(struct rk817_battery_device *battery)
-{
-	int time_sec;
-	int cap_temp;
-
-	if (battery->pdata->bat_mode == MODE_VIRTUAL) {
-		time_sec = 3600;
-	} else if (battery->voltage_avg > 0) {
-		cap_temp = battery->design_cap - (battery->remain_cap / 1000);
-		if (cap_temp < 0)
-			cap_temp = 0;
-		time_sec = (3600 * cap_temp) / battery->voltage_avg;
-	} else {
-		time_sec = 3600 * 24; /* One day */
-	}
-
-	return time_sec;
-}
-
 static int rk817_battery_get_property(struct power_supply *psy,
 				      enum power_supply_property psp,
 				      union power_supply_propval *val)
@@ -2188,9 +2146,6 @@ static int rk817_battery_get_property(struct power_supply *psy,
 		if (fg_init_done)
 			led_update_charger_soc_status();
 		break;
-	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-		val->intval = rk817_get_capacity_leve(battery);
-		break;
 	case POWER_SUPPLY_PROP_HEALTH:
 		val->intval = POWER_SUPPLY_HEALTH_GOOD;
 		break;
@@ -2205,8 +2160,10 @@ static int rk817_battery_get_property(struct power_supply *psy,
 		else if (battery->dsoc == 100 * 1000)
 			val->intval = POWER_SUPPLY_STATUS_FULL;
 		else {
+			/* stock also requires F_E6_6 (0xE6 bit 6), ffffffc008ee1618..1638 */
 			if ((battery->chip_id != RK809_ID) &&
-			    rk817_bat_get_charge_state(battery))
+			    rk817_bat_get_charge_state(battery) &&
+			    rk817_bat_field_read(battery, F_E6_6))
 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
 			else if (battery->chip_id == RK809_ID &&
 				 battery->plugin_trigger)
@@ -2216,14 +2173,11 @@ static int rk817_battery_get_property(struct power_supply *psy,
 		}
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
-		val->intval = battery->charge_count;
+		/* stock: 32-bit load of charge_count + 2500 (ffffffc008ee15d8) */
+		val->intval = battery->charge_count + 2500;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
-	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		val->intval = battery->pdata->design_capacity * 1000;/* uAh */
-		break;
-	case POWER_SUPPLY_PROP_TIME_TO_FULL_NOW:
-		val->intval = rk817_battery_time_to_full(battery);
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 		val->intval = 4500 * 1000;
