@@ -2751,8 +2751,7 @@ static int dwc3_gadget_soft_disconnect(struct dwc3 *dwc)
 	 * stall the transfer, and move back to the SETUP phase, so that any
 	 * pending endxfers can be executed.
 	 */
-	if (dwc->ep0state != EP0_SETUP_PHASE &&
-	    dwc->ep0state != EP0_UNCONNECTED) {
+	if (dwc->ep0state != EP0_SETUP_PHASE) {
 		reinit_completion(&dwc->ep0_in_setup);
 
 		ret = wait_for_completion_timeout(&dwc->ep0_in_setup,
