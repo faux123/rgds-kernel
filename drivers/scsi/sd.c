@@ -3772,11 +3772,17 @@ static int sd_resume_common(struct device *dev)
 	if (!sdkp->device->manage_start_stop)
 		return 0;
 
+	/*
+	 * RG DS stock (sd_resume_common, ffffffc008a753d8, kept out of line):
+	 * hold a wakeup reference across the START STOP UNIT command.
+	 */
+	pm_stay_awake(dev);
 	sd_printk(KERN_NOTICE, sdkp, "Starting disk\n");
 	ret = sd_start_stop_device(sdkp, 1);
 
 	if (!ret)
 		sd_resume(dev);
+	pm_relax(dev);
 
 	return ret;
 }
