@@ -585,6 +585,7 @@ static struct platform_driver joypad_driver = {
  */
 struct input_dev *joypad_input_g;	/* T @ffffffc00a4d5af0, 8 bytes (ldr x) */
 struct input_dev *gts_dev;		/* T @ffffffc00a4d58a8, 8 bytes; passed to input_event in g_touch_sync */
+int touch_id;				/* T @ffffffc00a4d58b0 (4 bytes before touch_data); no access with #0x8b0 in the joypad text range, kept for symbol parity */
 int touch_data[0x1e0 / 4];		/* T @ffffffc00a4d58b4..@..5a94 = 0x1e0 bytes = 30 slots of 16 */
 int joypad2touchpanel_abs_z_mode2(void)
 {
@@ -1979,3 +1980,10 @@ static DEVICE_ATTR(adc_fuzz, 0644, joypad_show_adc_fuzz, NULL);
 static DEVICE_ATTR(adc_flat, 0644, joypad_show_adc_flat, NULL);
 static DEVICE_ATTR(adc_cal, 0644, joypad_show_adc_cal, joypad_store_adc_cal);
 static DEVICE_ATTR(amux_debug, 0644, joypad_show_amux_debug, joypad_store_amux_debug);
+
+/* RG556 .ko cross-check of joypad_gpio_check (.ko 0x49e4, size 0x820 vs 0xfa0 on RG DS), by relocation names:
+ * shared with RG DS: the selector 1/2 hat-half path (abs_value_x/y_value(_old), 4 x tenpad2touchpanel_abs,
+ * remapkey_up/down/left/right_mode, touch_data+0x20), keypad2touchpanel_abs dispatch, remapkey_xbox_switch, and the
+ * tail (g_touch_sync, abs_z_mode2 -> joypad2touchpanel_abs_z_mode2). Present only on RG DS: the hat_x/hat_y state
+ * machines with gpio_hat_value_new/old and the 32-35 ms usleep_range debounce, and remapkey_xbox_switch_bt_tr
+ * (TL2/TR2 as ABS_Z/ABS_RZ). The RG556 revision has no d-pad hat block; RG DS bytes are the authority. */
