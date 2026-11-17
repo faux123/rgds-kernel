@@ -872,17 +872,17 @@ int joypad2touchpanel_abs_ext(int mask, int axis, int value)
 	if (--joypad_count_temp)			/* @..6e680 */
 		return 0;
 
-	if (gts_dev) {	/* every case re-tests gts_dev (cbz x9) before writing */
-		switch (mask) {
-		case 3:  stock_ext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
-		case 4:  stock_ext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
-		case 5:  stock_ext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
-		case 6:  stock_ext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
-		case 9:  stock_ext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
-		case 10: stock_ext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
-		case 11: stock_ext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
-		case 12: stock_ext_touch(abxy_mask_l3, remapkey_left_joy_mid_x, remapkey_left_joy_mid_y); break;
-		case 14: stock_ext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
+	{
+		switch (mask) {	/* each case re-tests gts_dev before writing, as stock (cbz x9 per case) */
+		case 3:  if (gts_dev) stock_ext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
+		case 4:  if (gts_dev) stock_ext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
+		case 5:  if (gts_dev) stock_ext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
+		case 6:  if (gts_dev) stock_ext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
+		case 9:  if (gts_dev) stock_ext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
+		case 10: if (gts_dev) stock_ext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
+		case 11: if (gts_dev) stock_ext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
+		case 12: if (gts_dev) stock_ext_touch(abxy_mask_l3, remapkey_left_joy_mid_x, remapkey_left_joy_mid_y); break;
+		case 14: if (gts_dev) stock_ext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
 		default: break;
 		}
 	}
@@ -924,17 +924,17 @@ int joypad2touchpanel_abs_z_ext(int mask, int axis, int value)
 	if (--joypadz_count_temp)			/* @..6edcc */
 		return 0;
 
-	if (gts_dev) {
-		switch (mask) {
-		case 3:  stock_zext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
-		case 4:  stock_zext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
-		case 5:  stock_zext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
-		case 6:  stock_zext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
-		case 9:  stock_zext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
-		case 10: stock_zext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
-		case 11: stock_zext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
-		case 13: stock_zext_touch(abxy_z_mask_r3, remapkey_right_joy_mid_x, remapkey_right_joy_mid_y); break;
-		case 14: stock_zext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
+	{
+		switch (mask) {	/* each case re-tests gts_dev before writing, as stock (cbz x9 per case) */
+		case 3:  if (gts_dev) stock_zext_touch(3,  remapkey_x_x,  remapkey_x_y);  break;
+		case 4:  if (gts_dev) stock_zext_touch(4,  remapkey_y_x,  remapkey_y_y);  break;
+		case 5:  if (gts_dev) stock_zext_touch(5,  remapkey_a_x,  remapkey_a_y);  break;
+		case 6:  if (gts_dev) stock_zext_touch(6,  remapkey_b_x,  remapkey_b_y);  break;
+		case 9:  if (gts_dev) stock_zext_touch(9,  remapkey_l2_x, remapkey_l2_y); break;
+		case 10: if (gts_dev) stock_zext_touch(10, remapkey_r1_x, remapkey_r1_y); break;
+		case 11: if (gts_dev) stock_zext_touch(11, remapkey_r2_x, remapkey_r2_y); break;
+		case 13: if (gts_dev) stock_zext_touch(abxy_z_mask_r3, remapkey_right_joy_mid_x, remapkey_right_joy_mid_y); break;
+		case 14: if (gts_dev) stock_zext_touch(14, remapkey_l1_x, remapkey_l1_y); break;
 		default: break;
 		}
 	}
@@ -2007,17 +2007,18 @@ static ssize_t joypad_show_adc_cal(struct device *dev, struct device_attribute *
 static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct stock_joypad *joypad = dev_get_drvdata(dev);
-	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
 	int i, v;
 
 	if (!simple_strtoul(buf, NULL, 10))				/* @..71968 */
 		return count;
 	mutex_lock(&joypad->lock);
 	for (i = 0; i < joypad->amux_count; i++) {
-		v = joypad_adc_read(amux, &joypad->adc[i]);
-		joypad->adc[i].value = v;				/* @..719b0 */
+		struct stock_adc_channel *e = &joypad->adc[i];
+
+		v = joypad_adc_read(*(struct stock_amux **)((char *)joypad + 0x10), e);	/* amux re-read each pass @..719a0 */
+		e->value = v;					/* @..719b0 */
 		if (v)
-			joypad->adc[i].cal = v;			/* @..719b8 (no channel 4/5 exception, unlike probe) */
+			e->cal = v;				/* @..719b8 (no channel 4/5 exception, unlike probe) */
 		else
 			dev_err(*(struct device **)joypad, "%s : saradc channels[%d]!\n", "joypad_store_adc_cal", i);
 	}
