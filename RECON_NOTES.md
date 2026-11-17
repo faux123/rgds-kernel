@@ -684,3 +684,6 @@ page-cluster 0, swappiness 100, no allocation stalls since boot. The script grow
 RAM (2.33 GB) to MemTotal (3.10 GB). First boot: resize FAILED because Android's own zram swapon came
 after sys.boot_completed (disksize 0 when the script ran); fixed to wait for zram0 in /proc/swaps.
 Not re-verified yet: the reboot is on hold for a peer session's ROM scan on the device.
+Re-verified 2026-11-17 12:44 after a cold reboot (peer paul-d7 released the device first): rgds-tune.log
+"zram disksize 2325282816 -> 3100381184" at boot+3 s, /proc/swaps zram0 3027712 KiB, lz4, page-cluster 0;
+mmcblk0 [bfq] ra=512; sched_bore=1 from rgds-bore.sh; wlan0 up.
