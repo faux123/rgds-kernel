@@ -42,6 +42,13 @@
 #include <linux/workqueue.h>
 
 static int dbg_enable;
+/*
+ * Stock-only globals with no references in the stock kernel text:
+ * switch_ntc_temp in .bss right after dbg_enable (ffffffc00a4dba9c),
+ * bat_ntc_temp in .data just before rk817_battery_driver (ffffffc00a319b78, value 0xfa).
+ */
+int switch_ntc_temp;
+int bat_ntc_temp = 250;
 
 /* Anbernic LED/SOC layer, defined before rk817_battery_probe */
 extern int fg_init_done;
@@ -2943,6 +2950,32 @@ static void rk817_bat_output_info(struct rk817_battery_device *battery)
 	DBG("info END.\n");
 }
 
+static void rk817_bat_update_temperature(struct rk817_battery_device *battery)
+{
+	/*
+	 * Stock inlines this into rk817_battery_work; its static keeps the name
+	 * rk817_bat_update_temperature.last_temp (@ffffffc00a4dbad8, store @ffffffc008edf250).
+	 */
+	static int last_temp;
+	int t = battery->temperature;	/* tenths of a degree C in stock (raw * 10 @ffffffc008edf1e0) */
+
+	/*
+	 * Stock ffffffc008edf1ec..f23c, written via rmap_fields[143] with mask -1:
+	 *   t <= 0 or t >= 500          -> 5      (ffffffc008edf204)
+	 *   3 <= t <= 479               -> 0xfa   (ffffffc008edf220)
+	 *   t in 1..2 or 480..499       -> no write
+	 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8); our tree keeps
+	 * the virtual temperature, so this write is constant here.
+	 */
+	if (t <= 0 || t >= 500)
+		rk817_bat_field_write(battery, NTC_TEMP_CFG, 5);
+	else if (t >= 3 && t <= 479)
+		rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
+
+	DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
+	last_temp = battery->temperature;
+}
+
 static void rk817_battery_work(struct work_struct *work)
 {
 	struct rk817_battery_device *battery =
@@ -2957,28 +2990,7 @@ static void rk817_battery_work(struct work_struct *work)
 	rk817_bat_save_data(battery);
 	rk817_bat_output_info(battery);
 
-	{
-		/* stock rk817_bat_update_temperature.last_temp @ffffffc00a4dbad8, store @ffffffc008edf250;
-		 * the NTC threshold-field write before it (ffffffc008edf20c..f23c) is not reconstructed. */
-		static int last_temp;
-		int t = battery->temperature;	/* tenths of a degree C in stock (raw * 10 @ffffffc008edf1e0) */
-
-		/*
-		 * Stock ffffffc008edf1ec..f23c, written via rmap_fields[143] with mask -1:
-		 *   t <= 0 or t >= 500          -> 5      (ffffffc008edf204)
-		 *   3 <= t <= 479               -> 0xfa   (ffffffc008edf220)
-		 *   t in 1..2 or 480..499       -> no write
-		 * Stock derives t from the TS ADC (ffffffc008edf180..f1e8); our tree keeps
-		 * the virtual temperature, so this write is constant here.
-		 */
-		if (t <= 0 || t >= 500)
-			rk817_bat_field_write(battery, NTC_TEMP_CFG, 5);
-		else if (t >= 3 && t <= 479)
-			rk817_bat_field_write(battery, NTC_TEMP_CFG, 0xfa);
-
-		DBG("++++++++++++++%d %d\n", last_temp, battery->temperature);
-		last_temp = battery->temperature;
-	}
+	rk817_bat_update_temperature(battery);
 
 	if (rk817_bat_field_read(battery, CUR_CALIB_UPD)) {
 		rk817_bat_current_calibration(battery);
