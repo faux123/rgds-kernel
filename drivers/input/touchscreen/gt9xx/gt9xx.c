@@ -448,11 +448,11 @@ static void gtp_touch_down(struct goodix_ts_data* ts,s32 id,s32 x,s32 y,s32 w)
 
 	/*
 	 * Stock coordinate mapping, inlined in goodix_ts_work_func
-	 * @ffffffc008cc08a0..093c: swap when gtp_change_x2y is NOT set
-	 * (csel @08b4/08b8), reverse only on non-GT911, then the RG DS
-	 * dual-panel fixups: flip_report_tp mirrors both axes, com_lcd_tp
-	 * maps the panel's full Y range onto half of abs_y_max (ext_lcd_tp
-	 * panel: top half, y/2; other panel: bottom half, y/2 + abs_y_max/2).
+	 * @ffffffc008cc08a0..093c (globals compiled as shrunk-to-bool flags):
+	 * Goodix swap/reverse, reversal only when bgt911, then the RG DS
+	 * dual-panel fixups: flip_report_tp mirrors both axes, com_lcd_tp maps
+	 * the panel's full Y range onto half of abs_y_max (ext_lcd_tp panel:
+	 * y/2; other panel: y/2 + abs_y_max/2).
 	 */
 	if (gtp_change_x2y)
 		GTP_SWAP(x, y);
@@ -2748,10 +2748,9 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
     }
 
 	/*
-	 * Stock table, goodix_ts_probe @ffffffc008cc01e4..033c (stores to
-	 * m89or101, bgt9xx flags, gtp_change_x2y/gtp_x_reverse/gtp_y_reverse). Read with
-	 * the inverted x2y and y_reverse tests in gtp_touch_down; the 911 and
-	 * 910 bgt911 values are as stock stores them.
+	 * Stock table, goodix_ts_probe @ffffffc008cc01e4..033c. clang shrinks
+	 * these globals to 1-bit "not the initializer" flags, so the values here
+	 * are the ones whose flags match the stock stores (see commit 6410f4083023).
 	 */
 	if (val == 89) {
 		m89or101 = TRUE;
