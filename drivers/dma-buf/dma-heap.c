@@ -300,19 +300,6 @@ struct device *dma_heap_get_dev(struct dma_heap *heap)
 EXPORT_SYMBOL_GPL(dma_heap_get_dev);
 
 /**
- * dma_heap_get_dev() - get device struct for the heap
- * @heap: DMA-Heap to retrieve device struct from
- *
- * Returns:
- * The device struct for the heap.
- */
-struct device *dma_heap_get_dev(struct dma_heap *heap)
-{
-	return heap->heap_dev;
-}
-EXPORT_SYMBOL_GPL(dma_heap_get_dev);
-
-/**
  * dma_heap_get_name() - get heap name
  * @heap: DMA-Heap to retrieve private data for
  *
@@ -381,7 +368,6 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
 		goto err2;
 	}
 
-	heap->heap_dev = dev_ret;
 	/* Make sure it doesn't disappear on us */
 	heap->heap_dev = get_device(heap->heap_dev);
 
