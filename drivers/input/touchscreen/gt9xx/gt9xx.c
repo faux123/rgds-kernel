@@ -1674,7 +1674,7 @@ static s32 gtp_init_panel(struct goodix_ts_data *ts)
     }
     
 #endif // GTP_DRIVER_SEND_CFG
-
+    GTP_INFO("  <%s>_%d \n", __func__, __LINE__);   /* stock: __LINE__ 1326 @ffffffc008cc0f68 */
     if ((ts->abs_x_max == 0) && (ts->abs_y_max == 0))
     {
         ts->abs_x_max = (config[RESOLUTION_LOC + 1] << 8) + config[RESOLUTION_LOC];
