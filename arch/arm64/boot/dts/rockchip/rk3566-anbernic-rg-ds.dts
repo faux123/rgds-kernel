@@ -12,6 +12,7 @@
 #include <dt-bindings/pinctrl/rockchip.h>
 #include "rk3568.dtsi"
 #include "rk3568-android.dtsi"
+#include <dt-bindings/clock/rk3568-cru.h>
 
 / {
 	compatible = "rockchip,rk3566-rk817-tablet", "rockchip,rk3566";
@@ -418,22 +419,22 @@
 
 	pvtm@fde00000 {
 		pvtm@0 {
-			clocks = <&cru 19 &cru 450>;
-			resets = <&cru 26 &cru 25>;
+			clocks = <&cru CLK_CORE_PVTM>, <&cru PCLK_CORE_PVTM>;
+			resets = <&cru SRST_CORE_PVTM>, <&cru SRST_P_CORE_PVTM>;
 		};
 	};
 
 	pvtm@fde80000 {
 		pvtm@1 {
-			clocks = <&cru 30 &cru 29>;
-			resets = <&cru 36 &cru 35>;
+			clocks = <&cru CLK_GPU_PVTM>, <&cru PCLK_GPU_PVTM>;
+			resets = <&cru SRST_GPU_PVTM>, <&cru SRST_P_GPU_PVTM>;
 		};
 	};
 
 	pvtm@fde90000 {
 		pvtm@2 {
-			clocks = <&cru 43 &cru 42 &cru 37>;
-			resets = <&cru 46 &cru 45>;
+			clocks = <&cru CLK_NPU_PVTM>, <&cru PCLK_NPU_PVTM>, <&cru HCLK_NPU_PRE>;
+			resets = <&cru SRST_NPU_PVTM>, <&cru SRST_P_NPU_PVTM>;
 		};
 	};
 
@@ -481,7 +482,7 @@
 };
 
 &audpwm {
-	clocks = <&cru 99 &cru 96>;
+	clocks = <&cru SCLK_AUDPWM>, <&cru HCLK_AUDPWM>;
 	dmas = <&dmac1 8>;
 };
 
@@ -549,8 +550,8 @@
 };
 
 &can0 {
-	clocks = <&cru 321 &cru 320>;
-	resets = <&cru 341 &cru 340>;
+	clocks = <&cru CLK_CAN0>, <&cru PCLK_CAN0>;
+	resets = <&cru SRST_CAN0>, <&cru SRST_P_CAN0>;
 };
 
 &can0m0_pins {
@@ -564,8 +565,8 @@
 };
 
 &can1 {
-	clocks = <&cru 323 &cru 322>;
-	resets = <&cru 343 &cru 342>;
+	clocks = <&cru CLK_CAN1>, <&cru PCLK_CAN1>;
+	resets = <&cru SRST_CAN1>, <&cru SRST_P_CAN1>;
 };
 
 &can1m0_pins {
@@ -579,8 +580,8 @@
 };
 
 &can2 {
-	clocks = <&cru 325 &cru 324>;
-	resets = <&cru 345 &cru 344>;
+	clocks = <&cru CLK_CAN2>, <&cru PCLK_CAN2>;
+	resets = <&cru SRST_CAN2>, <&cru SRST_P_CAN2>;
 };
 
 &can2m0_pins {
@@ -638,25 +639,25 @@
 };
 
 &combphy0_us {
-	clocks = <&pmucru 31 &cru 380 &cru 127>;
-	assigned-clocks = <&pmucru 31>;
-	resets = <&cru 452 &cru 453>;
+	clocks = <&pmucru CLK_PCIEPHY0_REF>, <&cru PCLK_PIPEPHY0>, <&cru PCLK_PIPE>;
+	assigned-clocks = <&pmucru CLK_PCIEPHY0_REF>;
+	resets = <&cru SRST_P_PIPEPHY0>, <&cru SRST_PIPEPHY0>;
 	rockchip,pipe-grf = <&pipegrf>;
 	rockchip,pipe-phy-grf = <&pipe_phy_grf0>;
 };
 
 &combphy1_usq {
-	clocks = <&pmucru 34 &cru 381 &cru 127>;
-	assigned-clocks = <&pmucru 34>;
-	resets = <&cru 454 &cru 455>;
+	clocks = <&pmucru CLK_PCIEPHY1_REF>, <&cru PCLK_PIPEPHY1>, <&cru PCLK_PIPE>;
+	assigned-clocks = <&pmucru CLK_PCIEPHY1_REF>;
+	resets = <&cru SRST_P_PIPEPHY1>, <&cru SRST_PIPEPHY1>;
 	rockchip,pipe-grf = <&pipegrf>;
 	rockchip,pipe-phy-grf = <&pipe_phy_grf1>;
 };
 
 &combphy2_psq {
-	clocks = <&pmucru 37 &cru 382 &cru 127>;
-	assigned-clocks = <&pmucru 37>;
-	resets = <&cru 456 &cru 457>;
+	clocks = <&pmucru CLK_PCIEPHY2_REF>, <&cru PCLK_PIPEPHY2>, <&cru PCLK_PIPE>;
+	assigned-clocks = <&pmucru CLK_PCIEPHY2_REF>;
+	resets = <&cru SRST_P_PIPEPHY2>, <&cru SRST_PIPEPHY2>;
 	rockchip,pipe-grf = <&pipegrf>;
 	rockchip,pipe-phy-grf = <&pipe_phy_grf2>;
 };
@@ -675,14 +676,14 @@
 
 &cru {
 	rockchip,grf = <&grf>;
-	assigned-clocks = <&pmucru 5 &cru 262 &cru 267 &pmucru 1 &pmucru 43 &cru 3 &cru 411 &cru 9 &cru 412 &cru 413 &cru 417 &cru 414 &cru 415 &cru 416 &cru 4 &cru 269 &cru 270 &cru 371 &cru 372 &cru 373 &cru 374 &cru 201 &cru 202 &cru 6 &cru 126 &cru 127 &cru 61 &cru 65 &cru 69 &cru 73 &cru 77 &cru 77 &cru 85 &cru 81 &cru 93 &cru 221>;
-	assigned-clock-parents = <&pmucru 8 &cru 4 &cru 4>;
+	assigned-clocks = <&pmucru CLK_RTC_32K>, <&cru ACLK_RKVDEC_PRE>, <&cru CLK_RKVDEC_CORE>, <&pmucru PLL_PPLL>, <&pmucru PCLK_PMU>, <&cru PLL_CPLL>, <&cru CPLL_500M>, <&cru CPLL_333M>, <&cru CPLL_250M>, <&cru CPLL_125M>, <&cru CPLL_100M>, <&cru CPLL_62P5M>, <&cru CPLL_50M>, <&cru CPLL_25M>, <&cru PLL_GPLL>, <&cru ACLK_BUS>, <&cru PCLK_BUS>, <&cru ACLK_TOP_HIGH>, <&cru ACLK_TOP_LOW>, <&cru HCLK_TOP>, <&cru PCLK_TOP>, <&cru ACLK_PERIMID>, <&cru HCLK_PERIMID>, <&cru PLL_NPLL>, <&cru ACLK_PIPE>, <&cru PCLK_PIPE>, <&cru CLK_I2S0_8CH_TX_SRC>, <&cru CLK_I2S0_8CH_RX_SRC>, <&cru CLK_I2S1_8CH_TX_SRC>, <&cru CLK_I2S1_8CH_RX_SRC>, <&cru CLK_I2S2_2CH_SRC>, <&cru CLK_I2S2_2CH_SRC>, <&cru CLK_I2S3_2CH_RX_SRC>, <&cru CLK_I2S3_2CH_TX_SRC>, <&cru MCLK_SPDIF_8CH_SRC>, <&cru ACLK_VOP>;
+	assigned-clock-parents = <&pmucru CLK_RTC32K_FRAC>, <&cru PLL_GPLL>, <&cru PLL_GPLL>;
 };
 
 &crypto {
-	clocks = <&cru 106 &cru 107 &cru 108 &cru 109>;
-	assigned-clocks = <&cru 108>;
-	resets = <&cru 105>;
+	clocks = <&cru ACLK_CRYPTO_NS>, <&cru HCLK_CRYPTO_NS>, <&cru CLK_CRYPTO_NS_CORE>, <&cru CLK_CRYPTO_NS_PKA>;
+	assigned-clocks = <&cru CLK_CRYPTO_NS_CORE>;
+	resets = <&cru SRST_CRYPTO_NS_CORE>;
 };
 
 &csi2_dphy0 {
@@ -698,7 +699,7 @@
 };
 
 &csi2_dphy_hw {
-	clocks = <&cru 377>;
+	clocks = <&cru PCLK_MIPICSIPHY>;
 	rockchip,grf = <&grf>;
 };
 
@@ -708,9 +709,9 @@
 };
 
 &dig_acodec {
-	clocks = <&cru 103 &cru 102 &cru 101 &cru 100>;
+	clocks = <&cru CLK_ACDCDIG_ADC>, <&cru CLK_ACDCDIG_DAC>, <&cru CLK_ACDCDIG_I2C>, <&cru HCLK_ACDCDIG>;
 	pinctrl-0 = <&acodec_pins>;
-	resets = <&cru 95>;
+	resets = <&cru SRST_ACDCDIG>;
 	rockchip,grf = <&grf>;
 };
 
@@ -721,11 +722,11 @@
 };
 
 &dmac0 {
-	clocks = <&cru 269>;
+	clocks = <&cru ACLK_BUS>;
 };
 
 &dmac1 {
-	clocks = <&cru 269>;
+	clocks = <&cru ACLK_BUS>;
 };
 
 &dmc {
@@ -748,10 +749,10 @@
 };
 
 &dsi0 {
-	clocks = <&cru 232 &cru 218>;
+	clocks = <&cru PCLK_DSITX_0>, <&cru HCLK_VO>;
 	phys = <&video_phy0>;
 	power-domains = <&power 9>;
-	resets = <&cru 272>;
+	resets = <&cru SRST_P_DSITX_0>;
 	rockchip,grf = <&grf>;
 	status = "okay";
 
@@ -831,10 +832,10 @@
 };
 
 &dsi1 {
-	clocks = <&cru 233 &cru 218>;
+	clocks = <&cru PCLK_DSITX_1>, <&cru HCLK_VO>;
 	phys = <&video_phy1>;
 	power-domains = <&power 9>;
-	resets = <&cru 273>;
+	resets = <&cru SRST_P_DSITX_1>;
 	rockchip,grf = <&grf>;
 	status = "okay";
 
@@ -912,19 +913,19 @@
 };
 
 &dsi_dphy0 {
-	clocks = <&pmucru 23 &cru 378>;
+	clocks = <&pmucru CLK_MIPIDSIPHY0_REF>, <&cru PCLK_MIPIDSIPHY0>;
 	power-domains = <&power 9>;
-	resets = <&cru 443>;
+	resets = <&cru SRST_P_MIPIDSIPHY0>;
 };
 
 &dsi_dphy1 {
-	clocks = <&pmucru 25 &cru 379>;
+	clocks = <&pmucru CLK_MIPIDSIPHY1_REF>, <&cru PCLK_MIPIDSIPHY1>;
 	power-domains = <&power 9>;
-	resets = <&cru 444>;
+	resets = <&cru SRST_P_MIPIDSIPHY1>;
 };
 
 &ebc {
-	clocks = <&cru 249 &cru 250>;
+	clocks = <&cru HCLK_EBC>, <&cru DCLK_EBC>;
 	power-domains = <&power 10>;
 	rockchip,grf = <&grf>;
 	pinctrl-0 = <&ebc_pins>;
@@ -965,8 +966,8 @@
 };
 
 &edp {
-	clocks = <&pmucru 41 &cru 234 &cru 235 &cru 218>;
-	resets = <&cru 275 &cru 274>;
+	clocks = <&pmucru XIN_OSC0_EDPPHY_G>, <&cru PCLK_EDP_CTRL>, <&cru CLK_EDP_200M>, <&cru HCLK_VO>;
+	resets = <&cru SRST_EDP_24M>, <&cru SRST_P_EDP_CTRL>;
 	phys = <&edp_phy>;
 	power-domains = <&power 9>;
 };
@@ -980,11 +981,11 @@
 };
 
 &edp_phy {
-	clocks = <&pmucru 41>;
+	clocks = <&pmucru XIN_OSC0_EDPPHY_G>;
 };
 
 &edp_phy_grf {
-	clocks = <&cru 402>;
+	clocks = <&cru PCLK_EDPPHY_GRF>;
 };
 
 &edpdpm0_pins {
@@ -996,7 +997,7 @@
 };
 
 &eink {
-	clocks = <&cru 255 &cru 256>;
+	clocks = <&cru PCLK_EINK>, <&cru HCLK_EINK>;
 };
 
 &emmc_bus8 {
@@ -1073,8 +1074,8 @@
 };
 
 &gmac0 {
-	clocks = <&cru 386 &cru 389 &cru 389 &cru 184 &cru 180 &cru 181 &cru 389 &cru 185 &cru 172 &cru 171>;
-	resets = <&cru 215>;
+	clocks = <&cru SCLK_GMAC0>, <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0_RX_TX>, <&cru CLK_MAC0_REFOUT>, <&cru ACLK_GMAC0>, <&cru PCLK_GMAC0>, <&cru SCLK_GMAC0_RX_TX>, <&cru CLK_GMAC0_PTP_REF>, <&cru PCLK_XPCS>, <&cru CLK_XPCS_EEE>;
+	resets = <&cru SRST_A_GMAC0>;
 	rockchip,grf = <&grf>;
 	snps,axi-config = <&gmac0_stmmac_axi_setup>;
 	snps,mtl-rx-config = <&gmac0_mtl_rx_setup>;
@@ -1137,8 +1138,8 @@
 };
 
 &gmac1 {
-	clocks = <&cru 390 &cru 393 &cru 393 &cru 199 &cru 195 &cru 196 &cru 393 &cru 200 &cru 172 &cru 171>;
-	resets = <&cru 236>;
+	clocks = <&cru SCLK_GMAC1>, <&cru SCLK_GMAC1_RX_TX>, <&cru SCLK_GMAC1_RX_TX>, <&cru CLK_MAC1_REFOUT>, <&cru ACLK_GMAC1>, <&cru PCLK_GMAC1>, <&cru SCLK_GMAC1_RX_TX>, <&cru CLK_GMAC1_PTP_REF>, <&cru PCLK_XPCS>, <&cru CLK_XPCS_EEE>;
+	resets = <&cru SRST_A_GMAC1>;
 	rockchip,grf = <&grf>;
 	snps,axi-config = <&gmac1_stmmac_axi_setup>;
 	snps,mtl-rx-config = <&gmac1_mtl_rx_setup>;
@@ -1264,27 +1265,27 @@
 };
 
 &gpio0 {
-	clocks = <&pmucru 46 &pmucru 12>;
+	clocks = <&pmucru PCLK_GPIO0>, <&pmucru DBCLK_GPIO0>;
 };
 
 &gpio1 {
-	clocks = <&cru 355 &cru 356>;
+	clocks = <&cru PCLK_GPIO1>, <&cru DBCLK_GPIO1>;
 };
 
 &gpio2 {
-	clocks = <&cru 357 &cru 358>;
+	clocks = <&cru PCLK_GPIO2>, <&cru DBCLK_GPIO2>;
 };
 
 &gpio3 {
-	clocks = <&cru 359 &cru 360>;
+	clocks = <&cru PCLK_GPIO3>, <&cru DBCLK_GPIO3>;
 };
 
 &gpio4 {
-	clocks = <&cru 361 &cru 362>;
+	clocks = <&cru PCLK_GPIO4>, <&cru DBCLK_GPIO4>;
 };
 
 &gpu {
-	clocks = <&scmi_clk 1 &cru 27>;
+	clocks = <&scmi_clk 1>, <&cru CLK_GPU>;
 	power-domains = <&power 7>;
 	operating-points-v2 = <&gpu_opp_table>;
 	status = "okay";
@@ -1305,7 +1306,7 @@
 };
 
 &hdmi {
-	clocks = <&cru 230 &cru 231 &cru 403 &pmucru 2 &cru 222>;
+	clocks = <&cru PCLK_HDMI_HOST>, <&cru CLK_HDMI_SFR>, <&cru CLK_HDMI_CEC>, <&pmucru PLL_HPLL>, <&cru HCLK_VOP>;
 	pinctrl-0 = <&hdmitx_scl &hdmitx_sda &hdmitxm0_cec>;
 	power-domains = <&power 9>;
 	rockchip,grf = <&grf>;
@@ -1349,7 +1350,7 @@
 };
 
 &i2c0 {
-	clocks = <&pmucru 7 &pmucru 45>;
+	clocks = <&pmucru CLK_I2C0>, <&pmucru PCLK_I2C0>;
 	pinctrl-0 = <&i2c0_xfer>;
 	status = "okay";
 
@@ -1623,11 +1624,11 @@
 		rk817_codec: codec {
 			#sound-dai-cells = <0>;
 			compatible = "rockchip,rk817-codec";
-			clocks = <&cru 419>;
+			clocks = <&cru I2S1_MCLKOUT>;
 			clock-names = "mclk";
-			assigned-clocks = <&cru 419 &cru 422>;
+			assigned-clocks = <&cru I2S1_MCLKOUT>, <&cru I2S1_MCLK_TX_IOE>;
 			assigned-clock-rates = <12288000>;
-			assigned-clock-parents = <&cru 72 &cru 72>;
+			assigned-clock-parents = <&cru I2S1_MCLKOUT_TX>, <&cru I2S1_MCLKOUT_TX>;
 			pinctrl-names = "default";
 			pinctrl-0 = <&i2s1m0_mclk>;
 			hp-volume = <23>;
@@ -1656,7 +1657,7 @@
 };
 
 &i2c1 {
-	clocks = <&cru 328 &cru 327>;
+	clocks = <&cru CLK_I2C1>, <&cru PCLK_I2C1>;
 	pinctrl-0 = <&i2c1_xfer>;
 };
 
@@ -1666,7 +1667,7 @@
 };
 
 &i2c2 {
-	clocks = <&cru 330 &cru 329>;
+	clocks = <&cru CLK_I2C2>, <&cru PCLK_I2C2>;
 	pinctrl-0 = <&i2c2m1_xfer>;
 	status = "okay";
 	clock-frequency = <200000>;
@@ -1735,7 +1736,7 @@
 };
 
 &i2c3 {
-	clocks = <&cru 332 &cru 331>;
+	clocks = <&cru CLK_I2C3>, <&cru PCLK_I2C3>;
 	pinctrl-0 = <&i2c3m1_xfer>;
 	status = "okay";
 	clock-frequency = <400000>;
@@ -1770,7 +1771,7 @@
 };
 
 &i2c4 {
-	clocks = <&cru 334 &cru 333>;
+	clocks = <&cru CLK_I2C4>, <&cru PCLK_I2C4>;
 	pinctrl-0 = <&i2c4m0_xfer>;
 };
 
@@ -1785,7 +1786,7 @@
 };
 
 &i2c5 {
-	clocks = <&cru 336 &cru 335>;
+	clocks = <&cru CLK_I2C5>, <&cru PCLK_I2C5>;
 	pinctrl-0 = <&i2c5m0_xfer>;
 	status = "okay";
 	clock-frequency = <400000>;
@@ -1820,18 +1821,18 @@
 };
 
 &i2s0_8ch {
-	clocks = <&cru 63 &cru 67 &cru 57>;
+	clocks = <&cru MCLK_I2S0_8CH_TX>, <&cru MCLK_I2S0_8CH_RX>, <&cru HCLK_I2S0_8CH>;
 	dmas = <&dmac1 0>;
-	resets = <&cru 80 &cru 81>;
+	resets = <&cru SRST_M_I2S0_8CH_TX>, <&cru SRST_M_I2S0_8CH_RX>;
 	rockchip,cru = <&cru>;
 	rockchip,grf = <&grf>;
 	status = "okay";
 };
 
 &i2s1_8ch {
-	clocks = <&cru 71 &cru 75 &cru 58>;
-	dmas = <&dmac1 2 &dmac1 3>;
-	resets = <&cru 82 &cru 83>;
+	clocks = <&cru MCLK_I2S1_8CH_TX>, <&cru MCLK_I2S1_8CH_RX>, <&cru HCLK_I2S1_8CH>;
+	dmas = <&dmac1 2>, <&dmac1 3>;
+	resets = <&cru SRST_M_I2S1_8CH_TX>, <&cru SRST_M_I2S1_8CH_RX>;
 	rockchip,cru = <&cru>;
 	rockchip,grf = <&grf>;
 	i2s-lrck-gpio = <&gpio1 RK_PA5 GPIO_ACTIVE_HIGH>;
@@ -1997,8 +1998,8 @@
 };
 
 &i2s2_2ch {
-	clocks = <&cru 79 &cru 79 &cru 59>;
-	dmas = <&dmac1 4 &dmac1 5>;
+	clocks = <&cru MCLK_I2S2_2CH>, <&cru MCLK_I2S2_2CH>, <&cru HCLK_I2S2_2CH>;
+	dmas = <&dmac1 4>, <&dmac1 5>;
 	rockchip,cru = <&cru>;
 	rockchip,grf = <&grf>;
 	i2s-lrck-gpio = <&gpio2 RK_PC3 GPIO_ACTIVE_HIGH>;
@@ -2062,9 +2063,9 @@
 };
 
 &i2s3_2ch {
-	clocks = <&cru 83 &cru 87 &cru 60>;
-	dmas = <&dmac1 6 &dmac1 7>;
-	resets = <&cru 85 &cru 86>;
+	clocks = <&cru MCLK_I2S3_2CH_TX>, <&cru MCLK_I2S3_2CH_RX>, <&cru HCLK_I2S3_2CH>;
+	dmas = <&dmac1 6>, <&dmac1 7>;
+	resets = <&cru SRST_M_I2S3_2CH_TX>, <&cru SRST_M_I2S3_2CH_RX>;
 	rockchip,cru = <&cru>;
 	rockchip,grf = <&grf>;
 	i2s-lrck-gpio = <&gpio3 RK_PA4 GPIO_ACTIVE_HIGH>;
@@ -2112,8 +2113,8 @@
 };
 
 &iep {
-	clocks = <&cru 246 &cru 247 &cru 248>;
-	resets = <&cru 295 &cru 296 &cru 297>;
+	clocks = <&cru ACLK_IEP>, <&cru HCLK_IEP>, <&cru CLK_IEP_CORE>;
+	resets = <&cru SRST_A_IEP>, <&cru SRST_H_IEP>, <&cru SRST_IEP_CORE>;
 	power-domains = <&power 10>;
 	rockchip,srv = <&mpp_srv>;
 	iommus = <&iep_mmu>;
@@ -2121,7 +2122,7 @@
 };
 
 &iep_mmu {
-	clocks = <&cru 246 &cru 247>;
+	clocks = <&cru ACLK_IEP>, <&cru HCLK_IEP>;
 	power-domains = <&power 10>;
 	status = "okay";
 };
@@ -2133,8 +2134,8 @@
 };
 
 &jpegd {
-	clocks = <&cru 251 &cru 252>;
-	resets = <&cru 300 &cru 301>;
+	clocks = <&cru ACLK_JDEC>, <&cru HCLK_JDEC>;
+	resets = <&cru SRST_A_JDEC>, <&cru SRST_H_JDEC>;
 	iommus = <&jpegd_mmu>;
 	rockchip,srv = <&mpp_srv>;
 	power-domains = <&power 10>;
@@ -2142,7 +2143,7 @@
 };
 
 &jpegd_mmu {
-	clocks = <&cru 251 &cru 252>;
+	clocks = <&cru ACLK_JDEC>, <&cru HCLK_JDEC>;
 	power-domains = <&power 10>;
 	status = "okay";
 };
@@ -2208,7 +2209,7 @@
 };
 
 &mailbox {
-	clocks = <&cru 283>;
+	clocks = <&cru PCLK_MAILBOX>;
 };
 
 &mcu_pins {
@@ -2224,8 +2225,8 @@
 };
 
 &mipi_csi2_hw {
-	clocks = <&cru 213>;
-	resets = <&cru 255>;
+	clocks = <&cru PCLK_CSI2HOST1>;
+	resets = <&cru SRST_P_CSI2HOST1>;
 };
 
 &mpp_srv {
@@ -2233,13 +2234,13 @@
 };
 
 &nandc0 {
-	clocks = <&cru 117 &cru 116>;
+	clocks = <&cru NCLK_NANDC>, <&cru HCLK_NANDC>;
 	status = "okay";
 };
 
 &nfc {
-	clocks = <&cru 116 &cru 117>;
-	assigned-clocks = <&cru 117>;
+	clocks = <&cru HCLK_NANDC>, <&cru NCLK_NANDC>;
+	assigned-clocks = <&cru NCLK_NANDC>;
 };
 
 &npu_opp_table {
@@ -2251,8 +2252,8 @@
 };
 
 &otp {
-	clocks = <&cru 115 &cru 114 &cru 113 &cru 385>;
-	resets = <&cru 463>;
+	clocks = <&cru CLK_OTPC_NS_USR>, <&cru CLK_OTPC_NS_SBPI>, <&cru PCLK_OTPC_NS>, <&cru PCLK_OTPPHY>;
+	resets = <&cru SRST_OTPPHY>;
 };
 
 &pcie20_buttonrstn {
@@ -2278,17 +2279,17 @@
 };
 
 &pcie2x1 {
-	clocks = <&cru 129 &cru 130 &cru 131 &cru 132 &cru 133>;
+	clocks = <&cru ACLK_PCIE20_MST>, <&cru ACLK_PCIE20_SLV>, <&cru ACLK_PCIE20_DBI>, <&cru PCLK_PCIE20>, <&cru CLK_PCIE20_AUX_NDFT>;
 	interrupt-map = <0x0 0x0 0x0 0x1 &pcie2x1_intc 0x0 0x0 0x0 0x0 0x2 &pcie2x1_intc 0x1 0x0 0x0 0x0 0x3 &pcie2x1_intc 0x2 0x0 0x0 0x0 0x4 &pcie2x1_intc 0x3>;
 	msi-map = <0x0 &its 0x0 0x1000>;
 	phys = <&combphy2_psq 2>;
 	power-domains = <&power 15>;
-	resets = <&cru 161>;
+	resets = <&cru SRST_PCIE20_POWERUP>;
 };
 
 &pcie30phy {
-	clocks = <&pmucru 38 &pmucru 39 &cru 375>;
-	resets = <&cru 446>;
+	clocks = <&pmucru CLK_PCIE30PHY_REF_M>, <&pmucru CLK_PCIE30PHY_REF_N>, <&cru PCLK_PCIE30PHY>;
+	resets = <&cru SRST_PCIE30PHY>;
 	rockchip,phy-grf = <&pcie30_phy_grf>;
 };
 
@@ -2337,28 +2338,28 @@
 };
 
 &pcie3x1 {
-	clocks = <&cru 136 &cru 137 &cru 138 &cru 139 &cru 140>;
+	clocks = <&cru ACLK_PCIE30X1_MST>, <&cru ACLK_PCIE30X1_SLV>, <&cru ACLK_PCIE30X1_DBI>, <&cru PCLK_PCIE30X1>, <&cru CLK_PCIE30X1_AUX_NDFT>;
 	interrupt-map = <0x0 0x0 0x0 0x1 &pcie3x1_intc 0x0 0x0 0x0 0x0 0x2 &pcie3x1_intc 0x1 0x0 0x0 0x0 0x3 &pcie3x1_intc 0x2 0x0 0x0 0x0 0x4 &pcie3x1_intc 0x3>;
 	msi-map = <0x1000 &its 0x1000 0x1000>;
 	phys = <&pcie30phy>;
 	power-domains = <&power 15>;
-	resets = <&cru 177>;
+	resets = <&cru SRST_PCIE30X1_POWERUP>;
 };
 
 &pcie3x2 {
-	clocks = <&cru 143 &cru 144 &cru 145 &cru 146 &cru 147>;
+	clocks = <&cru ACLK_PCIE30X2_MST>, <&cru ACLK_PCIE30X2_SLV>, <&cru ACLK_PCIE30X2_DBI>, <&cru PCLK_PCIE30X2>, <&cru CLK_PCIE30X2_AUX_NDFT>;
 	interrupt-map = <0x0 0x0 0x0 0x1 &pcie3x2_intc 0x0 0x0 0x0 0x0 0x2 &pcie3x2_intc 0x1 0x0 0x0 0x0 0x3 &pcie3x2_intc 0x2 0x0 0x0 0x0 0x4 &pcie3x2_intc 0x3>;
 	msi-map = <0x2000 &its 0x2000 0x1000>;
 	phys = <&pcie30phy>;
 	power-domains = <&power 15>;
-	resets = <&cru 193>;
+	resets = <&cru SRST_PCIE30X2_POWERUP>;
 };
 
 &pdm {
-	clocks = <&cru 90 &cru 89>;
+	clocks = <&cru MCLK_PDM>, <&cru HCLK_PDM>;
 	dmas = <&dmac1 9>;
 	pinctrl-0 = <&pdmm0_clk &pdmm0_clk1 &pdmm0_sdi0 &pdmm0_sdi1 &pdmm0_sdi2 &pdmm0_sdi3>;
-	resets = <&cru 88>;
+	resets = <&cru SRST_M_PDM>;
 };
 
 &pdmm0_clk {
@@ -2604,59 +2605,59 @@
 &pmucru {
 	rockchip,grf = <&grf>;
 	rockchip,pmugrf = <&pmugrf>;
-	assigned-clocks = <&pmucru 50>;
-	assigned-clock-parents = <&pmucru 5>;
+	assigned-clocks = <&pmucru SCLK_32K_IOE>;
+	assigned-clock-parents = <&pmucru CLK_RTC_32K>;
 };
 
 &power {
 	power-domain@6 {
-		clocks = <&cru 39 &cru 37 &cru 38>;
+		clocks = <&cru ACLK_NPU_PRE>, <&cru HCLK_NPU_PRE>, <&cru PCLK_NPU_PRE>;
 		pm_qos = <&qos_npu>;
 	};
 
 	power-domain@7 {
-		clocks = <&cru 25 &cru 26>;
+		clocks = <&cru ACLK_GPU_PRE>, <&cru PCLK_GPU_PRE>;
 		pm_qos = <&qos_gpu>;
 	};
 
 	power-domain@8 {
-		clocks = <&cru 204 &cru 205>;
+		clocks = <&cru HCLK_VI>, <&cru PCLK_VI>;
 		pm_qos = <&qos_isp &qos_vicap0 &qos_vicap1>;
 	};
 
 	power-domain@9 {
-		clocks = <&cru 218 &cru 219 &cru 220>;
+		clocks = <&cru HCLK_VO>, <&cru PCLK_VO>, <&cru ACLK_VOP_PRE>;
 		pm_qos = <&qos_hdcp &qos_vop_m0 &qos_vop_m1>;
 	};
 
 	power-domain@10 {
-		clocks = <&cru 241 &cru 242>;
+		clocks = <&cru HCLK_RGA_PRE>, <&cru PCLK_RGA_PRE>;
 		pm_qos = <&qos_ebc &qos_iep &qos_jpeg_dec &qos_jpeg_enc &qos_rga_rd &qos_rga_wr>;
 	};
 
 	power-domain@11 {
-		clocks = <&cru 237>;
+		clocks = <&cru HCLK_VPU_PRE>;
 		pm_qos = <&qos_vpu>;
 	};
 
 	power-domain@13 {
-		clocks = <&cru 263>;
+		clocks = <&cru HCLK_RKVDEC_PRE>;
 		pm_qos = <&qos_rkvdec>;
 	};
 
 	power-domain@14 {
-		clocks = <&cru 258>;
+		clocks = <&cru HCLK_RKVENC_PRE>;
 		pm_qos = <&qos_rkvenc_rd_m0 &qos_rkvenc_rd_m1 &qos_rkvenc_wr_m0>;
 	};
 
 	power-domain@15 {
-		clocks = <&cru 127>;
+		clocks = <&cru PCLK_PIPE>;
 		pm_qos = <&qos_pcie2x1 &qos_pcie3x1 &qos_pcie3x2 &qos_sata0 &qos_sata1 &qos_sata2 &qos_usb3_0 &qos_usb3_1>;
 	};
 };
 
 &pwm0 {
-	clocks = <&pmucru 13 &pmucru 48>;
+	clocks = <&pmucru CLK_PWM0>, <&pmucru PCLK_PWM0>;
 	pinctrl-0 = <&pwm0m0_pins>;
 };
 
@@ -2669,12 +2670,12 @@
 };
 
 &pwm1 {
-	clocks = <&pmucru 13 &pmucru 48>;
+	clocks = <&pmucru CLK_PWM0>, <&pmucru PCLK_PWM0>;
 	pinctrl-0 = <&pwm1m0_pins>;
 };
 
 &pwm10 {
-	clocks = <&cru 349 &cru 348>;
+	clocks = <&cru CLK_PWM2>, <&cru PCLK_PWM2>;
 	pinctrl-0 = <&pwm10m0_pins>;
 };
 
@@ -2687,7 +2688,7 @@
 };
 
 &pwm11 {
-	clocks = <&cru 349 &cru 348>;
+	clocks = <&cru CLK_PWM2>, <&cru PCLK_PWM2>;
 	pinctrl-0 = <&pwm11m0_pins>;
 };
 
@@ -2700,7 +2701,7 @@
 };
 
 &pwm12 {
-	clocks = <&cru 352 &cru 351>;
+	clocks = <&cru CLK_PWM3>, <&cru PCLK_PWM3>;
 	pinctrl-0 = <&pwm12m1_pins>;
 	status = "okay";
 };
@@ -2714,7 +2715,7 @@
 };
 
 &pwm13 {
-	clocks = <&cru 352 &cru 351>;
+	clocks = <&cru CLK_PWM3>, <&cru PCLK_PWM3>;
 	pinctrl-0 = <&pwm13m1_pins>;
 	status = "okay";
 };
@@ -2728,7 +2729,7 @@
 };
 
 &pwm14 {
-	clocks = <&cru 352 &cru 351>;
+	clocks = <&cru CLK_PWM3>, <&cru PCLK_PWM3>;
 	pinctrl-0 = <&pwm14m0_pins>;
 };
 
@@ -2741,7 +2742,7 @@
 };
 
 &pwm15 {
-	clocks = <&cru 352 &cru 351>;
+	clocks = <&cru CLK_PWM3>, <&cru PCLK_PWM3>;
 	pinctrl-0 = <&pwm15m0_pins>;
 };
 
@@ -2762,7 +2763,7 @@
 };
 
 &pwm2 {
-	clocks = <&pmucru 13 &pmucru 48>;
+	clocks = <&pmucru CLK_PWM0>, <&pmucru PCLK_PWM0>;
 	pinctrl-0 = <&pwm2m0_pins>;
 };
 
@@ -2775,7 +2776,7 @@
 };
 
 &pwm3 {
-	clocks = <&pmucru 13 &pmucru 48>;
+	clocks = <&pmucru CLK_PWM0>, <&pmucru PCLK_PWM0>;
 	pinctrl-0 = <&pwm3_pins>;
 };
 
@@ -2784,7 +2785,7 @@
 };
 
 &pwm4 {
-	clocks = <&cru 346 &cru 345>;
+	clocks = <&cru CLK_PWM1>, <&cru PCLK_PWM1>;
 	pinctrl-0 = <&pwm4_pins>;
 };
 
@@ -2793,7 +2794,7 @@
 };
 
 &pwm5 {
-	clocks = <&cru 346 &cru 345>;
+	clocks = <&cru CLK_PWM1>, <&cru PCLK_PWM1>;
 	pinctrl-0 = <&pwm5_pins>;
 };
 
@@ -2802,7 +2803,7 @@
 };
 
 &pwm6 {
-	clocks = <&cru 346 &cru 345>;
+	clocks = <&cru CLK_PWM1>, <&cru PCLK_PWM1>;
 	pinctrl-0 = <&pwm6_pins>;
 };
 
@@ -2811,7 +2812,7 @@
 };
 
 &pwm7 {
-	clocks = <&cru 346 &cru 345>;
+	clocks = <&cru CLK_PWM1>, <&cru PCLK_PWM1>;
 	pinctrl-0 = <&pwm7_pins>;
 };
 
@@ -2820,7 +2821,7 @@
 };
 
 &pwm8 {
-	clocks = <&cru 349 &cru 348>;
+	clocks = <&cru CLK_PWM2>, <&cru PCLK_PWM2>;
 	pinctrl-0 = <&pwm8m0_pins>;
 };
 
@@ -2833,7 +2834,7 @@
 };
 
 &pwm9 {
-	clocks = <&cru 349 &cru 348>;
+	clocks = <&cru CLK_PWM2>, <&cru PCLK_PWM2>;
 	pinctrl-0 = <&pwm9m0_pins>;
 };
 
@@ -2858,15 +2859,15 @@
 };
 
 &rk_rga {
-	clocks = <&cru 243 &cru 244 &cru 245>;
+	clocks = <&cru ACLK_RGA>, <&cru HCLK_RGA>, <&cru CLK_RGA_CORE>;
 	power-domains = <&power 10>;
 	status = "okay";
 };
 
 &rkcif {
-	clocks = <&cru 206 &cru 207 &cru 208 &cru 209>;
-	resets = <&cru 247 &cru 248 &cru 249 &cru 251 &cru 250>;
-	assigned-clocks = <&cru 208>;
+	clocks = <&cru ACLK_VICAP>, <&cru HCLK_VICAP>, <&cru DCLK_VICAP>, <&cru ICLK_VICAP_G>;
+	resets = <&cru SRST_A_VICAP>, <&cru SRST_H_VICAP>, <&cru SRST_D_VICAP>, <&cru SRST_P_VICAP>, <&cru SRST_I_VICAP>;
+	assigned-clocks = <&cru DCLK_VICAP>;
 	power-domains = <&power 8>;
 	rockchip,grf = <&grf>;
 	iommus = <&rkcif_mmu>;
@@ -2889,20 +2890,20 @@
 };
 
 &rkcif_mmu {
-	clocks = <&cru 206 &cru 207>;
+	clocks = <&cru ACLK_VICAP>, <&cru HCLK_VICAP>;
 	power-domains = <&power 8>;
 };
 
 &rkisp {
-	clocks = <&cru 210 &cru 211 &cru 212>;
-	resets = <&cru 253 &cru 252>;
+	clocks = <&cru ACLK_ISP>, <&cru HCLK_ISP>, <&cru CLK_ISP>;
+	resets = <&cru SRST_ISP>, <&cru SRST_H_ISP>;
 	rockchip,grf = <&grf>;
 	power-domains = <&power 8>;
 	iommus = <&rkisp_mmu>;
 };
 
 &rkisp_mmu {
-	clocks = <&cru 210 &cru 211>;
+	clocks = <&cru ACLK_ISP>, <&cru HCLK_ISP>;
 	power-domains = <&power 8>;
 };
 
@@ -2915,27 +2916,27 @@
 };
 
 &rknpu {
-	clocks = <&scmi_clk 2 &cru 35 &cru 40 &cru 41>;
-	assigned-clocks = <&cru 35>;
-	resets = <&cru 43 &cru 44>;
+	clocks = <&scmi_clk 2>, <&cru CLK_NPU>, <&cru ACLK_NPU>, <&cru HCLK_NPU>;
+	assigned-clocks = <&cru CLK_NPU>;
+	resets = <&cru SRST_A_NPU>, <&cru SRST_H_NPU>;
 	power-domains = <&power 6>;
 	operating-points-v2 = <&npu_opp_table>;
 	iommus = <&rknpu_mmu>;
 };
 
 &rknpu_mmu {
-	clocks = <&cru 40 &cru 41>;
+	clocks = <&cru ACLK_NPU>, <&cru HCLK_NPU>;
 	power-domains = <&power 6>;
 };
 
 &rktimer {
-	clocks = <&cru 364 &cru 365>;
+	clocks = <&cru PCLK_TIMER>, <&cru CLK_TIMER0>;
 };
 
 &rkvdec {
-	clocks = <&cru 264 &cru 265 &cru 266 &cru 267 &cru 268>;
-	resets = <&cru 322 &cru 323 &cru 324 &cru 325 &cru 326>;
-	assigned-clocks = <&cru 264 &cru 266 &cru 267 &cru 268>;
+	clocks = <&cru ACLK_RKVDEC>, <&cru HCLK_RKVDEC>, <&cru CLK_RKVDEC_CA>, <&cru CLK_RKVDEC_CORE>, <&cru CLK_RKVDEC_HEVC_CA>;
+	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>, <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>, <&cru SRST_RKVDEC_HEVC_CA>;
+	assigned-clocks = <&cru ACLK_RKVDEC>, <&cru CLK_RKVDEC_CA>, <&cru CLK_RKVDEC_CORE>, <&cru CLK_RKVDEC_HEVC_CA>;
 	power-domains = <&power 13>;
 	operating-points-v2 = <&rkvdec_opp_table>;
 	vdec-supply = <&vdd_logic>;
@@ -2946,7 +2947,7 @@
 };
 
 &rkvdec_mmu {
-	clocks = <&cru 264 &cru 265>;
+	clocks = <&cru ACLK_RKVDEC>, <&cru HCLK_RKVDEC>;
 	power-domains = <&power 13>;
 	status = "okay";
 };
@@ -2956,9 +2957,9 @@
 };
 
 &rkvenc {
-	clocks = <&cru 259 &cru 260 &cru 261>;
-	resets = <&cru 307 &cru 308 &cru 309>;
-	assigned-clocks = <&cru 259 &cru 261>;
+	clocks = <&cru ACLK_RKVENC>, <&cru HCLK_RKVENC>, <&cru CLK_RKVENC_CORE>;
+	resets = <&cru SRST_A_RKVENC>, <&cru SRST_H_RKVENC>, <&cru SRST_RKVENC_CORE>;
+	assigned-clocks = <&cru ACLK_RKVENC>, <&cru CLK_RKVENC_CORE>;
 	iommus = <&rkvenc_mmu>;
 	rockchip,srv = <&mpp_srv>;
 	power-domains = <&power 14>;
@@ -2967,7 +2968,7 @@
 };
 
 &rkvenc_mmu {
-	clocks = <&cru 259 &cru 260>;
+	clocks = <&cru ACLK_RKVENC>, <&cru HCLK_RKVENC>;
 	power-domains = <&power 14>;
 	status = "okay";
 };
@@ -2977,8 +2978,8 @@
 };
 
 &rng {
-	clocks = <&cru 112 &cru 111>;
-	resets = <&cru 109>;
+	clocks = <&cru CLK_TRNG_NS>, <&cru HCLK_TRNG_NS>;
+	resets = <&cru SRST_TRNG_NS>;
 };
 
 &route_dsi0 {
@@ -3008,14 +3009,14 @@
 };
 
 &saradc {
-	clocks = <&cru 275 &cru 274>;
-	resets = <&cru 384>;
+	clocks = <&cru CLK_SARADC>, <&cru PCLK_SARADC>;
+	resets = <&cru SRST_P_SARADC>;
 	status = "okay";
 	vref-supply = <&vcc_1v8>;
 };
 
 &sata0 {
-	clocks = <&cru 150 &cru 151 &cru 152>;
+	clocks = <&cru ACLK_SATA0>, <&cru CLK_SATA0_PMALIVE>, <&cru CLK_SATA0_RXOOB>;
 	phys = <&combphy0_us 1>;
 	power-domains = <&power 15>;
 };
@@ -3025,7 +3026,7 @@
 };
 
 &sata1 {
-	clocks = <&cru 155 &cru 156 &cru 157>;
+	clocks = <&cru ACLK_SATA1>, <&cru CLK_SATA1_PMALIVE>, <&cru CLK_SATA1_RXOOB>;
 	phys = <&combphy1_usq 1>;
 	power-domains = <&power 15>;
 };
@@ -3035,7 +3036,7 @@
 };
 
 &sata2 {
-	clocks = <&cru 160 &cru 161 &cru 162>;
+	clocks = <&cru ACLK_SATA2>, <&cru CLK_SATA2_PMALIVE>, <&cru CLK_SATA2_RXOOB>;
 	phys = <&combphy2_psq 1>;
 	power-domains = <&power 15>;
 };
@@ -3056,7 +3057,7 @@
 
 &scr {
 	pinctrl-0 = <&scr_pins>;
-	clocks = <&cru 276>;
+	clocks = <&cru PCLK_SCR>;
 };
 
 &scr_pins {
@@ -3067,9 +3068,9 @@
 };
 
 &sdhci {
-	assigned-clocks = <&cru 123 &cru 125 &cru 124>;
-	clocks = <&cru 124 &cru 122 &cru 121 &cru 123 &cru 125>;
-	resets = <&cru 120 &cru 118 &cru 117 &cru 119 &cru 121>;
+	assigned-clocks = <&cru BCLK_EMMC>, <&cru TCLK_EMMC>, <&cru CCLK_EMMC>;
+	clocks = <&cru CCLK_EMMC>, <&cru HCLK_EMMC>, <&cru ACLK_EMMC>, <&cru BCLK_EMMC>, <&cru TCLK_EMMC>;
+	resets = <&cru SRST_C_EMMC>, <&cru SRST_H_EMMC>, <&cru SRST_A_EMMC>, <&cru SRST_B_EMMC>, <&cru SRST_T_EMMC>;
 	status = "okay";
 	bus-width = <8>;
 	no-sdio;
@@ -3079,8 +3080,8 @@
 };
 
 &sdmmc0 {
-	clocks = <&cru 176 &cru 177 &cru 394 &cru 395>;
-	resets = <&cru 212>;
+	clocks = <&cru HCLK_SDMMC0>, <&cru CLK_SDMMC0>, <&cru SCLK_SDMMC0_DRV>, <&cru SCLK_SDMMC0_SAMPLE>;
+	resets = <&cru SRST_SDMMC0>;
 	status = "okay";
 	no-sdio;
 	no-mmc;
@@ -3119,8 +3120,8 @@
 };
 
 &sdmmc1 {
-	clocks = <&cru 178 &cru 179 &cru 396 &cru 397>;
-	resets = <&cru 214>;
+	clocks = <&cru HCLK_SDMMC1>, <&cru CLK_SDMMC1>, <&cru SCLK_SDMMC1_DRV>, <&cru SCLK_SDMMC1_SAMPLE>;
+	resets = <&cru SRST_SDMMC1>;
 };
 
 &sdmmc1_bus4 {
@@ -3147,9 +3148,9 @@
 };
 
 &sdmmc2 {
-	clocks = <&cru 193 &cru 194 &cru 398 &cru 399>;
+	clocks = <&cru HCLK_SDMMC2>, <&cru CLK_SDMMC2>, <&cru SCLK_SDMMC2_DRV>, <&cru SCLK_SDMMC2_SAMPLE>;
 	max-frequency = <100000000>;
-	resets = <&cru 235>;
+	resets = <&cru SRST_SDMMC2>;
 	status = "okay";
 	no-sd;
 	no-mmc;
@@ -3216,8 +3217,8 @@
 };
 
 &sfc {
-	clocks = <&cru 120 &cru 118>;
-	assigned-clocks = <&cru 120>;
+	clocks = <&cru SCLK_SFC>, <&cru HCLK_SFC>;
+	assigned-clocks = <&cru SCLK_SFC>;
 };
 
 &soc_thermal {
@@ -3237,7 +3238,7 @@
 };
 
 &spdif_8ch {
-	clocks = <&cru 95 &cru 92>;
+	clocks = <&cru MCLK_SPDIF_8CH>, <&cru HCLK_SPDIF_8CH>;
 	dmas = <&dmac1 1>;
 	pinctrl-0 = <&spdifm0_tx>;
 };
@@ -3255,8 +3256,8 @@
 };
 
 &spi0 {
-	clocks = <&cru 338 &cru 337>;
-	dmas = <&dmac0 20 &dmac0 21>;
+	clocks = <&cru CLK_SPI0>, <&cru PCLK_SPI0>;
+	dmas = <&dmac0 20>, <&dmac0 21>;
 	pinctrl-0 = <&spi0m0_cs0 &spi0m0_cs1 &spi0m0_pins>;
 	pinctrl-1 = <&spi0m0_cs0 &spi0m0_cs1 &spi0m0_pins_hs>;
 };
@@ -3310,8 +3311,8 @@
 };
 
 &spi1 {
-	clocks = <&cru 340 &cru 339>;
-	dmas = <&dmac0 22 &dmac0 23>;
+	clocks = <&cru CLK_SPI1>, <&cru PCLK_SPI1>;
+	dmas = <&dmac0 22>, <&dmac0 23>;
 	pinctrl-0 = <&spi1m0_cs0 &spi1m0_cs1 &spi1m0_pins>;
 	pinctrl-1 = <&spi1m0_cs0 &spi1m0_cs1 &spi1m0_pins_hs>;
 };
@@ -3365,8 +3366,8 @@
 };
 
 &spi2 {
-	clocks = <&cru 342 &cru 341>;
-	dmas = <&dmac0 24 &dmac0 25>;
+	clocks = <&cru CLK_SPI2>, <&cru PCLK_SPI2>;
+	dmas = <&dmac0 24>, <&dmac0 25>;
 	pinctrl-0 = <&spi2m0_cs0 &spi2m0_cs1 &spi2m0_pins>;
 	pinctrl-1 = <&spi2m0_cs0 &spi2m0_cs1 &spi2m0_pins_hs>;
 };
@@ -3428,8 +3429,8 @@
 };
 
 &spi3 {
-	clocks = <&cru 344 &cru 343>;
-	dmas = <&dmac0 26 &dmac0 27>;
+	clocks = <&cru CLK_SPI3>, <&cru PCLK_SPI3>;
+	dmas = <&dmac0 26>, <&dmac0 27>;
 	pinctrl-0 = <&spi3m0_cs0 &spi3m0_cs1 &spi3m0_pins>;
 	pinctrl-1 = <&spi3m0_cs0 &spi3m0_cs1 &spi3m0_pins_hs>;
 };
@@ -3491,9 +3492,9 @@
 };
 
 &tsadc {
-	assigned-clocks = <&cru 272 &cru 273>;
-	clocks = <&cru 273 &cru 271>;
-	resets = <&cru 386 &cru 385 &cru 471>;
+	assigned-clocks = <&cru CLK_TSADC_TSEN>, <&cru CLK_TSADC>;
+	clocks = <&cru CLK_TSADC>, <&cru PCLK_TSADC>;
+	resets = <&cru SRST_TSADC>, <&cru SRST_P_TSADC>, <&cru SRST_TSADCPHY>;
 	rockchip,grf = <&grf>;
 	nvmem-cells = <&tsadc_trim_base &tsadc_trim_base_frac>;
 	pinctrl-0 = <&tsadc_gpio_func>;
@@ -3544,8 +3545,8 @@
 };
 
 &uart0 {
-	clocks = <&pmucru 11 &pmucru 44>;
-	dmas = <&dmac0 0 &dmac0 1>;
+	clocks = <&pmucru SCLK_UART0>, <&pmucru PCLK_UART0>;
+	dmas = <&dmac0 0>, <&dmac0 1>;
 	pinctrl-0 = <&uart0_xfer>;
 };
 
@@ -3563,8 +3564,8 @@
 };
 
 &uart1 {
-	clocks = <&cru 287 &cru 284>;
-	dmas = <&dmac0 2 &dmac0 3>;
+	clocks = <&cru SCLK_UART1>, <&cru PCLK_UART1>;
+	dmas = <&dmac0 2>, <&dmac0 3>;
 	pinctrl-0 = <&uart1m1_xfer &uart1m1_ctsn>;
 	status = "okay";
 };
@@ -3596,8 +3597,8 @@
 };
 
 &uart2 {
-	clocks = <&cru 291 &cru 288>;
-	dmas = <&dmac0 4 &dmac0 5>;
+	clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
+	dmas = <&dmac0 4>, <&dmac0 5>;
 	pinctrl-0 = <&uart2m0_xfer>;
 };
 
@@ -3612,8 +3613,8 @@
 };
 
 &uart3 {
-	clocks = <&cru 295 &cru 292>;
-	dmas = <&dmac0 6 &dmac0 7>;
+	clocks = <&cru SCLK_UART3>, <&cru PCLK_UART3>;
+	dmas = <&dmac0 6>, <&dmac0 7>;
 	pinctrl-0 = <&uart3m0_xfer>;
 };
 
@@ -3636,8 +3637,8 @@
 };
 
 &uart4 {
-	clocks = <&cru 299 &cru 296>;
-	dmas = <&dmac0 8 &dmac0 9>;
+	clocks = <&cru SCLK_UART4>, <&cru PCLK_UART4>;
+	dmas = <&dmac0 8>, <&dmac0 9>;
 	pinctrl-0 = <&uart4m0_xfer>;
 };
 
@@ -3660,8 +3661,8 @@
 };
 
 &uart5 {
-	clocks = <&cru 303 &cru 300>;
-	dmas = <&dmac0 10 &dmac0 11>;
+	clocks = <&cru SCLK_UART5>, <&cru PCLK_UART5>;
+	dmas = <&dmac0 10>, <&dmac0 11>;
 	pinctrl-0 = <&uart5m0_xfer>;
 };
 
@@ -3684,8 +3685,8 @@
 };
 
 &uart6 {
-	clocks = <&cru 307 &cru 304>;
-	dmas = <&dmac0 12 &dmac0 13>;
+	clocks = <&cru SCLK_UART6>, <&cru PCLK_UART6>;
+	dmas = <&dmac0 12>, <&dmac0 13>;
 	pinctrl-0 = <&uart6m0_xfer>;
 };
 
@@ -3708,8 +3709,8 @@
 };
 
 &uart7 {
-	clocks = <&cru 311 &cru 308>;
-	dmas = <&dmac0 14 &dmac0 15>;
+	clocks = <&cru SCLK_UART7>, <&cru PCLK_UART7>;
+	dmas = <&dmac0 14>, <&dmac0 15>;
 	pinctrl-0 = <&uart7m0_xfer>;
 };
 
@@ -3737,8 +3738,8 @@
 };
 
 &uart8 {
-	clocks = <&cru 315 &cru 312>;
-	dmas = <&dmac0 16 &dmac0 17>;
+	clocks = <&cru SCLK_UART8>, <&cru PCLK_UART8>;
+	dmas = <&dmac0 16>, <&dmac0 17>;
 	pinctrl-0 = <&uart8m0_xfer>;
 };
 
@@ -3761,8 +3762,8 @@
 };
 
 &uart9 {
-	clocks = <&cru 319 &cru 316>;
-	dmas = <&dmac0 18 &dmac0 19>;
+	clocks = <&cru SCLK_UART9>, <&cru PCLK_UART9>;
+	dmas = <&dmac0 18>, <&dmac0 19>;
 	pinctrl-0 = <&uart9m0_xfer>;
 };
 
@@ -3790,51 +3791,51 @@
 };
 
 &usb2phy0 {
-	clocks = <&pmucru 19>;
+	clocks = <&pmucru CLK_USBPHY0_REF>;
 	rockchip,usbgrf = <&usb2phy0_grf>;
-	assigned-clocks = <&cru 11>;
+	assigned-clocks = <&cru USB480M>;
 	assigned-clock-parents = <&usb2phy0>;
 	status = "okay";
 };
 
 &usb2phy1 {
-	clocks = <&pmucru 21>;
+	clocks = <&pmucru CLK_USBPHY1_REF>;
 	rockchip,usbgrf = <&usb2phy1_grf>;
 	status = "okay";
 };
 
 &usb_host0_ehci {
-	clocks = <&cru 189 &cru 190 &cru 188 &usb2phy1>;
+	clocks = <&cru HCLK_USB2HOST0>, <&cru HCLK_USB2HOST0_ARB>, <&cru PCLK_USB>, <&usb2phy1>;
 	phys = <&u2phy1_otg>;
 	status = "okay";
 };
 
 &usb_host0_ohci {
-	clocks = <&cru 189 &cru 190 &cru 188 &usb2phy1>;
+	clocks = <&cru HCLK_USB2HOST0>, <&cru HCLK_USB2HOST0_ARB>, <&cru PCLK_USB>, <&usb2phy1>;
 	phys = <&u2phy1_otg>;
 	status = "okay";
 };
 
 &usb_host1_ehci {
-	clocks = <&cru 191 &cru 192 &cru 188 &usb2phy1>;
+	clocks = <&cru HCLK_USB2HOST1>, <&cru HCLK_USB2HOST1_ARB>, <&cru PCLK_USB>, <&usb2phy1>;
 	phys = <&u2phy1_host>;
 	status = "okay";
 };
 
 &usb_host1_ohci {
-	clocks = <&cru 191 &cru 192 &cru 188 &usb2phy1>;
+	clocks = <&cru HCLK_USB2HOST1>, <&cru HCLK_USB2HOST1_ARB>, <&cru PCLK_USB>, <&usb2phy1>;
 	phys = <&u2phy1_host>;
 	status = "okay";
 };
 
 &usbdrd30 {
-	clocks = <&cru 166 &cru 167 &cru 165 &cru 127>;
+	clocks = <&cru CLK_USB3OTG0_REF>, <&cru CLK_USB3OTG0_SUSPEND>, <&cru ACLK_USB3OTG0>, <&cru PCLK_PIPE>;
 	status = "okay";
 };
 
 &usbdrd_dwc3 {
 	power-domains = <&power 15>;
-	resets = <&cru 148>;
+	resets = <&cru SRST_USB3OTG0>;
 	status = "okay";
 	phys = <&u2phy0_otg>;
 	phy-names = "usb2-phy";
@@ -3845,23 +3846,23 @@
 };
 
 &usbhost30 {
-	clocks = <&cru 169 &cru 170 &cru 168 &cru 127>;
+	clocks = <&cru CLK_USB3OTG1_REF>, <&cru CLK_USB3OTG1_SUSPEND>, <&cru ACLK_USB3OTG1>, <&cru PCLK_PIPE>;
 	status = "okay";
 };
 
 &usbhost_dwc3 {
-	phys = <&u2phy0_host &combphy1_usq 4>;
+	phys = <&u2phy0_host>, <&combphy1_usq 4>;
 	power-domains = <&power 15>;
-	resets = <&cru 149>;
+	resets = <&cru SRST_USB3OTG1>;
 };
 
 &vad {
-	clocks = <&cru 91>;
+	clocks = <&cru HCLK_VAD>;
 };
 
 &vdpu {
-	clocks = <&cru 238 &cru 239>;
-	resets = <&cru 282 &cru 283>;
+	clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+	resets = <&cru SRST_A_VPU>, <&cru SRST_H_VPU>;
 	iommus = <&vdpu_mmu>;
 	power-domains = <&power 11>;
 	rockchip,srv = <&mpp_srv>;
@@ -3869,7 +3870,7 @@
 };
 
 &vdpu_mmu {
-	clocks = <&cru 238 &cru 239>;
+	clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
 	power-domains = <&power 11>;
 	status = "okay";
 };
@@ -3879,8 +3880,8 @@
 };
 
 &vepu {
-	clocks = <&cru 253 &cru 254>;
-	resets = <&cru 302 &cru 303>;
+	clocks = <&cru ACLK_JENC>, <&cru HCLK_JENC>;
+	resets = <&cru SRST_A_JENC>, <&cru SRST_H_JENC>;
 	iommus = <&vepu_mmu>;
 	rockchip,srv = <&mpp_srv>;
 	power-domains = <&power 10>;
@@ -3888,39 +3889,39 @@
 };
 
 &vepu_mmu {
-	clocks = <&cru 253 &cru 254>;
+	clocks = <&cru ACLK_JENC>, <&cru HCLK_JENC>;
 	power-domains = <&power 10>;
 	status = "okay";
 };
 
 &video_phy0 {
-	clocks = <&pmucru 23 &cru 378 &cru 232>;
-	resets = <&cru 443>;
+	clocks = <&pmucru CLK_MIPIDSIPHY0_REF>, <&cru PCLK_MIPIDSIPHY0>, <&cru PCLK_DSITX_0>;
+	resets = <&cru SRST_P_MIPIDSIPHY0>;
 	power-domains = <&power 9>;
 	status = "okay";
 };
 
 &video_phy1 {
-	clocks = <&pmucru 25 &cru 379 &cru 233>;
-	resets = <&cru 444>;
+	clocks = <&pmucru CLK_MIPIDSIPHY1_REF>, <&cru PCLK_MIPIDSIPHY1>, <&cru PCLK_DSITX_1>;
+	resets = <&cru SRST_P_MIPIDSIPHY1>;
 	power-domains = <&power 9>;
 	status = "okay";
 };
 
 &vop {
-	clocks = <&cru 221 &cru 222 &cru 223 &cru 224 &cru 225>;
+	clocks = <&cru ACLK_VOP>, <&cru HCLK_VOP>, <&cru DCLK_VOP0>, <&cru DCLK_VOP1>, <&cru DCLK_VOP2>;
 	operating-points-v2 = <&vop_opp_table>;
 	iommus = <&vop_mmu>;
 	power-domains = <&power 9>;
 	rockchip,grf = <&grf>;
 	status = "okay";
-	assigned-clocks = <&cru 223 &cru 224>;
-	assigned-clock-parents = <&pmucru 2 &cru 5>;
+	assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>;
+	assigned-clock-parents = <&pmucru PLL_HPLL>, <&cru PLL_VPLL>;
 	vop-supply = <&vdd_logic>;
 };
 
 &vop_mmu {
-	clocks = <&cru 221 &cru 222>;
+	clocks = <&cru ACLK_VOP>, <&cru HCLK_VOP>;
 	status = "okay";
 };
 
@@ -3989,13 +3990,13 @@
 };
 
 &vpu {
-	clocks = <&cru 238 &cru 239>;
+	clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
 	iommus = <&vdpu_mmu>;
 	power-domains = <&power 11>;
 };
 
 &wdt {
-	clocks = <&cru 278 &cru 277>;
+	clocks = <&cru TCLK_WDT_NS>, <&cru PCLK_WDT_NS>;
 };
 
 &xin32k {
