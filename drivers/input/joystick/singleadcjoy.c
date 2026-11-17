@@ -1382,7 +1382,7 @@ static int joypad_probe(struct platform_device *pdev)
 		gts_dev->id.vendor = 0xabcd;
 		gts_dev->id.product = 0xabcd;
 		gts_dev->id.version = 0x1ab;
-		__set_bit(INPUT_PROP_DIRECT, gts_dev->propbit);	/* orr #0x2 on propbit @..716d4 / stset @..71420 */
+		set_bit(INPUT_PROP_DIRECT, gts_dev->propbit);	/* atomic, as stock: stset @ffffffc008c71420, LL/SC fallback @..716c8 */
 		if (input_register_device(gts_dev))
 			printk("Register %s input device failed", gts_dev->name);	/* @..71440, no return */
 	}
