@@ -127,8 +127,7 @@ static ssize_t accel_calibration_show(struct class *class,
 #define ACCEL_CAPTURE_TIMES 20
 #define ACCEL_SENSITIVE 16384
 /* +-1 * 16384 / 9.8 */
-/* stock: 4800 (mov w22, #0x12c0 in accel_calibration_store, compared with the x, y and z offsets) */
-#define ACCEL_OFFSET_MAX 4800
+#define ACCEL_OFFSET_MAX 4800	/* stock: mov w22, #0x12c0 in accel_calibration_store */
 static int accel_do_calibration(struct sensor_private_data *sensor)
 {
 	int i;
