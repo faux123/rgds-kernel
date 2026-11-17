@@ -436,3 +436,29 @@ metadata, none source:
 
 Correction to the round 1 note: the rk817 "range checks rewritten" are the same predicate
 (x/10 == 0 and (unsigned)(x+9) <= 18 both mean -9 <= x <= 9 for 32-bit int).
+
+## Round 3 (2026-11-17): data layout by name
+
+`stock.elf`'s symbol table names data objects too (all typed `t`), so `audit/datanames.py`
+compares every mapped data address by symbol name and offset in both kernels. Gemini round 2
+(reviews/2026-11-17-gemini-round2.md) asked for the root cause of the data shifts; walking the
+shift steps (`.data` deltas between consecutive mapped addresses) found real source differences,
+all in reconstructed drivers:
+
+| Step | Cause (stock evidence) | Fix (stock branch) |
+|---|---|---|
+| -800 before net_namespace_list | aw87391 left/right: of_device_id tables non-const in .data after each driver; i2c_driver.id_table = goodix_ts_id | e41c061b8b96 |
+| -8 / -32 at joypad | BTN_S defined before joypad_init_temp; joypad_attr_group non-const in .data | 7d36310b110c |
+| rk817_battery_probe 4 bytes short | stock zeroes sm_linek_fast/normal in init; fg_init_done set after the closing DBGs; NTC table allocated with battery->dev | 67a8180f9b49 |
+
+After these (build r9): EXACT 45,557 (was 42,319); ADDR 24,201; ADDR_MAPPED 91; DIFF 74; address
+conflicts 0. Data: every .data/.bss address matches stock by name and offset; .data shift steps left
+are two object-order differences that clang picks from first-reference order (joypad_driver vs
+joypadz_count_mode2; rk817_attrs vs the rk817 property tables), size-neutral. Constant data: the
+same 6 build-metadata differences. rk817_battery_probe is now the same size as stock; the remaining
+difference is one instruction-order pair (ubfiz/ldr).
+
+Publishing note: after tag v1.21-recon-1 the fixes branch was force-pushed when it was replayed on
+new stock tips (against the agreement to stop force-pushing). From e41c061b8b96 on, stock commits are
+added to both branches as ordinary commits (no force); the fixes branch tree equals stock + the 3
+FIX commits (6 lines, 3 files).
