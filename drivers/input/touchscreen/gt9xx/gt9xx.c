@@ -67,6 +67,28 @@ static u8 gtp_x_reverse = FALSE;
 static u8 gtp_y_reverse = TRUE;
 
 static const char *goodix_ts_name = "goodix-ts";
+
+/* Stock exports gt9xx_touch_swap (EXPORT_SYMBOL); the *_status globals are written by the joypad driver's touch_mode sysfs. */
+int gt9xx_touch_swap;
+EXPORT_SYMBOL(gt9xx_touch_swap);
+int gt9xx_touch_swap_status;
+int gt9xx_touch_combo_status;
+struct input_dev *input_gt9xx_0;
+struct input_dev *input_gt9xx_1;
+
+void gt9xx_touch_swap_set(int v)
+{
+    gt9xx_touch_swap = v;
+    printk("gt9xx_touch_swap_set  %d \n", v);
+}
+
+/* Stock: swap on -> panel with ext_lcd_tp set reports on input_gt9xx_0, the other on input_gt9xx_1 (crossed). */
+static struct input_dev *gtp_out_dev(struct goodix_ts_data *ts)
+{
+    if (!gt9xx_touch_swap)
+        return ts->input_dev;
+    return ts->ext_lcd_tp ? input_gt9xx_0 : input_gt9xx_1;
+}
 static struct workqueue_struct *goodix_wq;
 struct i2c_client * gtp_i2c_connect_client = NULL; 
 static u8 config[GTP_CONFIG_MAX_LENGTH + GTP_ADDR_LENGTH]
@@ -470,6 +492,9 @@ static void gtp_touch_up(struct goodix_ts_data* ts, s32 id)
 #else
     input_report_key(ts->input_dev, BTN_TOUCH, 0);
 #endif
+    /* stock gtp_touch_up @ffffffc008cc1500: BTN_TOUCH=0 goes to the swap-selected device */
+    if (gt9xx_touch_swap && gtp_out_dev(ts))
+        input_report_key(gtp_out_dev(ts), BTN_TOUCH, 0);
 }
 
 #if GTP_WITH_PEN
@@ -1013,6 +1038,9 @@ static void goodix_ts_work_func(struct work_struct *work)
 #endif
     {
         input_sync(ts->input_dev);
+        /* stock goodix_ts_work_func @ffffffc008cc0a68: SYN_REPORT on the swap-selected device */
+        if (gt9xx_touch_swap && gtp_out_dev(ts))
+            input_sync(gtp_out_dev(ts));
     }
 
 exit_work_func:
@@ -2108,11 +2136,16 @@ static s8 gtp_request_input_dev(struct i2c_client *client,
     input_set_abs_params(ts->input_dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);
     input_set_abs_params(ts->input_dev, ABS_MT_TRACKING_ID, 0, 255, 0, 0);
 
-    sprintf(phys, "input/ts");
-    ts->input_dev->name = goodix_ts_name;
+    /* stock @ffffffc008cc11ec..12c0: name/phys/vendor depend on ext_lcd_tp; panel pointer saved in input_gt9xx_{0,1} */
+    ts->input_dev->name = ts->ext_lcd_tp ? "gt9xx-1" : "gt9xx-0";
+    sprintf(phys, ts->ext_lcd_tp ? "input/ts1" : "input/ts0");
     ts->input_dev->phys = phys;
     ts->input_dev->id.bustype = BUS_I2C;
-    ts->input_dev->id.vendor = 0xDEAD;
+    ts->input_dev->id.vendor = ts->ext_lcd_tp ? 0x417 : 0x416;
+    if (ts->ext_lcd_tp)
+        input_gt9xx_1 = ts->input_dev;
+    else
+        input_gt9xx_0 = ts->input_dev;
     ts->input_dev->id.product = 0xBEEF;
     ts->input_dev->id.version = 10427;
     
@@ -2646,6 +2679,10 @@ static int goodix_ts_probe(struct i2c_client *client, const struct i2c_device_id
     	dev_err(&client->dev, "no device tree\n");
     	return -EINVAL;
     }
+    /* stock reads these three u32 DT props into ts+0x130/0x131/0x132 and fails probe if absent; optional here */
+    if (!of_property_read_u32(np, "ext_lcd_tp", &val)) ts->ext_lcd_tp = val;
+    if (!of_property_read_u32(np, "flip_report_tp", &val)) ts->flip_report_tp = val;
+    if (!of_property_read_u32(np, "com_lcd_tp", &val)) ts->com_lcd_tp = val;
     if (of_property_read_u32(np, "tp-size", &val)) {
     	dev_err(&client->dev, "no max-x defined\n");
     	return -EINVAL;
