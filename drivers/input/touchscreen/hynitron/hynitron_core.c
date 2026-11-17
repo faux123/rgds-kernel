@@ -1283,17 +1283,20 @@ int hyn_irq_init(struct i2c_client *client)
 
 
 
-void hyn_enter_deep_sleep(void)
+void noinline hyn_enter_deep_sleep(void)
+/* body as Hynitron MTK V2.2 (matches stock @ffffffc008cc26c4: same messages, mutcap command bytes 0xD1,0x05) */
 {
     int ret = 0;
-
+	HYN_ERROR("hyn_enter_deep_sleep");
 /* TP enter sleep mode */
 	if(hyn_ts_data->config_chip_product_line==HYN_CHIP_PRODUCT_LINE_MUT_CAP)
 	{
     //mutcap
         u8 buf[2];
-		buf[0]=HYN_REG_MUT_DEEP_SLEEP_MODE&0xff;
-		buf[1]=HYN_REG_MUT_DEEP_SLEEP_MODE>>8;
+		buf[0]=HYN_REG_MUT_DEEP_SLEEP_MODE>>8;
+		buf[1]=HYN_REG_MUT_DEEP_SLEEP_MODE&0xff;
+	
+		HYN_ERROR("Set TP to sleep mode mutcap");
    		ret = cst3xx_i2c_write(hyn_ts_data->client, buf,2);
 	    if (ret < 0){
 	        HYN_ERROR("Set TP to sleep mode fail, ret=%d!", ret);
@@ -1301,6 +1304,7 @@ void hyn_enter_deep_sleep(void)
 		
 	}else if(hyn_ts_data->config_chip_product_line==HYN_CHIP_PRODUCT_LINE_SEL_CAP){
 	//selfcap
+		HYN_ERROR("Set TP to sleep mode selfcap");
 		ret = hyn_i2c_write_byte(hyn_ts_data->client, HYN_REG_CAP_POWER_MODE, HYN_REG_CAP_POWER_MODE_SLEEP_VALUE);
 	    if (ret < 0){
 	        HYN_ERROR("Set TP to sleep mode fail, ret=%d!", ret);
