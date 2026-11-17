@@ -20,7 +20,7 @@
  * Linux MultiTouch Protocol
  * 1: Protocol B(default), 0: Protocol A
  */
-#define HYN_MT_PROTOCOL_B_EN                   1
+#define HYN_MT_PROTOCOL_B_EN                   0 /* stock: no input_mt_slot/input_mt_init_slots/slot_state calls; MT reported with protocol A */
 /*
  * Stock RG DS: cst8xx_touch_report (@ffffffc008cc21b8) reports with protocol A (tpd_touchinfo, tpd_down/tpd_up),
  * while cst3xx_touch_report uses protocol B (cst3xx_touch_down/up). TODO: stock cst8xx strings differ from V2.2
