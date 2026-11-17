@@ -1591,7 +1591,7 @@ int keypad2touchpanel_abs(int code, int pressed)
 {
 	switch (code) {	/* halfword jump table @ffffffc0097195a0 */
 	KP_KEY(0x130, a, 5, 5)
-	KP_KEY(0x131, b, 6, 4)	/* stock quirk: B accepts a mask of 4 (Y's slot), see above */
+	KP_KEY(0x131, b, 6, 6)
 	KP_KEY(0x133, x, 3, 3)
 	KP_KEY(0x134, y, 4, 4)
 	KP_KEY(0x136, l1, 14, 14)
