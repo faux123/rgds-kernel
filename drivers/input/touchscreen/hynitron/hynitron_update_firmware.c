@@ -2182,10 +2182,19 @@ int hyn_boot_update_fw(struct i2c_client * client)
 			HYN_ERROR("hyn ic have no firmware,update default firmware.\n");
 			check_proj_id=0;
 			proj_id=hyn_find_fw_idx(check_proj_id);
-			HYN_INFO("hyn_find_match chip type,fw_idx: proj_id:%d.\r\n",proj_id);
+			HYN_INFO("hyn_find_match chip type,fw_idx: proj_id:%d.\n",proj_id);
 			if(proj_id<0){
 				HYN_ERROR("hyn not find config chip type firmware,please check config chip type or firmware.\n");
-				return 0;
+				proj_id=hyn_find_fw_idx(0);
+				if(proj_id>0){
+					hyn_ts_data->fw_name					   =hynitron_fw_grp[proj_id].name;
+					hyn_ts_data->p_hynitron_upgrade_firmware   =hynitron_fw_grp[proj_id].fw;
+					hyn_ts_data->fw_length				       =hynitron_fw_grp[proj_id].fw_length;
+					HYN_INFO("update default TP firmware data for apk update.(%s)!\n", hynitron_fw_grp[proj_id].name);
+				}else{
+					HYN_INFO("please chekc hynitron_fw_grp fw config!\n");
+					return 0;
+				}
 			}else{
 				hyn_ts_data->fw_name					    =hynitron_fw_grp[proj_id].name;
 				hyn_ts_data->p_hynitron_upgrade_firmware   	=hynitron_fw_grp[proj_id].fw;
@@ -2196,10 +2205,19 @@ int hyn_boot_update_fw(struct i2c_client * client)
 		}else{
 			check_proj_id=1;
 			proj_id=hyn_find_fw_idx(check_proj_id);
-			HYN_INFO("hyn_find_fw_idx: proj_id:%d.\r\n",proj_id);	
+			HYN_INFO("hyn_find_fw_idx: proj_id:%d.\n",proj_id);	
 			if(proj_id<0){
 				HYN_ERROR("not find matched TP firmware,please check chip type and chip project id. !\n"); 
-				return 0;
+				proj_id=hyn_find_fw_idx(0);
+				if(proj_id>0){
+					hyn_ts_data->fw_name					   =hynitron_fw_grp[proj_id].name;
+					hyn_ts_data->p_hynitron_upgrade_firmware   =hynitron_fw_grp[proj_id].fw;
+					hyn_ts_data->fw_length				       =hynitron_fw_grp[proj_id].fw_length;
+					HYN_INFO("update default TP firmware data for apk update.(%s)!\n", hynitron_fw_grp[proj_id].name);
+				}else{
+					HYN_INFO("please chekc hynitron_fw_grp fw config!\n");
+					return 0;
+				}
 			}else{	
 				HYN_INFO("find matched TP firmware(%s)!\n", hynitron_fw_grp[proj_id].name);
 				hyn_ts_data->fw_name					   =hynitron_fw_grp[proj_id].name;
@@ -2226,11 +2244,6 @@ int hyn_boot_update_fw(struct i2c_client * client)
 	switch(hyn_ts_data->config_chip_series){
 		case HYN_CHIP_CST0XX: 			
 			 break;
-		case HYN_CHIP_CST2XX:
-#if HYN_EN_AUTO_UPDATE_CST2xx
-			 ret =cst2xx_boot_update_fw(client);
-#endif
-			break;
 		case HYN_CHIP_CST6XX: 
 #if (HYN_EN_AUTO_UPDATE_CST6xx)
 			ret = cst6xx_boot_update_fw(client);
@@ -2243,6 +2256,8 @@ int hyn_boot_update_fw(struct i2c_client * client)
 			ret = cst3xx_boot_update_fw(client);
 #endif
 			break;
+
+
 		case HYN_CHIP_CST1XXSE:
 		case HYN_CHIP_CST2XXSE:
 		case HYN_CHIP_CST3XXSE:
@@ -2254,6 +2269,11 @@ int hyn_boot_update_fw(struct i2c_client * client)
 		case HYN_CHIP_CST8XX:
 #if HYN_EN_AUTO_UPDATE_CST78xx
 			ret = cst8xx_boot_update_fw(client);
+#endif
+			break;
+		case HYN_CHIP_CST644K:
+#if HYN_EN_AUTO_UPDATE_CST644K
+			ret = cst644k_boot_update_fw(client);
 #endif
 			break;
 		default :
