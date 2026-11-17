@@ -12,4 +12,8 @@ export CONFIG_AIC_WLAN_SUPPORT = y
 export CONFIG_AIC_FW_PATH = "/vendor/etc/firmware"
 export CONFIG_AIC8800_WLAN_SUPPORT = m
 obj-m += aic8800/
+export CONFIG_INFINEON_DHD = m
+obj-m += infineon/
+export CONFIG_EA6621Q = y
+obj-m += ea6621q/
 endif
