@@ -1023,11 +1023,10 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 void *poll_dev_private;			/* T @ffffffc00a4d5708, 8 bytes (next symbol @..5710) */
 
 
-/* Inlined into joypad_probe in stock (@..707b8..70b70). Returns 0 or -errno. */
+/* Inlined into joypad_probe in stock (@..707b8..708d4). Returns 0 or -ENOMEM. */
 static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **out)
 {
 	struct stock_joypad *joypad;
-	int i;
 
 	joypad = devm_kmalloc(dev, 0x78, GFP_KERNEL | __GFP_ZERO);
 	if (!joypad) {
@@ -1048,6 +1047,16 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		dev_err(dev, "adc key = %d, gpio key = %d error!",
 			joypad->amux_count, joypad->gpio_key_count);
 	/* NOTE: stock continues after this dev_err (no return seen between @..708d0 and @..708d4); verify. */
+	*out = joypad;
+	return 0;
+}
+
+/* joypad_adc_setup, inlined in probe @..708d4..70b70. Both of its error exits (alloc @..70910, amux count
+ * @..70c74) branch to @..70d8c, which prints "dt parse error!(err = %d)\n" and returns; neither prints
+ * "Joypad amux setup failed". */
+static int stock_joypad_adc_setup(struct device *dev, struct stock_joypad *joypad)
+{
+	int i;
 
 	joypad->adc = devm_kmalloc(dev, (long)joypad->amux_count * 0x64, GFP_KERNEL | __GFP_ZERO);
 	if (!joypad->adc) {
@@ -1066,29 +1075,40 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		}
 		e->mux_index = i;
 		e->invert = 0;
-		if (i > 5)
-			continue;	/* default branch @..70c58: not decoded yet */
+		if (i > 5) {	/* default branch @..70c58 */
+			dev_err(dev, "%s amux count(%d) error!", "joypad_adc_setup", i);
+			return -EINVAL;
+		}
+		/* switch(i) via jump table @ffffffc0097195c0. Each case reads its own -p-tuning; the -n-tuning read sits in
+		 * two shared tails, one that sets invert (@..70afc -> @..70950) and one that does not (@..70b54).
+		 * A missing property leaves 180 (0xb4 @..70948). */
 		{
-			/* switch(i) via jump table @ffffffc0097195c0; invert set through the shared tail @..70afc -> @..70950 */
-			const char *pp, *nn;
-			u8 inv;
+			const char *nn;
 
+#define ADC_P(CODE, NAME)								\
+			e->code = (CODE);						\
+			if (device_property_read_u32(dev, "abs_" NAME "-p-tuning", &e->tuning_p)) \
+				e->tuning_p = 180;					\
+			nn = "abs_" NAME "-n-tuning"
 			switch (i) {
-			case 0: e->code = 0; pp = "abs_x-p-tuning";  nn = "abs_x-n-tuning";  inv = 1; break;	/* @..709c4 */
-			case 1: e->code = 1; pp = "abs_y-p-tuning";  nn = "abs_y-n-tuning";  inv = 1; break;	/* @..70ac0 */
-			case 2: e->code = 3; pp = "abs_rx-p-tuning"; nn = "abs_rx-n-tuning"; inv = 0; break;	/* @..70a40 */
-			case 3: e->code = 4; pp = "abs_ry-p-tuning"; nn = "abs_ry-n-tuning"; inv = 1; break;	/* @..70a80 */
-			case 4: e->code = 2; pp = "abs_z-p-tuning";  nn = "abs_z-n-tuning";  inv = 0; break;	/* @..70a00 */
-			default: e->code = 5; pp = "abs_rz-p-tuning"; nn = "abs_rz-n-tuning"; inv = 0; break;	/* @..70b18 */
+			case 0: ADC_P(0, "x");  goto tail_inv;		/* @..709c4 */
+			case 1: ADC_P(1, "y");  goto tail_inv;		/* @..70ac0 */
+			case 2: ADC_P(3, "rx"); goto tail_plain;	/* @..70a40 */
+			case 3: ADC_P(4, "ry"); goto tail_inv;		/* @..70a80 */
+			case 4: ADC_P(2, "z");  goto tail_plain;	/* @..70a00 */
+			default: ADC_P(5, "rz"); goto tail_plain;	/* @..70b18 */
 			}
-			if (device_property_read_u32(dev, pp, &e->tuning_p))
-				e->tuning_p = 180;		/* 0xb4 @..70948 */
+#undef ADC_P
+tail_inv:
 			if (device_property_read_u32(dev, nn, &e->tuning_n))
 				e->tuning_n = 180;
-			e->invert = inv;
+			e->invert = 1;
+			continue;
+tail_plain:
+			if (device_property_read_u32(dev, nn, &e->tuning_n))
+				e->tuning_n = 180;
 		}
 	}
-	*out = joypad;
 	return 0;
 }
 
@@ -1099,7 +1119,8 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
  * stored at joypad+0x10: +0x0 iio_channel*, +0x8 sel_a gpio, +0xc sel_b gpio, +0x10 en gpio (same offsets
  * joypad_adc_read uses). Error exits print "Joypad amux setup failed: %d\n" (@..70d88) and then
  * "dt parse error!(err = %d)\n" (@..70d9c) before returning err. */
-static int stock_amux_gpio(struct device *dev, const char *prop, const char *label, int *gpio_out)
+static __always_inline int stock_amux_gpio(struct device *dev, const char *prop, const char *label,
+					   const char *req_fmt, int *gpio_out)
 {
 	enum of_gpio_flags flags;
 	int gpio, ret;
@@ -1110,8 +1131,8 @@ static int stock_amux_gpio(struct device *dev, const char *prop, const char *lab
 		return 0;
 	ret = devm_gpio_request(dev, gpio, label);
 	if (ret < 0) {
-		dev_err(dev, "%s : failed to request %s %d\n", "joypad_amux_setup", label, gpio);
-		/* stock has one literal per gpio: "%s : failed to request amux-sel-a %d\n" etc. */
+		/* stock has one literal per gpio (x1 set per path, one shared call @..70d74) */
+		dev_err(dev, req_fmt, "joypad_amux_setup", gpio);
 		return ret;
 	}
 	return gpiod_direction_output_raw(gpio_to_desc(gpio), 0);	/* all three driven 0 */
@@ -1141,13 +1162,16 @@ static int stock_joypad_amux_setup(struct device *dev, struct stock_joypad *joyp
 		dev_err(dev, "Incompatible channel type %d\n", type);
 		return -EINVAL;
 	}
-	ret = stock_amux_gpio(dev, "amux-a-gpios", "amux-sel-a", &amux->sel_a_gpio);
+	ret = stock_amux_gpio(dev, "amux-a-gpios", "amux-sel-a",
+			      "%s : failed to request amux-sel-a %d\n", &amux->sel_a_gpio);
 	if (ret < 0)
 		return ret;
-	ret = stock_amux_gpio(dev, "amux-b-gpios", "amux-sel-b", &amux->sel_b_gpio);
+	ret = stock_amux_gpio(dev, "amux-b-gpios", "amux-sel-b",
+			      "%s : failed to request amux-sel-b %d\n", &amux->sel_b_gpio);
 	if (ret < 0)
 		return ret;
-	ret = stock_amux_gpio(dev, "amux-en-gpios", "amux-en", &amux->en_gpio);
+	ret = stock_amux_gpio(dev, "amux-en-gpios", "amux-en",
+			      "%s : failed to request amux-en %d\n", &amux->en_gpio);
 	if (ret < 0)
 		return ret;
 	if (!dev->of_node)
@@ -1189,7 +1213,7 @@ struct stock_button {
 _Static_assert(sizeof(struct stock_button) == 0x20, "button 0x20");
 _Static_assert(__builtin_offsetof(struct stock_button, not_active_low) == 0x19, "button+0x19");
 
-static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joypad, struct stock_button **out)
+static __always_inline int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joypad, struct stock_button **out)
 {
 	struct device_node *np = dev->of_node, *child = NULL;
 	struct stock_button *buttons;
@@ -1205,10 +1229,11 @@ static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joyp
 		struct stock_button *b = &buttons[n];
 		enum of_gpio_flags flags = 0;
 
-		b->gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
-		if (b->gpio < 0) {
-			dev_err(dev, "Failed to get gpio flags, error: %d\n", b->gpio);
-			return b->gpio;
+		ret = of_get_named_gpio_flags(child, "gpios", 0, &flags);
+		b->gpio = ret;
+		if (ret < 0) {	/* stock prints the returned value (w21 = w0 @..70f74), not a re-read of b->gpio */
+			dev_err(dev, "Failed to get gpio flags, error: %d\n", ret);
+			return ret;
 		}
 		b->not_active_low = !(flags & 1);
 		b->label = of_get_property(child, "label", NULL);
@@ -1264,6 +1289,9 @@ static int joypad_probe(struct platform_device *pdev)
 	err = stock_joypad_dt_parse_head(dev, &joypad);
 	if (err)
 		return err;	/* stock: alloc failure returns -ENOMEM without "dt parse error" (@..707e0 -> @..70da0) */
+	err = stock_joypad_adc_setup(dev, joypad);
+	if (err)
+		goto dt_err;	/* @..70914 / @..70c78 -> @..70d8c */
 	err = stock_joypad_amux_setup(dev, joypad, &amux);
 	if (err) {
 		dev_err(dev, "Joypad amux setup failed: %d\n", err);
