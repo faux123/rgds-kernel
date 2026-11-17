@@ -18,4 +18,6 @@ export CONFIG_EA6621Q = y
 obj-m += ea6621q/
 export CONFIG_RTL8822CS = m
 obj-m += rtl8822cs/
+export CONFIG_AP6XXX = m
+obj-m += bcmdhd/
 endif
