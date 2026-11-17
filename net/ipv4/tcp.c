@@ -829,9 +829,7 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
 			 */
 			if (!skb_queue_empty(&sk->sk_receive_queue))
 				break;
-			ret = sk_wait_data(sk, &timeo, NULL);
-			if (ret < 0)
-				break;
+			sk_wait_data(sk, &timeo, NULL);
 			if (signal_pending(current)) {
 				ret = sock_intr_errno(timeo);
 				break;
@@ -1494,22 +1492,6 @@ int tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size)
 }
 EXPORT_SYMBOL(tcp_sendmsg);
 
-void tcp_splice_eof(struct socket *sock)
-{
-	struct sock *sk = sock->sk;
-	struct tcp_sock *tp = tcp_sk(sk);
-	int mss_now, size_goal;
-
-	if (!tcp_write_queue_tail(sk))
-		return;
-
-	lock_sock(sk);
-	mss_now = tcp_send_mss(sk, &size_goal, 0);
-	tcp_push(sk, 0, mss_now, tp->nonagle, size_goal);
-	release_sock(sk);
-}
-EXPORT_SYMBOL_GPL(tcp_splice_eof);
-
 /*
  *	Handle reading urgent data. BSD has very simple semantics for
  *	this, no blocking and very strange errors 8)
@@ -1917,10 +1899,10 @@ int tcp_mmap(struct file *file, struct socket *sock,
 {
 	if (vma->vm_flags & (VM_WRITE | VM_EXEC))
 		return -EPERM;
-	vma->vm_flags &= ~(VM_MAYWRITE | VM_MAYEXEC);
+	vm_flags_clear(vma, VM_MAYWRITE | VM_MAYEXEC);
 
 	/* Instruct vm_insert_page() to not mmap_read_lock(mm) */
-	vma->vm_flags |= VM_MIXEDMAP;
+	vm_flags_set(vma, VM_MIXEDMAP);
 
 	vma->vm_ops = &tcp_vm_ops;
 	return 0;
@@ -2598,11 +2580,7 @@ static int tcp_recvmsg_locked(struct sock *sk, struct msghdr *msg, size_t len,
 			__sk_flush_backlog(sk);
 		} else {
 			tcp_cleanup_rbuf(sk, copied);
-			err = sk_wait_data(sk, &timeo, last);
-			if (err < 0) {
-				err = copied ? : err;
-				goto out;
-			}
+			sk_wait_data(sk, &timeo, last);
 		}
 
 		if ((flags & MSG_PEEK) &&
@@ -3132,6 +3110,12 @@ int tcp_disconnect(struct sock *sk, int flags)
 	int old_state = sk->sk_state;
 	u32 seq;
 
+	/* Deny disconnect if other threads are blocked in sk_wait_event()
+	 * or inet_wait_for_connect().
+	 */
+	if (sk->sk_wait_pending)
+		return -EBUSY;
+
 	if (old_state != TCP_CLOSE)
 		tcp_set_state(sk, TCP_CLOSE);
 
@@ -3203,7 +3187,7 @@ int tcp_disconnect(struct sock *sk, int flags)
 	icsk->icsk_ack.rcv_mss = TCP_MIN_MSS;
 	memset(&tp->rx_opt, 0, sizeof(tp->rx_opt));
 	__sk_dst_reset(sk);
-	dst_release(unrcu_pointer(xchg(&sk->sk_rx_dst, NULL)));
+	dst_release(xchg((__force struct dst_entry **)&sk->sk_rx_dst, NULL));
 	tcp_saved_syn_free(tp);
 	tp->compressed_ack = 0;
 	tp->segs_in = 0;
@@ -4745,12 +4729,6 @@ int tcp_abort(struct sock *sk, int err)
 	/* Don't race with userspace socket closes such as tcp_close. */
 	lock_sock(sk);
 
-	/* Avoid closing the same socket twice. */
-	if (sk->sk_state == TCP_CLOSE) {
-		release_sock(sk);
-		return -ENOENT;
-	}
-
 	if (sk->sk_state == TCP_LISTEN) {
 		tcp_set_state(sk, TCP_CLOSE);
 		inet_csk_listen_stop(sk);
@@ -4760,12 +4738,19 @@ int tcp_abort(struct sock *sk, int err)
 	local_bh_disable();
 	bh_lock_sock(sk);
 
-	if (tcp_need_reset(sk->sk_state))
-		tcp_send_active_reset(sk, GFP_ATOMIC);
-	tcp_done_with_error(sk, err);
+	if (!sock_flag(sk, SOCK_DEAD)) {
+		WRITE_ONCE(sk->sk_err, err);
+		/* This barrier is coupled with smp_rmb() in tcp_poll() */
+		smp_wmb();
+		sk_error_report(sk);
+		if (tcp_need_reset(sk->sk_state))
+			tcp_send_active_reset(sk, GFP_ATOMIC);
+		tcp_done(sk);
+	}
 
 	bh_unlock_sock(sk);
 	local_bh_enable();
+	tcp_write_queue_purge(sk);
 	release_sock(sk);
 	return 0;
 }

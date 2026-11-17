@@ -330,6 +330,8 @@ struct mem_cgroup {
 	struct lru_gen_mm_list mm_list;
 #endif
 
+	ANDROID_OEM_DATA_ARRAY(1, 2);
+
 	struct mem_cgroup_per_node *nodeinfo[];
 };
 
@@ -354,6 +356,11 @@ enum page_memcg_data_flags {
 #define MEMCG_DATA_FLAGS_MASK (__NR_MEMCG_DATA_FLAGS - 1)
 
 static inline bool folio_memcg_kmem(struct folio *folio);
+
+int mem_cgroup_move_account(struct page *page,
+			    bool compound,
+			    struct mem_cgroup *from,
+			    struct mem_cgroup *to);
 
 /*
  * After the initialization objcg->memcg is always pointing at
@@ -795,6 +802,11 @@ static inline void obj_cgroup_put(struct obj_cgroup *objcg)
 	percpu_ref_put(&objcg->refcnt);
 }
 
+static inline bool mem_cgroup_tryget(struct mem_cgroup *memcg)
+{
+	return !memcg || css_tryget(&memcg->css);
+}
+
 static inline void mem_cgroup_put(struct mem_cgroup *memcg)
 {
 	if (memcg)
@@ -1026,7 +1038,7 @@ static inline unsigned long lruvec_page_state_local(struct lruvec *lruvec,
 }
 
 void mem_cgroup_flush_stats(void);
-void mem_cgroup_flush_stats_delayed(void);
+void mem_cgroup_flush_stats_ratelimited(void);
 
 void __mod_memcg_lruvec_state(struct lruvec *lruvec, enum node_stat_item idx,
 			      int val);
@@ -1145,6 +1157,7 @@ unsigned long mem_cgroup_soft_limit_reclaim(pg_data_t *pgdat, int order,
 						gfp_t gfp_mask,
 						unsigned long *total_scanned);
 
+extern int mem_cgroup_init(void);
 #else /* CONFIG_MEMCG */
 
 #define MEM_CGROUP_ID_SHIFT	0
@@ -1179,6 +1192,14 @@ static inline bool folio_memcg_kmem(struct folio *folio)
 static inline bool PageMemcgKmem(struct page *page)
 {
 	return false;
+}
+
+static inline int mem_cgroup_move_account(struct page *page,
+					  bool compound,
+					  struct mem_cgroup *from,
+					  struct mem_cgroup *to)
+{
+	return 0;
 }
 
 static inline bool mem_cgroup_is_root(struct mem_cgroup *memcg)
@@ -1293,6 +1314,11 @@ struct mem_cgroup *mem_cgroup_from_css(struct cgroup_subsys_state *css)
 
 static inline void obj_cgroup_put(struct obj_cgroup *objcg)
 {
+}
+
+static inline bool mem_cgroup_tryget(struct mem_cgroup *memcg)
+{
+	return true;
 }
 
 static inline void mem_cgroup_put(struct mem_cgroup *memcg)
@@ -1507,7 +1533,7 @@ static inline void mem_cgroup_flush_stats(void)
 {
 }
 
-static inline void mem_cgroup_flush_stats_delayed(void)
+static inline void mem_cgroup_flush_stats_ratelimited(void)
 {
 }
 
@@ -1570,6 +1596,8 @@ unsigned long mem_cgroup_soft_limit_reclaim(pg_data_t *pgdat, int order,
 {
 	return 0;
 }
+
+static inline int mem_cgroup_init(void) { return 0; }
 #endif /* CONFIG_MEMCG */
 
 static inline void __inc_lruvec_kmem_state(void *p, enum node_stat_item idx)

@@ -54,6 +54,8 @@
 #include <trace/events/initcall.h>
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
+#undef CREATE_TRACE_POINTS
+#include <trace/hooks/printk.h>
 
 #include "printk_ringbuffer.h"
 #include "console_cmdline.h"
@@ -2173,6 +2175,8 @@ static u16 printk_sprint(char *text, u16 size, int facility,
 	return text_len;
 }
 
+EXPORT_TRACEPOINT_SYMBOL_GPL(console);
+
 __printf(4, 0)
 int vprintk_store(int facility, int level,
 		  const struct dev_printk_info *dev_info,
@@ -2272,6 +2276,7 @@ int vprintk_store(int facility, int level,
 	r.info->flags = flags & 0x1f;
 	r.info->ts_nsec = ts_nsec;
 	r.info->caller_id = caller_id;
+	trace_android_vh_vprintk_store(r.info->ts_nsec, r.text_buf, r.info->text_len);
 	if (dev_info)
 		memcpy(&r.info->dev_info, dev_info, sizeof(r.info->dev_info));
 
@@ -2611,6 +2616,12 @@ void resume_console(void)
  */
 static int console_cpu_notify(unsigned int cpu)
 {
+	int flag = 0;
+
+	trace_android_vh_printk_hotplug(&flag);
+	if (flag)
+		return 0;
+
 	if (!cpuhp_tasks_frozen) {
 		/* If trylock fails, someone else is doing the printing */
 		if (console_trylock())
@@ -3629,6 +3640,7 @@ int _printk_deferred(const char *fmt, ...)
 
 	return r;
 }
+EXPORT_SYMBOL_GPL(_printk_deferred);
 
 /*
  * printk rate limiting, lifted from the networking subsystem.
