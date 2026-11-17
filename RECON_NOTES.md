@@ -556,5 +556,5 @@ both aw87391 amps probed. Not checked from adb: touch input, button presses, aud
 charge LED in a non-full state, 12 W at the meter.
 
 Paul's hands-on check on rgds-v1.21 d1cfee9e280a (2026-11-17): touch good, power button good, lid
-working (open: screen on; close: screen off). Still unchecked: joypad buttons/sticks, audible
-sound (speaker and headset), charge LED below full, 12 W at the meter.
+working (open: screen on; close: screen off); speaker and headphones play sound. Still unchecked:
+joypad buttons, sticks and triggers (two captures saw no input), charge LED below full, 12 W at the meter.
