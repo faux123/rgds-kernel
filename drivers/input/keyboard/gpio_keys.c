@@ -930,6 +930,14 @@ static int gpio_keys_probe(struct platform_device *pdev)
 
 	fwnode_handle_put(child);
 
+	/*
+	 * RG DS stock (gpio_keys_probe, ffffffc008c6af68..af84): declare the
+	 * lid hall keys reported by gpio_keys_gpio_report_event, otherwise the
+	 * input core drops them.
+	 */
+	input_set_capability(input, EV_KEY, KEY_CHANNELUP);
+	input_set_capability(input, EV_KEY, KEY_CHANNELDOWN);
+
 	error = input_register_device(input);
 	if (error) {
 		dev_err(dev, "Unable to register input device, error: %d\n",
