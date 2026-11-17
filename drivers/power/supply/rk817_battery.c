@@ -496,7 +496,6 @@ struct rk817_battery_device {
 	struct workqueue_struct		*bat_monitor_wq;
 	struct delayed_work		bat_delay_work;
 	struct delayed_work		calib_delay_work;
-	struct work_struct		resume_work;
 	struct wake_lock		wake_lock;
 	struct timer_list		caltimer;
 
@@ -627,7 +626,6 @@ struct rk817_battery_device {
 	bool				change; /* Battery status change, report information */
 };
 
-static void rk817_bat_resume_work(struct work_struct *work);
 
 static u64 get_boot_sec(void)
 {
@@ -3057,7 +3055,6 @@ static int rk817_battery_probe(struct platform_device *pdev)
 	INIT_DELAYED_WORK(&battery->bat_delay_work, rk817_battery_work);
 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
 			   msecs_to_jiffies(TIMER_MS_COUNTS * 5));
-	INIT_WORK(&battery->resume_work, rk817_bat_resume_work);
 
 	ret = rk817_bat_init_power_supply(battery);
 	if (ret) {
@@ -3338,9 +3335,9 @@ static int rk817_bat_sleep_dischrg(struct rk817_battery_device *battery)
 	return sleep_soc;
 }
 
-static void rk817_bat_resume_work(struct work_struct *work)
+static int rk817_bat_pm_resume(struct device *dev)
 {
-	struct rk817_battery_device *battery = container_of(work, struct rk817_battery_device, resume_work);
+	struct rk817_battery_device *battery = dev_get_drvdata(dev);
 	int interval_sec = 0, time_step = 0, pwroff_vol;
 
 	battery->s2r = true;
@@ -3387,13 +3384,6 @@ static void rk817_bat_resume_work(struct work_struct *work)
 
 	queue_delayed_work(battery->bat_monitor_wq, &battery->bat_delay_work,
 			   msecs_to_jiffies(1000));
-}
-
-static int rk817_bat_pm_resume(struct device *dev)
-{
-	struct rk817_battery_device *battery = dev_get_drvdata(dev);
-
-	queue_work(battery->bat_monitor_wq, &battery->resume_work);
 
 	return 0;
 }
