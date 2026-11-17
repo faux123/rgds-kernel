@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Reconstruction of the Anbernic RG DS stock singleadc-joypad sysfs layer,
- * from stock.elf disassembly. Skeleton merge into gamma_rg_ds_kernel_singleadcjoy.c pending.
+ * from stock.elf disassembly.
  *
  * Simple-int family template, verified on:
  *   remapkey_show_a_x  @ffffffc008c7216c / remapkey_store_a_x  @ffffffc008c721a0 (var +0x730 = remapkey_a_x @ffffffc00a4d5730)
@@ -51,7 +51,7 @@
 /* FIX CANDIDATE: joypad_show_amux_debug (@ffffffc008c71bcc) clears the enable byte, so reading the attr stops
  * polling, and always prints adc value 0 (@ffffffc008c71be4). */
 /* FIX CANDIDATE: joypad_adc_check sums and averages a fixed 6 channels and writes hist[] of channels 4/5
- * (@ffffffc008c75fd4..762ac) regardless of amux_count; with amux_count < 6 this writes past the adcs array. */
+ * (@ffffffc008c75fd4..762ac) regardless of amux_count; with amux_count < 6 this writes past the adc array. */
 
 #define STOCK_INT_SHOW(fn, var) \
 static ssize_t fn(struct device *dev, struct device_attribute *attr, char *buf) \
@@ -942,14 +942,14 @@ int joypad2touchpanel_abs_z_ext(int mask, int axis, int value)
  *   +0x38 = device_property_present(dev, "autorepeat") & 1   (@..708a8)
  *   +0x28 = device_get_child_node_count(dev)                  (@..708b8)
  *   if (!amux_count || !child_count) dev_err(dev, "adc key = %d, gpio key = %d error!", ...) (@..708d0).
- * Stock differs from the Gamma port here: no boot-arg overrides (g_button_adc_*) are consulted.
- * Field names below are Gamma's; offsets are stock. */
+ * No boot-arg overrides are consulted. Field names are descriptive (from the DT property and sysfs
+ * names where stock has them); offsets are stock. */
 
-/* ---- joypad_probe: per-channel ADC setup loop @..70918..70b70 (Gamma: joypad_adc_setup, inlined in stock).
- * adcs = devm_kmalloc(dev, amux_count * 0x64, GFP_KERNEL|__GFP_ZERO) -> joypad+0x20 (@..708ec/@..708f0);
+/* ---- joypad_probe: per-channel ADC setup loop @..70918..70b70 (stock string "joypad_adc_setup", inlined in probe).
+ * adc = devm_kmalloc(dev, amux_count * 0x64, GFP_KERNEL|__GFP_ZERO) -> joypad+0x20 (@..708ec/@..708f0);
  *   on NULL: dev_err("%s devm_kzmalloc error!", "joypad_adc_setup"), -ENOMEM.
- * For i in 0..amux_count-1, entry e = adcs + 0x64*i:
- *   e+0x50 = bt_adc_scale (joypad+0x44)                          @..70988
+ * For i in 0..amux_count-1, entry e = adc + 0x64*i:
+ *   e+0x50 = adc_scale (joypad+0x44)                          @..70988
  *   e+0x44 = 0x4000 (max); e+0x48 = (i==4||i==5) ? 0 : -0x4000 (min)   @..70974..7098c
  *   if (scale) { e+0x44 = scale << 14; e+0x48 = min * scale; }    @..70994..7099c
  *   e+0x58 = i  (amux channel)                                    @..709a4
@@ -961,13 +961,13 @@ int joypad2touchpanel_abs_z_ext(int mask, int axis, int value)
  *   on loop exit e+0x54 byte set to 1 in one path (@..70954; condition not yet decoded).
  *
  * amux indices 4 and 5: amux-count = 6 in the stock DTB, so channels 4 (ABS_Z) and 5 (ABS_RZ) exist with
- * amux_ch 4 and 5. joypad_adc_read (@..71a14) rejects amux_ch >= 4: it sets the mux enable gpio to 1 (mux off)
+ * mux_index 4 and 5. joypad_adc_read (@..71a14) rejects mux_index >= 4: it sets the mux enable gpio to 1 (mux off)
  * and returns 0. So Z/RZ always read 0 on this board, matching joypad_show_adc_z/rz which print a constant 0.
  * The right stick is NOT on 4/5: it is ABS_RX/ABS_RY on mux channels 2 and 3, read through the normal path.
  */
 
 /* ---- Stock layouts (offsets from the disassembly; unnamed gaps are padding until decoded) ---- */
-struct stock_bt_adc {				/* stride 0x64 (devm_kmalloc amux_count*0x64 @..708e4) */
+struct stock_adc_channel {				/* stride 0x64 (devm_kmalloc amux_count*0x64 @..708e4) */
 	int value;				/* +0x00 joypad_adc_read result, then the 4-sample average (@..75f08, @..761f0) */
 	int shown;				/* +0x04 joypad_show_adc_lx */
 	int shown_p;				/* +0x08 joypad_show_adc_lx_p */
@@ -983,7 +983,7 @@ struct stock_bt_adc {				/* stride 0x64 (devm_kmalloc amux_count*0x64 @..708e4) 
 	int scale;				/* +0x50 */
 	u8  invert;				/* +0x54 */
 	u8  pad55[3];
-	int amux_ch;				/* +0x58 */
+	int mux_index;				/* +0x58 */
 	int tuning_p;				/* +0x5c */
 	int tuning_n;				/* +0x60 */
 };
@@ -994,15 +994,15 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 	u8  pad0d[0x18 - 0x0d];
 	int amux_count;				/* +0x18 */
 	int pad1c;
-	struct stock_bt_adc *adcs;		/* +0x20 */
-	int bt_gpio_count;			/* +0x28 */
+	struct stock_adc_channel *adc;		/* +0x20 */
+	int gpio_key_count;			/* +0x28 */
 	u8  pad2c[0x38 - 0x2c];
-	int auto_repeat;			/* +0x38 */
-	int bt_adc_fuzz;			/* +0x3c */
-	int bt_adc_flat;			/* +0x40 */
-	int bt_adc_scale;			/* +0x44 */
-	int bt_adc_deadzone;			/* +0x48 */
-	int bt_adc_deadzone2;			/* +0x4c copy of +0x48 */
+	int autorepeat;			/* +0x38 */
+	int adc_fuzz_v;			/* +0x3c */
+	int adc_flat_v;			/* +0x40 */
+	int adc_scale;			/* +0x44 */
+	int adc_deadzone_v;			/* +0x48 */
+	int adc_deadzone_copy;			/* +0x4c copy of +0x48 */
 	u8  lock[0x20];				/* +0x50 struct mutex (mutex_lock(drvdata+0x50)) */
 	int amux_debug;				/* +0x70 joypad_store_amux_debug @..71c48 */
 	int pad74;
@@ -1031,36 +1031,36 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 		return -ENOMEM;
 	}
 	poll_dev_private = joypad;
-	device_property_read_u32(dev, "button-adc-fuzz", &joypad->bt_adc_fuzz);
-	device_property_read_u32(dev, "button-adc-flat", &joypad->bt_adc_flat);
-	device_property_read_u32(dev, "button-adc-scale", &joypad->bt_adc_scale);
-	device_property_read_u32(dev, "button-adc-deadzone", &joypad->bt_adc_deadzone);
-	joypad->bt_adc_deadzone2 = joypad->bt_adc_deadzone;
+	device_property_read_u32(dev, "button-adc-fuzz", &joypad->adc_fuzz_v);
+	device_property_read_u32(dev, "button-adc-flat", &joypad->adc_flat_v);
+	device_property_read_u32(dev, "button-adc-scale", &joypad->adc_scale);
+	device_property_read_u32(dev, "button-adc-deadzone", &joypad->adc_deadzone_v);
+	joypad->adc_deadzone_copy = joypad->adc_deadzone_v;
 	device_property_read_u32(dev, "amux-count", &joypad->amux_count);
 	device_property_read_u32(dev, "poll-interval", &joypad->poll_interval);
-	joypad->auto_repeat = device_property_present(dev, "autorepeat") & 1;
-	joypad->bt_gpio_count = device_get_child_node_count(dev);
-	if (!joypad->amux_count || !joypad->bt_gpio_count)
+	joypad->autorepeat = device_property_present(dev, "autorepeat") & 1;
+	joypad->gpio_key_count = device_get_child_node_count(dev);
+	if (!joypad->amux_count || !joypad->gpio_key_count)
 		dev_err(dev, "adc key = %d, gpio key = %d error!",
-			joypad->amux_count, joypad->bt_gpio_count);
+			joypad->amux_count, joypad->gpio_key_count);
 	/* NOTE: stock continues after this dev_err (no return seen between @..708d0 and @..708d4); verify. */
 
-	joypad->adcs = devm_kmalloc(dev, (long)joypad->amux_count * 0x64, GFP_KERNEL | __GFP_ZERO);
-	if (!joypad->adcs) {
+	joypad->adc = devm_kmalloc(dev, (long)joypad->amux_count * 0x64, GFP_KERNEL | __GFP_ZERO);
+	if (!joypad->adc) {
 		dev_err(dev, "%s devm_kzmalloc error!", "joypad_adc_setup");
 		return -ENOMEM;
 	}
 	for (i = 0; i < joypad->amux_count; i++) {
-		struct stock_bt_adc *e = &joypad->adcs[i];
+		struct stock_adc_channel *e = &joypad->adc[i];
 
-		e->scale = joypad->bt_adc_scale;
+		e->scale = joypad->adc_scale;
 		e->max = 0x4000;
 		e->min = ((i & ~1) == 4) ? 0 : -0x4000;
 		if (e->scale) {
 			e->max = e->scale << 14;
 			e->min = e->min * e->scale;
 		}
-		e->amux_ch = i;
+		e->mux_index = i;
 		e->invert = 0;
 		if (i > 5)
 			continue;	/* default branch @..70c58: not decoded yet */
@@ -1076,7 +1076,7 @@ static int stock_joypad_dt_parse_head(struct device *dev, struct stock_joypad **
 }
 
 /* Open question 1 resolved: after dev_err("adc key = %d, gpio key = %d error!") @..708d0 the code falls straight
- * into the adcs allocation @..708d4. There is no return on that path in stock. */
+ * into the adc array allocation @..708d4. There is no return on that path in stock. */
 
 /* ---- joypad_amux_setup, inlined in probe @..70b70..70df0. amux struct is 0x40 bytes (devm_kmalloc @..70b80),
  * stored at joypad+0x10: +0x0 iio_channel*, +0x8 sel_a gpio, +0xc sel_b gpio, +0x10 en gpio (same offsets
@@ -1137,7 +1137,7 @@ static int stock_joypad_amux_setup(struct device *dev, struct stock_joypad *joyp
 		return -ENODEV;				/* -19 @..70dfc */
 	return 0;
 }
-/* Per-child GPIO parse starts @..70e04: buttons = devm_kmalloc(bt_gpio_count * 0x20) -> joypad+0x30; for each
+/* Per-child GPIO parse starts @..70e04: buttons = devm_kmalloc(gpio_key_count * 0x20) -> joypad+0x30; for each
  * child: of_get_named_gpio_flags(child,"gpios"), of_get_property("label"), devm_gpio_request_one(gpio, 1, label),
  * "linux,code" (required; "Button without keycode: 0x%x\n"), "linux,input-type" (default 1 on failure),
  * "linux,abs-value" (default 0). Field offsets inside the 0x20 slot: NOT yet verified; not written as C. */
@@ -1145,9 +1145,9 @@ static int stock_joypad_amux_setup(struct device *dev, struct stock_joypad *joyp
 _Static_assert(__builtin_offsetof(struct stock_amux, sel_a_gpio) == 0x8, "amux+0x8");
 _Static_assert(__builtin_offsetof(struct stock_amux, en_gpio) == 0x10, "amux+0x10");
 _Static_assert(sizeof(struct stock_joypad) == 0x78, "joypad 0x78");
-_Static_assert(sizeof(struct stock_bt_adc) == 0x64, "adc 0x64");
-_Static_assert(__builtin_offsetof(struct stock_bt_adc, amux_ch) == 0x58, "adc+0x58");
-_Static_assert(__builtin_offsetof(struct stock_joypad, bt_adc_deadzone) == 0x48, "jp+0x48");
+_Static_assert(sizeof(struct stock_adc_channel) == 0x64, "adc 0x64");
+_Static_assert(__builtin_offsetof(struct stock_adc_channel, mux_index) == 0x58, "adc+0x58");
+_Static_assert(__builtin_offsetof(struct stock_joypad, adc_deadzone_v) == 0x48, "jp+0x48");
 
 /* ---- joypad_gpio_setup, inlined in probe @..70e04..70f9c. Button slot is 0x20 bytes (index << 5 @..70e9c):
  *   +0x00 const char *label   (of_get_property(child, "label", NULL), str x @..70ed4)
@@ -1178,7 +1178,7 @@ static int stock_joypad_gpio_setup(struct device *dev, struct stock_joypad *joyp
 	struct stock_button *buttons;
 	int n = 0, ret;
 
-	buttons = devm_kmalloc(dev, (long)joypad->bt_gpio_count << 5, GFP_KERNEL | __GFP_ZERO);
+	buttons = devm_kmalloc(dev, (long)joypad->gpio_key_count << 5, GFP_KERNEL | __GFP_ZERO);
 	*out = buttons;					/* joypad+0x30 */
 	if (!buttons) {
 		dev_err(dev, "%s devm_kzmalloc error!", "joypad_gpio_setup");
@@ -1258,7 +1258,7 @@ static int joypad_probe(struct platform_device *pdev)
 		goto dt_err;
 	*(struct stock_button **)((char *)joypad + 0x30) = buttons;
 	dev_info(dev, "%s : adc key cnt = %d, gpio key cnt = %d\n", "joypad_dt_parse",
-		 joypad->amux_count, joypad->bt_gpio_count);		/* @..70fc0 */
+		 joypad->amux_count, joypad->gpio_key_count);		/* @..70fc0 */
 
 	mutex_init((struct mutex *)joypad->lock);			/* @..70fd8, class "&joypad->lock" */
 	platform_set_drvdata(pdev, joypad);				/* pdev+0x88 @..70fe8 */
@@ -1283,18 +1283,18 @@ static int joypad_probe(struct platform_device *pdev)
 	__set_bit(EV_ABS, input->evbit);				/* orr #0x8 @..7108c */
 
 	for (i = 0; i < joypad->amux_count; i++) {
-		struct stock_bt_adc *e = &joypad->adcs[i];
+		struct stock_adc_channel *e = &joypad->adc[i];
 
 		input_set_abs_params(input, e->code, e->min, e->max,
-				     joypad->bt_adc_fuzz, joypad->bt_adc_flat);	/* @..710e8 */
+				     joypad->adc_fuzz_v, joypad->adc_flat_v);	/* @..710e8 */
 		dev_info(dev, "%s : SCALE = %d, ABS min = %d, max = %d, fuzz = %d, flat = %d, deadzone = %d\n",
 			 "joypad_input_setup", e->scale, e->min, e->max,
-			 joypad->bt_adc_fuzz, joypad->bt_adc_flat, joypad->bt_adc_deadzone);
+			 joypad->adc_fuzz_v, joypad->adc_flat_v, joypad->adc_deadzone_v);
 		dev_info(dev, "%s : adc tuning_p = %d, adc_tuning_n = %d\n\n",
 			 "joypad_input_setup", e->tuning_p, e->tuning_n);
 	}
 	__set_bit(EV_KEY, input->evbit);				/* orr #0x2 @..7113c */
-	for (i = 0; i < joypad->bt_gpio_count; i++)
+	for (i = 0; i < joypad->gpio_key_count; i++)
 		input_set_capability(input, buttons[i].input_type, buttons[i].code);	/* @..71168 */
 
 	input_set_capability(input, EV_KEY, 0x132);			/* BTN_C   @..7118c */
@@ -1310,7 +1310,7 @@ static int joypad_probe(struct platform_device *pdev)
 	input_set_abs_params(input, ABS_HAT0Y, -1, 1, 0, 0);
 	input_set_abs_params(input, ABS_Z, 0, 0x4000, 0x20, 0x20);	/* @..71260 */
 	input_set_abs_params(input, ABS_RZ, 0, 0x4000, 0x20, 0x20);
-	if (joypad->auto_repeat)
+	if (joypad->autorepeat)
 		__set_bit(EV_REP, input->evbit);			/* orr #0x100000 @..7128c */
 
 	*(struct device **)joypad = dev;				/* joypad+0x0 @..712a4 */
@@ -1345,11 +1345,11 @@ static int joypad_probe(struct platform_device *pdev)
 	jokstick_cal_init();					/* inlined in stock @..71450..71538 */
 
 	/* joypad_open, inlined @..7153c..716a0 */
-	for (i = 0; i < joypad->bt_gpio_count; i++)
+	for (i = 0; i < joypad->gpio_key_count; i++)
 		buttons[i].raw_not_high = buttons[i].not_active_low ^ 1;	/* @..715a0..715a8 */
 	mdelay(300);						/* 300 x __const_udelay(0x418958 = 1 ms) @..715c4 */
 	for (i = 0; i < joypad->amux_count; i++) {
-		struct stock_bt_adc *e = &joypad->adcs[i];
+		struct stock_adc_channel *e = &joypad->adc[i];
 		int v = joypad_adc_read(amux, e);
 
 		e->value = v;					/* @..7164c */
@@ -1501,7 +1501,7 @@ int tenpad2touchpanel_abs(int sel, int axis, int pressed)
 	return 0;
 }
 
-/* ---- joypad_gpio_check block 4 @..757f4..75e4c: buttons 4.. (only if bt_gpio_count >= 5).
+/* ---- joypad_gpio_check block 4 @..757f4..75e4c: buttons 4.. (only if gpio_key_count >= 5).
  * Slot fields used: gpio +0x08, input_type +0x0c, code +0x10, selector +0x14 (linux,abs-value), last raw +0x18,
  * not_active_low +0x19. "pressed" below = (v == not_active_low) (cset eq @..75b7c etc.). */
 extern int remapkey_xbox_switch, remapkey_xbox_switch_bt_tr;	/* @..5714, @..5718 (DEVICE_ATTR vars, defined above) */
@@ -1620,7 +1620,7 @@ static void stock_gpio_buttons(void)
 	struct device *dev = *(struct device **)joypad;
 	int i, v;
 
-	for (i = 4; i < joypad->bt_gpio_count; i++) {
+	for (i = 4; i < joypad->gpio_key_count; i++) {
 		struct stock_button *b = *(struct stock_button **)((char *)joypad + 0x30) + i;
 		int pressed, code;
 
@@ -1737,7 +1737,7 @@ static void joypad_gpio_check(struct input_dev *input)
  * Annotated listing of the whole remaining function: .gpioc.annot.txt (global names resolved). */
 
 /* joypad_gpio_check block 4 (@..757f4..75e4c), PARTIAL DECODE, NOT YET C.
- * Loop i = 4 .. bt_gpio_count-1 (only if bt_gpio_count >= 5, @..757f8). x26 = buttons + 0x20*i - 8, so in slot terms:
+ * Loop i = 4 .. gpio_key_count-1 (only if gpio_key_count >= 5, @..757f8). x26 = buttons + 0x20*i - 8, so in slot terms:
  *   gpio = slot+0x08; last raw value byte = slot+0x18 (compared with the new raw value, @..75870; same byte
  *   block 1 fills with (v != 1) for buttons 0..3); code = slot+0x10; not_active_low = slot+0x19; slot+0x14 used as a
  *   0/1/2 selector (@..75884..7589c; this is the "linux,abs-value" field).
@@ -1756,12 +1756,12 @@ static void joypad_adc_check(struct input_dev *input)
 {
 	struct stock_joypad *joypad = poll_dev_private;
 	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
-	struct stock_bt_adc *a;
+	struct stock_adc_channel *a;
 	int i, k;
 
 	for (i = 0; i < joypad->amux_count; i++)		/* @..75ef4 */
-		joypad->adcs[i].value = joypad_adc_read(amux, &joypad->adcs[i]);
-	a = joypad->adcs;
+		joypad->adc[i].value = joypad_adc_read(amux, &joypad->adc[i]);
+	a = joypad->adc;
 	lx_g = a[0].value; ly_g = a[1].value; rx_g = a[2].value; ry_g = a[3].value;	/* strh @..75f40.. */
 	lt_g = 0; rt_g = 0;
 	if (count_joypad_data > 3) {				/* @..75f6c: wrap without storing */
@@ -1788,7 +1788,7 @@ static void joypad_adc_check(struct input_dev *input)
 	 * side's jokstick_cal_switch is set, else the channel's own cal (+0x4c). value = value - centre and
 	 * adc_abs_<axis> = |value| (cneg mi @..76330). Channels > 3 only copy value to shown_p. */
 	for (i = 0; i < joypad->amux_count; i++) {
-		struct stock_bt_adc *e = &a[i];
+		struct stock_adc_channel *e = &a[i];
 		int v = e->value, c, *absv;
 
 		e->shown_p = v;					/* str @..7635c */
@@ -1807,7 +1807,7 @@ static void joypad_adc_check(struct input_dev *input)
 	/* Block D @..76450..7695c. /1000 = smull 0x10624dd3, asr #38 (2^38 / 0x10624dd3 = 1000.0);
 	 * *98/100 = mul 0x62, smull 0x51eb851f, asr #37. */
 	for (i = 0; i < joypad->amux_count; i++) {
-		struct stock_bt_adc *e = &a[i];
+		struct stock_adc_channel *e = &a[i];
 		int v = e->value, hi, lo, sw, out, sp, sn, axv, ayv;
 
 		if (i <= 3) {		/* table @ffffffc0097195e6 -> @..764ec/76544/76594/765e4 */
@@ -1898,7 +1898,7 @@ static void joypad_adc_check(struct input_dev *input)
 _Static_assert(sizeof(struct mutex) <= 0x20, "stock struct joypad has 0x20 bytes for the mutex (+0x50..+0x70)");
 _Static_assert(__builtin_offsetof(struct stock_joypad, amux_debug) == 0x70, "jp+0x70");
 
-/* ---- Attributes shared with the Gamma port (stock @ffffffc008c716e4..71c58, dev_attr_* @ffffffc00a2a4080..4140,
+/* ---- Remaining stock attributes (stock @ffffffc008c716e4..71c58, dev_attr_* @ffffffc00a2a4080..4140,
  * all 0644; adc_fuzz/adc_flat have no store). */
 static ssize_t joypad_show_poll_interval(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1917,11 +1917,11 @@ static ssize_t joypad_store_poll_interval(struct device *dev, struct device_attr
 }
 static ssize_t joypad_show_adc_fuzz(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->bt_adc_fuzz);	/* +0x3c */
+	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->adc_fuzz_v);	/* +0x3c */
 }
 static ssize_t joypad_show_adc_flat(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->bt_adc_flat);	/* +0x40 */
+	return sprintf(buf, "%d\n", ((struct stock_joypad *)dev_get_drvdata(dev))->adc_flat_v);	/* +0x40 */
 }
 static ssize_t joypad_show_adc_cal(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1930,8 +1930,8 @@ static ssize_t joypad_show_adc_cal(struct device *dev, struct device_attribute *
 	int i;
 
 	for (i = 0; i < joypad->amux_count; i++)			/* @..718cc */
-		len += sprintf(buf + len, "adc[%d]->cal = %d\n", i, joypad->adcs[i].cal);
-	len += sprintf(buf + len, "adc scale = %d\n", joypad->bt_adc_scale);	/* @..71914 */
+		len += sprintf(buf + len, "adc[%d]->cal = %d\n", i, joypad->adc[i].cal);
+	len += sprintf(buf + len, "adc scale = %d\n", joypad->adc_scale);	/* @..71914 */
 	return len;
 }
 static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
@@ -1944,10 +1944,10 @@ static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute 
 		return count;
 	mutex_lock((struct mutex *)joypad->lock);
 	for (i = 0; i < joypad->amux_count; i++) {
-		v = joypad_adc_read(amux, &joypad->adcs[i]);
-		joypad->adcs[i].value = v;				/* @..719b0 */
+		v = joypad_adc_read(amux, &joypad->adc[i]);
+		joypad->adc[i].value = v;				/* @..719b0 */
 		if (v)
-			joypad->adcs[i].cal = v;			/* @..719b8 (no channel 4/5 exception, unlike probe) */
+			joypad->adc[i].cal = v;			/* @..719b8 (no channel 4/5 exception, unlike probe) */
 		else
 			dev_err(*(struct device **)joypad, "%s : saradc channels[%d]!\n", "joypad_store_adc_cal", i);
 	}
@@ -1963,7 +1963,7 @@ static ssize_t joypad_show_amux_debug(struct device *dev, struct device_attribut
 	if (joypad->enable)
 		joypad->enable = 0;					/* @..71bcc: reading this attr stops polling */
 	len = sprintf(buf, "amux ch[%d], adc scale = %d, adc value = %d\n",
-		      joypad->amux_debug, joypad->bt_adc_scale, 0);	/* @..71be8, value is a literal 0 */
+		      joypad->amux_debug, joypad->adc_scale, 0);	/* @..71be8, value is a literal 0 */
 	mutex_unlock((struct mutex *)joypad->lock);
 	return len;
 }
