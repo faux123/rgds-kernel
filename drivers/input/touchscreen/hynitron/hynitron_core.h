@@ -130,6 +130,7 @@ struct hynitron_chip_type_array {
 	const u8 chip_product_line;
 	const u8 chip_boot_addr;
 };
+extern struct hynitron_chip_type_array hynitron_chip_type_grp[30];	/* 30 entries as stock (loop bound 0x1e in hyn_ts_data_init @ffffffc008cc2838) */
 
 
 struct hynitron_fw_array {

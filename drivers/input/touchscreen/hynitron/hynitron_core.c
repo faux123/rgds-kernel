@@ -1144,15 +1144,30 @@ static void cst8xx_touch_report(struct work_struct *work)
 int hyn_update_firmware_init(struct i2c_client *client)
 {
 	int ret=-1;
-
+	unsigned char scan_id;
+	
 	HYN_FUNC_ENTER();
-
-    ret=hyn_firmware_info(client);
+	ret=hyn_firmware_info(client);
 	if(ret<0){
-		HYN_ERROR("hyn_firmware_info failed,start update firmware.\n");
-		//hyn_ts_data->chip_ic_fw_version=0x00;
-	}	
+		HYN_ERROR("hyn_firmware_info failed.\n");
+	}
 
+	for(scan_id=0;scan_id<ARRAY_SIZE(hynitron_chip_type_grp);scan_id++){
+		if(hyn_ts_data->config_chip_type == hynitron_chip_type_grp[scan_id].chip_type){
+			hyn_ts_data->config_chip_series        =hynitron_chip_type_grp[scan_id].chip_series;
+			hyn_ts_data->config_chip_product_line  =hynitron_chip_type_grp[scan_id].chip_product_line;		
+			hyn_ts_data->chip_ic_bootloader_addr   =hynitron_chip_type_grp[scan_id].chip_boot_addr;		
+			HYN_DEBUG("config [hyn] hyn_ts_data->config_chip_type = %d\n",hyn_ts_data->config_chip_type);
+			HYN_DEBUG("config [hyn] scan_id = %d\n",scan_id);
+			break;
+		}
+	}	
+	if(scan_id==ARRAY_SIZE(hynitron_chip_type_grp))
+	{
+		HYN_ERROR("chip type error,please check firmware.\r\n");		
+		return 0;
+	}	
+   
 #if HYN_SYS_AUTO_SEARCH_FIRMWARE
 	ret=hyn_sys_auto_search_firmware();
  	if(ret>0){
@@ -1486,19 +1501,38 @@ static int hyn_parse_dt(struct device *dev, struct hynitron_ts_platform_data *pd
 }
 void hyn_ts_data_init(struct i2c_client *client)
 {
+	unsigned char scan_id;
 	HYN_FUNC_ENTER();
  	hyn_ts_data->client = client;
 	hyn_ts_data->config_chip_type		=HYN_CHIP_TYPE_CONFIG;
+	hyn_ts_data->config_chip_product_line =HYN_CHIP_PRODUCT_LINE_MUT_CAP;				
 	
-	hyn_ts_data->chip_ic_main_addr     =client->addr;	
+	hyn_ts_data->chip_ic_main_addr     =HYN_MAIN_IIC_ADDR_CONFIG;	
 	hyn_ts_data->pdata->x_overturn     =HYN_X_REVERT;
 	hyn_ts_data->pdata->y_overturn     =HYN_Y_REVERT;
 	hyn_ts_data->pdata->xy_exchange	   =HYN_XY_EXCHANGE;
 	hyn_ts_data->work_mode 			   =HYN_WORK_MODE_NORMAL;	
-		
+	hyn_ts_data->pdata->max_touch_num  =HYN_MAX_POINTS;
+
+
+	for(scan_id=0;scan_id<ARRAY_SIZE(hynitron_chip_type_grp);scan_id++){
+		if(hyn_ts_data->config_chip_type == hynitron_chip_type_grp[scan_id].chip_type){
+			hyn_ts_data->config_chip_series        =hynitron_chip_type_grp[scan_id].chip_series;
+			hyn_ts_data->config_chip_product_line  =hynitron_chip_type_grp[scan_id].chip_product_line;		
+			hyn_ts_data->chip_ic_bootloader_addr   =hynitron_chip_type_grp[scan_id].chip_boot_addr;		
+			HYN_DEBUG("config [hyn] scan_id = %d,config_chip_type:0x%x.\n",scan_id,hyn_ts_data->config_chip_type);
+			break;
+		}
+	}	
+	if(scan_id==ARRAY_SIZE(hynitron_chip_type_grp))
+	{
+		HYN_ERROR("chip type error,please check firmware.\r\n");		
+		return;
+	}	
 
 	if(hyn_ts_data->chip_ic_main_addr!=client->addr){		
-		hyn_ts_data->chip_ic_main_addr=HYN_MAIN_IIC_ADDR_CONFIG;	
+		hyn_ts_data->chip_ic_main_addr=HYN_MAIN_IIC_ADDR_CONFIG;
+		client->addr						=HYN_MAIN_IIC_ADDR_CONFIG;	
 		HYN_DEBUG("client addr is different,now use default addr,please confirm. client->addr=0x%x, default iic addr=0x%x.\r\n",client->addr,HYN_MAIN_IIC_ADDR_CONFIG);
 	}
 		

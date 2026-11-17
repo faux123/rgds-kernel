@@ -2003,12 +2003,13 @@ static int cst3xx_firmware_info(struct i2c_client * client)
 	hyn_ts_data->chip_ic_type <<= 8;
 	hyn_ts_data->chip_ic_type |= buf[2];
 
+	hyn_ts_data->config_chip_type =hyn_ts_data->chip_ic_type;
 	
 	hyn_ts_data->chip_ic_project_id = buf[1];
 	hyn_ts_data->chip_ic_project_id <<= 8;
 	hyn_ts_data->chip_ic_project_id |= buf[0];
 
-	HYN_INFO("the chip ic chip_ic_type :0x%x, chip_ic_project_id:0x%x\r\n",
+	HYN_INFO("chip_ic_type :0x%x, chip_ic_project_id:0x%x\r\n",
 		hyn_ts_data->chip_ic_type, hyn_ts_data->chip_ic_project_id);
 
 	mdelay(2);
@@ -2044,29 +2045,20 @@ static int cst3xx_firmware_info(struct i2c_client * client)
 		return -1;
 	}
 
-
 	buf[0] = 0xD0;
 	buf[1] = 0x47;
 	ret = cst3xx_i2c_read_register(client, buf, 1);
 	if (ret < 0) return -1;
 
 	hyn_ts_data->chip_ic_module_id=buf[0];	
+	HYN_INFO("chip_ic_module_id:0x%x.\n",hyn_ts_data->chip_ic_module_id);
 
     buf[0] = 0xD1;
 	buf[1] = 0x09;
 	ret = cst3xx_i2c_write(client, buf, 2);
 	if (ret < 0) return -1;
     mdelay(5);
-
-//drv add by wangwei1 for hardware_info 20230628 start
-#if IS_ENABLED(CONFIG_PRIZE_HARDWARE_INFO)
-	sprintf(current_tp_info.chip, "CST328");
-	sprintf(current_tp_info.id,"FW_ver:0x%x", hyn_ts_data->chip_ic_fw_version);
-	sprintf(current_tp_info.more,"touchpanel");
-	sprintf(current_tp_info.vendor,"hynitron");
-#endif
-//drv add by wangwei1 for hardware_info 20230628 end
-
+	
 	HYN_FUNC_EXIT();
 	return 0;
 }
@@ -2162,13 +2154,11 @@ int hyn_firmware_info(struct i2c_client * client)
 	int ret=-1;
 	HYN_FUNC_ENTER();
 
-	if(hyn_ts_data->config_chip_product_line==HYN_CHIP_PRODUCT_LINE_MUT_CAP)
+	if(hyn_ts_data->config_chip_product_line==HYN_CHIP_PRODUCT_LINE_MUT_CAP)				
 	{
     //mutcap
-    	if(hyn_ts_data->config_chip_series != HYN_CHIP_CST2XX)
-			ret=cst3xx_firmware_info(client);
-		
-		
+		ret=cst3xx_firmware_info(client);	
+
 	}else if(hyn_ts_data->config_chip_product_line==HYN_CHIP_PRODUCT_LINE_SEL_CAP){
 	//selfcap
 		ret=cst8xx_firmware_info(client);
