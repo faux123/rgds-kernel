@@ -445,7 +445,7 @@ int adc_abs_lx, adc_abs_ly, adc_abs_rx, adc_abs_ry;    /* @..5bac..@..5bb8 */
  * Struct type names are placeholders; offsets are stock.
  */
 struct stock_amux { struct iio_channel *chan; int sel_a_gpio; int sel_b_gpio; int en_gpio; };
-static int __maybe_unused joypad_adc_read(struct stock_amux *amux, void *button)	/* callers (probe tail, joypad_adc_check) not yet written */
+static noinline int joypad_adc_read(struct stock_amux *amux, void *button)	/* stock calls it out of line (probe, adc_check, store_adc_cal) */
 {
 	int val = 0;
 	int idx = *(int *)((char *)button + 0x58);
@@ -515,7 +515,7 @@ module_init(joypad_driver_init);	/* stock: __initcall__kmod_singleadcjoy__459_36
 module_exit(joypad_driver_exit);
 
 /* jokstick_cal_init @ffffffc008c7064c: leaf, 36 32-bit stores (str w*), no loads. jokstick_cal_scale_auto (@ffffffc00a4d5814) is NOT written. */
-void jokstick_cal_init(void)
+__always_inline void jokstick_cal_init(void)	/* T symbol in stock, but inlined into joypad_probe */
 {
 	jokstick_cal_switch_l = 0;	/* @ffffffc008c70660 */
 	jokstick_cal_switch_r = 0;	/* @ffffffc008c70668 */
@@ -1006,7 +1006,8 @@ struct stock_joypad {				/* devm_kmalloc(dev, 0x78) @..707c4 */
 	int adc_scale;			/* +0x44 */
 	int adc_deadzone_v;			/* +0x48 */
 	int adc_deadzone_copy;			/* +0x4c copy of +0x48 */
-	u8  lock[0x20];				/* +0x50 struct mutex (mutex_lock(drvdata+0x50)) */
+	struct mutex lock;			/* +0x50 (mutex_lock(drvdata+0x50)); lock class name "&joypad->lock" as stock */
+	u8  lock_pad[0x20 - sizeof(struct mutex)];
 	int amux_debug;				/* +0x70 joypad_store_amux_debug @..71c48 */
 	int pad74;
 };
@@ -1267,7 +1268,7 @@ static int joypad_probe(struct platform_device *pdev)
 	dev_info(dev, "%s : adc key cnt = %d, gpio key cnt = %d\n", "joypad_dt_parse",
 		 joypad->amux_count, joypad->gpio_key_count);		/* @..70fc0 */
 
-	mutex_init((struct mutex *)joypad->lock);			/* @..70fd8, class "&joypad->lock" */
+	mutex_init(&joypad->lock);			/* @..70fd8, class "&joypad->lock" */
 	platform_set_drvdata(pdev, joypad);				/* pdev+0x88 @..70fe8 */
 	err = sysfs_create_group(&dev->kobj, &joypad_attr_group);
 	if (err) {
@@ -1369,9 +1370,9 @@ static int joypad_probe(struct platform_device *pdev)
 	}
 	joypad_adc_check(input);				/* @..7166c */
 	joypad_gpio_check(input);				/* @..71670 */
-	mutex_lock((struct mutex *)joypad->lock);
+	mutex_lock(&joypad->lock);
 	joypad->enable = 0;				/* strb wzr +0xc @..71684 (stock writes 0 here; see report) */
-	mutex_unlock((struct mutex *)joypad->lock);
+	mutex_unlock(&joypad->lock);
 	dev_info(dev, "%s : opened\n", "joypad_open");
 	dev_info(dev, "%s : probe success\n", "joypad_probe");
 	return 0;
@@ -1481,7 +1482,7 @@ static __always_inline void stock_gpio_hat(const struct stock_hat *h)
  *   0x11 sel 2 -> UP (remapkey_up_*),  0x11 sel 1 -> DOWN (remapkey_down_*)   (@..6f6b4 / @..6f754)
  *   0x10 sel 2 -> LEFT (remapkey_left_*), 0x10 sel 1 -> RIGHT (remapkey_right_*) (@..6f708 / @..6f798)
  * pressed: slot = {1,1,y,x} (@..6f7dc); released: slot = {1,0} (@..6f7f8). Other sel/axis: nothing. */
-int tenpad2touchpanel_abs(int sel, int axis, int pressed)
+noinline int tenpad2touchpanel_abs(int sel, int axis, int pressed)
 {
 	int *mode, *kx, *ky;
 
@@ -1718,7 +1719,7 @@ next:
 		b->raw_not_high = (v != 0);			/* strb @..75830 */
 	}
 }
-static void joypad_gpio_check(struct input_dev *input)
+static noinline void joypad_gpio_check(struct input_dev *input)
 {
 	struct stock_joypad *joypad = poll_dev_private;
 	struct stock_button *b = *(struct stock_button **)((char *)joypad + 0x30);
@@ -1780,12 +1781,12 @@ static void joypad_gpio_check(struct input_dev *input)
  * NOTE: the annotator's "=0xffffffc00a4d50xx" names in this range are struct-field offsets, not globals. */
 
 /* ---- joypad_adc_check @ffffffc008c75eb4 (0xaa8). Blocks A+B (@..75ed8..762ac) written; rest TODO. */
-static void joypad_adc_check(struct input_dev *input)
+static noinline void joypad_adc_check(struct input_dev *input)
 {
 	struct stock_joypad *joypad = poll_dev_private;
 	struct stock_amux *amux = *(struct stock_amux **)((char *)joypad + 0x10);
 	struct stock_adc_channel *a;
-	int i, k;
+	int i;
 
 	for (i = 0; i < joypad->amux_count; i++)		/* @..75ef4 */
 		joypad->adc[i].value = joypad_adc_read(amux, &joypad->adc[i]);
@@ -1795,22 +1796,52 @@ static void joypad_adc_check(struct input_dev *input)
 	if (count_joypad_data > 3) {				/* @..75f6c: wrap without storing */
 		count_joypad_data = 0;
 	} else {
-		a[0].hist[count_joypad_data] = (short)a[0].value;	/* sxth @..75f80 */
-		a[1].hist[count_joypad_data] = (short)a[1].value;
-		a[2].hist[count_joypad_data] = (short)a[2].value;
-		a[3].hist[count_joypad_data] = (short)a[3].value;
-		a[4].hist[count_joypad_data] = 0;
-		a[5].hist[count_joypad_data] = 0;
+		/* written out as stock: each statement re-reads joypad->adc (@..75f7c..75fe4) */
+		joypad->adc[0].hist[count_joypad_data] = lx_g;
+		joypad->adc[1].hist[count_joypad_data] = ly_g;
+		joypad->adc[2].hist[count_joypad_data] = rx_g;
+		joypad->adc[3].hist[count_joypad_data] = ry_g;
+		joypad->adc[4].hist[count_joypad_data] = lt_g;
+		joypad->adc[5].hist[count_joypad_data] = rt_g;
 		count_joypad_data++;
 	}
 	/* Fixed 6 channels and 4 taps regardless of amux_count (unrolled @..75ff8..761d4). */
-	for (k = 0; k < 4; k++)
-		for (i = 0; i < 6; i++)
-			a[i].sum += a[i].hist[k];
-	for (i = 0; i < 6; i++) {				/* @..761dc..7627c: signed /4 */
-		a[i].value = a[i].sum / 4;
-		a[i].sum = 0;
-	}
+	joypad->adc[0].sum += joypad->adc[0].hist[0];
+	joypad->adc[1].sum += joypad->adc[1].hist[0];
+	joypad->adc[2].sum += joypad->adc[2].hist[0];
+	joypad->adc[3].sum += joypad->adc[3].hist[0];
+	joypad->adc[4].sum += joypad->adc[4].hist[0];
+	joypad->adc[5].sum += joypad->adc[5].hist[0];
+	joypad->adc[0].sum += joypad->adc[0].hist[1];
+	joypad->adc[1].sum += joypad->adc[1].hist[1];
+	joypad->adc[2].sum += joypad->adc[2].hist[1];
+	joypad->adc[3].sum += joypad->adc[3].hist[1];
+	joypad->adc[4].sum += joypad->adc[4].hist[1];
+	joypad->adc[5].sum += joypad->adc[5].hist[1];
+	joypad->adc[0].sum += joypad->adc[0].hist[2];
+	joypad->adc[1].sum += joypad->adc[1].hist[2];
+	joypad->adc[2].sum += joypad->adc[2].hist[2];
+	joypad->adc[3].sum += joypad->adc[3].hist[2];
+	joypad->adc[4].sum += joypad->adc[4].hist[2];
+	joypad->adc[5].sum += joypad->adc[5].hist[2];
+	joypad->adc[0].sum += joypad->adc[0].hist[3];
+	joypad->adc[1].sum += joypad->adc[1].hist[3];
+	joypad->adc[2].sum += joypad->adc[2].hist[3];
+	joypad->adc[3].sum += joypad->adc[3].hist[3];
+	joypad->adc[4].sum += joypad->adc[4].hist[3];
+	joypad->adc[5].sum += joypad->adc[5].hist[3];
+	joypad->adc[0].value = joypad->adc[0].sum / 4;
+	joypad->adc[1].value = joypad->adc[1].sum / 4;
+	joypad->adc[2].value = joypad->adc[2].sum / 4;
+	joypad->adc[3].value = joypad->adc[3].sum / 4;
+	joypad->adc[4].value = joypad->adc[4].sum / 4;
+	joypad->adc[5].value = joypad->adc[5].sum / 4;
+	joypad->adc[0].sum = 0;
+	joypad->adc[1].sum = 0;
+	joypad->adc[2].sum = 0;
+	joypad->adc[3].sum = 0;
+	joypad->adc[4].sum = 0;
+	joypad->adc[5].sum = 0;
 	/* Block C @..762b0..7644c: centre each stick channel. Table @ffffffc0097195e2 = {0,0xa,0x14,0x1e} words
 	 * -> i0 @..76378, i1 @..763a0, i2 @..763c8, i3 @..763f0. Centre = (lr + rl) / 2 (signed, cinc/asr) when the
 	 * side's jokstick_cal_switch is set, else the channel's own cal (+0x4c). value = value - centre and
@@ -1938,9 +1969,9 @@ static ssize_t joypad_store_poll_interval(struct device *dev, struct device_attr
 {
 	struct stock_joypad *joypad = dev_get_drvdata(dev);
 
-	mutex_lock((struct mutex *)joypad->lock);
+	mutex_lock(&joypad->lock);
 	joypad->poll_interval = simple_strtoul(buf, NULL, 10);		/* @..71758; polling rate itself not updated */
-	mutex_unlock((struct mutex *)joypad->lock);
+	mutex_unlock(&joypad->lock);
 	return count;
 }
 static ssize_t joypad_show_adc_fuzz(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1970,7 +2001,7 @@ static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute 
 
 	if (!simple_strtoul(buf, NULL, 10))				/* @..71968 */
 		return count;
-	mutex_lock((struct mutex *)joypad->lock);
+	mutex_lock(&joypad->lock);
 	for (i = 0; i < joypad->amux_count; i++) {
 		v = joypad_adc_read(amux, &joypad->adc[i]);
 		joypad->adc[i].value = v;				/* @..719b0 */
@@ -1979,7 +2010,7 @@ static ssize_t joypad_store_adc_cal(struct device *dev, struct device_attribute 
 		else
 			dev_err(*(struct device **)joypad, "%s : saradc channels[%d]!\n", "joypad_store_adc_cal", i);
 	}
-	mutex_unlock((struct mutex *)joypad->lock);
+	mutex_unlock(&joypad->lock);
 	return count;
 }
 static ssize_t joypad_show_amux_debug(struct device *dev, struct device_attribute *attr, char *buf)
@@ -1987,12 +2018,12 @@ static ssize_t joypad_show_amux_debug(struct device *dev, struct device_attribut
 	struct stock_joypad *joypad = dev_get_drvdata(dev);
 	ssize_t len;
 
-	mutex_lock((struct mutex *)joypad->lock);
+	mutex_lock(&joypad->lock);
 	if (joypad->enable)
 		joypad->enable = 0;					/* @..71bcc: reading this attr stops polling */
 	len = sprintf(buf, "amux ch[%d], adc scale = %d, adc value = %d\n",
 		      joypad->amux_debug, joypad->adc_scale, 0);	/* @..71be8, value is a literal 0 */
-	mutex_unlock((struct mutex *)joypad->lock);
+	mutex_unlock(&joypad->lock);
 	return len;
 }
 static ssize_t joypad_store_amux_debug(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
