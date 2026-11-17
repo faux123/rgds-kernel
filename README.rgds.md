@@ -94,12 +94,12 @@ The vendor Wi-Fi and Bluetooth modules on the device report vermagic
 | Wi-Fi (Seekwave SWT6621S) | `drivers/net/wireless/rockchip_wlan/swt6621s/` | Same SDK mirror; `swt6621s_wifi` 567/567 and `skw_sdio_lite` 193/193 symbols, all sizes equal to stock |
 | DMA heaps | `drivers/dma-buf/heaps/rk_system_heap.c`, `rk_cma_heap.c` | Rockchip heaps built as stock does, ported to 6.1 |
 | SC7U22 accelerometer and gyroscope | `drivers/input/sensors/{accel,gyro}/sc7u22_*.c` | Reconstructed from stock disassembly |
-| RK817 battery | `drivers/power/supply/rk817_battery.c` | Rockchip `develop-4.19` revision (`d1d1ad90afcc`), ported to 6.1, plus stock-only parts reconstructed from disassembly: resume handling, low-power check, field table tail, LED layer, `/sys/rk809/battery_adjust`, CW2015 SOC reporting |
+| RK817 battery | `drivers/power/supply/rk817_battery.c` | Rockchip `develop-4.19` revision (`d1d1ad90afcc`) as the skeleton, ported to 6.1; the stock RG DS variant (whose source is in no public tree) reconstructed from disassembly: field table, SOC algorithms (smooth, zero, finish), sleep and resume handling, NTC/TS-ADC temperature path, property set, LED layer, `/sys/rk809/battery_adjust`, CW2015 SOC reporting. Most functions are stock size or opcode-identical |
 | CW2015 gauge | `drivers/power/supply/cw2015_battery.c` | Rockchip base driver plus Anbernic SOC sharing and charger state, reconstructed from disassembly |
 | Speaker amplifiers (AW87391) | `sound/soc/rockchip/aw_pa_left.c`, `aw_pa_right.c` | Reconstructed from stock disassembly |
 | RK817 codec | `sound/soc/codecs/rk817_codec.c` | Rockchip base plus the stock amplifier calls in `rk817_digital_mute`, from disassembly |
-| GT9xx touchscreen | `drivers/input/touchscreen/gt9xx/` | Rockchip base built like stock, plus Anbernic touch-swap globals and the stock panel-notifier suspend/resume, reconstructed from disassembly |
-| Hynitron touchscreen | `drivers/input/touchscreen/hynitron/` | Hynitron V2.2 20210129 skeleton, trimmed and matched function by function to the stock V2.1 binary (names, firmware tables, touch reporting, sleep sequence) |
+| GT9xx touchscreen | `drivers/input/touchscreen/gt9xx/` | Rockchip base built like stock, plus the stock RG DS parts reconstructed from disassembly: dual-panel coordinate mapping and swap routing, orientation table, touch ranges from DT, panel-notifier suspend/resume. 22 of 23 functions stock size |
+| Hynitron touchscreen | `drivers/input/touchscreen/hynitron/` | Hynitron V2.2 20210129 skeleton, trimmed and matched function by function to the stock V2.1 binary (names, firmware tables, touch reporting, sleep sequence). Like stock, it is built with `HYN_UPDATE_FIRMWARE_FORCE 1`, so a firmware update skips the version and project-ID checks |
 | Hall sensor | `drivers/input/keyboard/gpio_keys.c` | Rockchip base plus the stock hall-sensor handling and `hall_status` attribute, from disassembly |
 
 Commit messages name the stock addresses that each reconstruction is based on.
@@ -111,9 +111,12 @@ Commit messages name the stock addresses that each reconstruction is based on.
   build host's pahole.
 - The board DTB has no semantic difference from the stock DTB
   (`scripts/rgds/dts/gate.sh`).
-- Symbol comparison against the stock kernel's kallsyms: 54 stock symbols are
-  not in this build (most are initcall names whose line numbers differ) and
-  15 symbols in this build are not in stock.
+- Symbol comparison against the stock kernel's kallsyms: 26 stock symbols are
+  not in this build (20 are initcall names whose line numbers differ, 5 are
+  linker veneers) and the only other symbols in this build that stock lacks
+  are linker veneers.
+- Function comparison against stock: of 69,919 functions present in both,
+  40,968 are instruction-identical and 28,746 differ only in addresses.
 - Nothing in this tree has been tested on hardware yet.
 
 ## Flashing warning
