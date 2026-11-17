@@ -124,9 +124,9 @@ static int sensor_report_value(struct i2c_client *client)
 		return ret;
 	}
 
-	x = ((buffer[0] << 8) & 0xff00) + (buffer[1] & 0xFF);
-	y = ((buffer[2] << 8) & 0xff00) + (buffer[3] & 0xFF);
-	z = ((buffer[4] << 8) & 0xff00) + (buffer[5] & 0xFF);
+	x = (short)(((buffer[0] << 8) & 0xff00) + (buffer[1] & 0xFF)) / 10;	/* stock: each axis / 10 (mul 0x6667, asr 18) */
+	y = (short)(((buffer[2] << 8) & 0xff00) + (buffer[3] & 0xFF)) / 10;
+	z = (short)(((buffer[4] << 8) & 0xff00) + (buffer[5] & 0xFF)) / 10;
 
 	axis.x = (pdata->orientation[0]) * x + (pdata->orientation[1]) * y +
 		 (pdata->orientation[2]) * z;
