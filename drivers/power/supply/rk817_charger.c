@@ -31,6 +31,7 @@
 #include <linux/power/rk_usbbc.h>
 #include <linux/regmap.h>
 #include <linux/rtc.h>
+#include <linux/thermal.h>
 #include <linux/timer.h>
 #include <linux/workqueue.h>
 
@@ -84,6 +85,16 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
  */
 #define THERMAL_BAND_COUNT		5
 #define THERMAL_ACT_BAND		2
+/*
+ * Board heat as a stand-in for the cell. The RG DS has no battery NTC, so
+ * nothing measures the cell; the SoC zone is the nearest sensor that sees
+ * the heat a game adds on top of charging. At or above the limit the same
+ * step-down applies as for a hot die; stepping back up waits until the zone
+ * is SOC_HYST_C under the limit. Writable via soc_temp_limit (0 = off).
+ */
+#define SOC_TZ_NAME			"soc-thermal"
+#define SOC_LIMIT_C			70
+#define SOC_HYST_C			5
 #define SAMPLE_RES_10MR		10
 #define SAMPLE_RES_20MR		20
 #define SAMPLE_RES_DIV1		1
@@ -336,6 +347,9 @@ struct rk817_charger {
 	int thermal_cool_polls;		/* consecutive polls with the latch clear */
 	int die_band;			/* 0..4, see THERMAL_BAND_COUNT */
 	int thermal_action_band;	/* throttle at or above this band */
+	struct thermal_zone_device *soc_tz;	/* looked up lazily */
+	int soc_limit_c;		/* 0 disables the SoC throttle */
+	bool soc_hot;			/* last poll was at or above the limit */
 	struct notifier_block bc_nb;
 	struct notifier_block cable_cg_nb;
 	struct notifier_block cable_host_nb;
@@ -925,6 +939,71 @@ static ssize_t thermal_action_band_store(struct device *dev,
 }
 static DEVICE_ATTR_RW(thermal_action_band);
 
+/*
+ * SoC zone limit in degrees C for the charge throttle, 0 to switch it off.
+ * Hysteresis: once hot, the zone has to drop SOC_HYST_C under the limit
+ * before it counts as cool again, so the current does not hunt on the
+ * zone's ~1C steps. An unreadable zone counts as cool: the die loop and the
+ * PMIC's own limiter still cover the charger.
+ */
+static bool rk817_charge_soc_hot(struct rk817_charger *charge)
+{
+	int limit = READ_ONCE(charge->soc_limit_c);
+	int mc, ret;
+	bool was = charge->soc_hot;
+
+	if (limit <= 0) {
+		charge->soc_hot = false;
+		return false;
+	}
+	if (!charge->soc_tz) {
+		struct thermal_zone_device *tz;
+
+		tz = thermal_zone_get_zone_by_name(SOC_TZ_NAME);
+		if (IS_ERR(tz))
+			return false;
+		charge->soc_tz = tz;
+	}
+	ret = thermal_zone_get_temp(charge->soc_tz, &mc);
+	if (ret)
+		return false;
+
+	if (was)
+		charge->soc_hot = mc >= (limit - SOC_HYST_C) * 1000;
+	else
+		charge->soc_hot = mc >= limit * 1000;
+	if (charge->soc_hot != was)
+		dev_info(charge->dev, "thermal: soc %dC, %s (limit %dC)\n",
+			 mc / 1000,
+			 charge->soc_hot ? "hot" : "cool again", limit);
+	return charge->soc_hot;
+}
+
+static ssize_t soc_temp_limit_show(struct device *dev,
+				   struct device_attribute *attr, char *buf)
+{
+	struct rk817_charger *charge = dev_get_drvdata(dev);
+
+	return sprintf(buf, "%d\n", READ_ONCE(charge->soc_limit_c));
+}
+
+static ssize_t soc_temp_limit_store(struct device *dev,
+				    struct device_attribute *attr,
+				    const char *buf, size_t count)
+{
+	struct rk817_charger *charge = dev_get_drvdata(dev);
+	int v;
+
+	/* 0 is off; otherwise keep it where a cool board cannot trip it and a
+	 * hot one cannot slip past it. */
+	if (kstrtoint(buf, 0, &v) || (v != 0 && (v < 40 || v > 100)))
+		return -EINVAL;
+	WRITE_ONCE(charge->soc_limit_c, v);
+	dev_info(charge->dev, "thermal: soc limit set to %dC\n", v);
+	return count;
+}
+static DEVICE_ATTR_RW(soc_temp_limit);
+
 static void rk817_charge_thermal_work(struct work_struct *work)
 {
 	struct rk817_charger *charge = container_of(work, struct rk817_charger,
@@ -932,7 +1011,7 @@ static void rk817_charge_thermal_work(struct work_struct *work)
 	u32 cur = charge->thermal_chrg_current;
 	u32 want = cur;
 	int band, prev;
-	bool hot;
+	bool hot, soc_hot;
 
 	if (!rk817_charge_online(charge)) {
 		/* No charger: hand back the full limit so the next plug starts
@@ -943,6 +1022,7 @@ static void rk817_charge_thermal_work(struct work_struct *work)
 						      charge->thermal_chrg_current);
 		}
 		charge->thermal_cool_polls = 0;
+		charge->soc_hot = false;
 		queue_delayed_work(charge->usb_charger_wq, &charge->thermal_work,
 				   msecs_to_jiffies(THERMAL_IDLE_POLL_MS));
 		return;
@@ -955,7 +1035,8 @@ static void rk817_charge_thermal_work(struct work_struct *work)
 		dev_info(charge->dev, "thermal: die band %s -> %s\n",
 			 rk817_die_band_name[prev], rk817_die_band_name[band]);
 
-	hot = band >= charge->thermal_action_band;
+	soc_hot = rk817_charge_soc_hot(charge);
+	hot = band >= charge->thermal_action_band || soc_hot;
 	if (hot) {
 		charge->thermal_cool_polls = 0;
 		if (cur > THERMAL_FLOOR_MA)
@@ -972,8 +1053,9 @@ static void rk817_charge_thermal_work(struct work_struct *work)
 		charge->thermal_chrg_current = want;
 		rk817_charge_set_chrg_current(charge, want);
 		dev_info(charge->dev,
-			 "thermal: die %s, charge current %u -> %u mA\n",
-			 rk817_die_band_name[band], cur, want);
+			 "thermal: die %s%s, charge current %u -> %u mA\n",
+			 rk817_die_band_name[band],
+			 soc_hot ? ", soc hot" : "", cur, want);
 	}
 
 	queue_delayed_work(charge->usb_charger_wq, &charge->thermal_work,
@@ -1528,6 +1610,8 @@ static void rk817_charge_pre_init(struct rk817_charger *charge)
 	charge->thermal_cool_polls = 0;
 	charge->die_band = 0;
 	charge->thermal_action_band = THERMAL_ACT_BAND;
+	charge->soc_limit_c = SOC_LIMIT_C;
+	charge->soc_hot = false;
 	rk817_charge_set_chrg_current(charge, charge->thermal_chrg_current);
 
 	/* Hand the die its own current limiter. CHRG_CT_EN (0xE4 bit 3) is the
@@ -1898,7 +1982,8 @@ static int rk817_charge_probe(struct platform_device *pdev)
 	INIT_DELAYED_WORK(&charge->thermal_work, rk817_charge_thermal_work);
 	if (device_create_file(charge->dev, &dev_attr_die_temp_band) ||
 	    device_create_file(charge->dev, &dev_attr_thermal_chrg_current) ||
-	    device_create_file(charge->dev, &dev_attr_thermal_action_band))
+	    device_create_file(charge->dev, &dev_attr_thermal_action_band) ||
+	    device_create_file(charge->dev, &dev_attr_soc_temp_limit))
 		dev_warn(charge->dev, "thermal: sysfs attributes not created\n");
 	queue_delayed_work(charge->usb_charger_wq, &charge->thermal_work,
 			   msecs_to_jiffies(THERMAL_POLL_MS));
