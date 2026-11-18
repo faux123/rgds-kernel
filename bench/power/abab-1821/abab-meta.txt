@@ -1,0 +1,10 @@
+Tue Nov 17 18:21:37 PST 2026
+0
+0
+102
+  mWakefulness=Awake
+Failed to write while dumping service power: Broken pipe
+  mCurrentFocus=null
+Failed to write while dumping service window: Broken pipe
+cpu performance gpu performance vop performance vdec performance
+END
