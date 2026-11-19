@@ -711,3 +711,18 @@ Not re-verified yet: the reboot is on hold for a peer session's ROM scan on the 
 Re-verified 2026-11-17 12:44 after a cold reboot (peer paul-d7 released the device first): rgds-tune.log
 "zram disksize 2325282816 -> 3100381184" at boot+3 s, /proc/swaps zram0 3027712 KiB, lz4, page-cluster 0;
 mmcblk0 [bfq] ra=512; sched_bore=1 from rgds-bore.sh; wlan0 up.
+
+## BORE default on + ThinLTO (2026-11-18)
+
+- f5e53bcdcb74: sched_bore defaults to 1. On the RG DS this is a no-op at run time: the Magisk hook
+  /data/adb/service.d/rgds-bore.sh already arms it ~30 s after every boot (since 2026-11-17).
+- 5bc5fbcc1879: arch/arm64/configs/rgds_thinlto.config (stock config + `make rgds_thinlto.config`;
+  reproduces the tested .config exactly, and without the fragment the config differs on LTO_NONE).
+  vmlinux.symvers name+CRC identical to the non-LTO build; 4235 `.llvm.` symbols in /proc/kallsyms on
+  the device; 8821cs loads, wlan0 up; dmesg hits for "oops" were ramoops/pstore setup lines.
+  Boot image e8b2a916 (gate PASS), flashed 21:39, rollback ddc0df31.
+- FauxDS Mario Kart, stack-26, full length (peer FauxDS session): ThinLTO+BORE 46.4/46.9/47.1/46.8,
+  ThinLTO bore0 47.4/46.3, BORE offset 25 46.8, old image ddc0df31 rerun back to back 47.0/46.9.
+  An earlier old-image pair (48.3/47.8, ~1.5 h before) was the outlier; no kernel FPS cost.
+- 16-hog offset test (bench/bore/offset-20261118.txt, 3 rounds): missed 60 Hz frames bore0
+  18.5/38.7/4.2%, offset 22 0/0.3/0.3%, offset 25 0.7/2.4/0.7%. Default offset 22 kept.
