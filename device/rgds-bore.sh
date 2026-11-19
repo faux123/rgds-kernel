@@ -1,4 +1,5 @@
 #!/system/bin/sh
+# RETIRED 2026-11-19: main f5e53bcdcb74 boots with sched_bore=1. Only needed on kernels before it.
 # Magisk service.d hook: arm BORE at boot on the RG DS kernel (main).
 # The kernel boots with kernel.sched_bore=0 (stock CFS); this turns BORE on once Android is up.
 # Disable: rm /data/adb/service.d/rgds-bore.sh, or `sysctl kernel.sched_bore=0` for this boot.

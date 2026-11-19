@@ -1,0 +1,14 @@
+lock Thu Nov 19 03:37:41 AM PST 2026 S=10.0.3.10:42157
+rgds-tune.sh
+10
+REBOOTED Thu Nov 19 03:38:44 AM PST 2026
+NEW S=10.0.3.10:36277 Thu Nov 19 03:38:58 AM PST 2026
+[    2.283150] BORE (Burst-Oriented Response Enhancer) CPU Scheduler modification 5.1.0 by Masahito Suzuki, sched_bore=1 (0 = stock CFS)
+66.27
+1
+rgds-tune.sh
+111.50
+sched_bore=1
+10
+Wed Nov 18 21:38:59 PST 2026 uptime 32.94s sched_bore=1
+#31 SMP PREEMPT Tue Sep 29 16:47:09 CST 2026

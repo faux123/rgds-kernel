@@ -716,6 +716,10 @@ mmcblk0 [bfq] ra=512; sched_bore=1 from rgds-bore.sh; wlan0 up.
 
 - f5e53bcdcb74: sched_bore defaults to 1. On the RG DS this is a no-op at run time: the Magisk hook
   /data/adb/service.d/rgds-bore.sh already arms it ~30 s after every boot (since 2026-11-17).
+- 2026-11-19: Magisk hook retired. Moved to /data/adb/rgds-bore.sh.off (out of service.d) and rebooted
+  e8b2a916 with no hook (bench/bore/no-hook-check.log): dmesg at 2.28 s prints "sched_bore=1",
+  /proc/sys/kernel/sched_bore=1 at 66 s and 111 s uptime, rgds-bore.log got no new line. BORE is on
+  from kernel init, no Magisk needed. device/rgds-bore.sh is kept only for older kernels.
 - 5bc5fbcc1879: arch/arm64/configs/rgds_thinlto.config (stock config + `make rgds_thinlto.config`;
   reproduces the tested .config exactly, and without the fragment the config differs on LTO_NONE).
   vmlinux.symvers name+CRC identical to the non-LTO build; 4235 `.llvm.` symbols in /proc/kallsyms on
