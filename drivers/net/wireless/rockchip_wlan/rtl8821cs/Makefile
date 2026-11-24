@@ -2505,7 +2505,9 @@ endif
 
 ifneq ($(KERNELRELEASE),)
 
-export CONFIG_RTL8821CS = m
+# Kconfig decides: =y links the driver into the kernel, =m builds 8821cs.ko.
+CONFIG_RTL8821CS ?= m
+export CONFIG_RTL8821CS
 
 ########### this part for *.mk ############################
 include $(src)/hal/phydm/phydm.mk
