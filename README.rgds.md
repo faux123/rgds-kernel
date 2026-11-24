@@ -45,13 +45,20 @@ Linux version 6.1.141 (builder1@dell-PowerEdge-R730XD) (Android (10087095, +pgo,
 
 2. The host needs `bc`, `flex`, `bison`, and the OpenSSL and libelf headers.
 
-3. Use the stock configuration (the device's `/proc/config.gz`, committed as
-   `arch/arm64/configs/rgds_v1.21_stock.config`):
+3. Configure. The release kernel (1.0 and later) is the stock configuration
+   plus two fragments: ThinLTO (`rgds_thinlto.config`) and the release
+   options (`rgds_release.config`: transparent huge pages on, in `madvise`
+   mode, and the RTL8821CS Wi-Fi driver built in):
 
    ```
    cp arch/arm64/configs/rgds_v1.21_stock.config .config
-   make ARCH=arm64 LLVM=1 olddefconfig
+   make ARCH=arm64 LLVM=1 rgds_thinlto.config rgds_release.config
    ```
+
+   To rebuild the stock kernel exactly, skip the fragments and run
+   `make ARCH=arm64 LLVM=1 olddefconfig` on the stock configuration (the
+   device's `/proc/config.gz`, committed as
+   `arch/arm64/configs/rgds_v1.21_stock.config`).
 
 4. Build. `KCFLAGS` matches the ACK build environment (`build.config.common`);
    the `KBUILD_BUILD_*` variables reproduce the stock version banner byte for
@@ -117,7 +124,12 @@ Commit messages name the stock addresses that each reconstruction is based on.
   are linker veneers.
 - Function comparison against stock: of 69,919 functions present in both,
   40,968 are instruction-identical and 28,746 differ only in addresses.
-- Nothing in this tree has been tested on hardware yet.
+- Release 1.0 (tag `v1.0`) runs on the author's RG DS: the kernel from commit
+  `52c2a1983271f` with the release configuration above, packed into the
+  device's own boot image (only the kernel replaced), boots with Wi-Fi up and
+  transparent huge pages in `madvise` mode. Checked 2026-11-24 by hashing the
+  device's boot partition against the packed image. Other RG DS units and
+  firmware versions are untested.
 
 ## Flashing warning
 
